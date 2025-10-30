@@ -1,0 +1,21 @@
+{
+  "projectName": "brandy.work",
+  "mode": "file-router",
+  "typescript": true,
+  "tailwind": true,
+  "packageManager": "pnpm",
+  "addOnOptions": {},
+  "git": true,
+  "version": 1,
+  "framework": "react-cra",
+  "chosenAddOns": [
+    "biome",
+    "start",
+    "convex",
+    "sentry",
+    "shadcn",
+    "t3env",
+    "store",
+    "tanstack-query"
+  ]
+}
