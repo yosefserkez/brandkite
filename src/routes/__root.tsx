@@ -8,7 +8,8 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import Header from '../components/Header'
 
-import ConvexProvider from '../integrations/convex/provider'
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import { ConvexReactClient } from "convex/react";
 
 import StoreDevtools from '../lib/demo-store-devtools'
 
@@ -47,6 +48,8 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   shellComponent: RootDocument,
 })
 
+const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -54,7 +57,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <ConvexProvider>
+      <ConvexAuthProvider client={convex}>
           <Header />
           {children}
           <TanStackDevtools
@@ -70,7 +73,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               TanStackQueryDevtools,
             ]}
           />
-        </ConvexProvider>
+        </ConvexAuthProvider>
         <Scripts />
       </body>
     </html>

@@ -12,6 +12,8 @@
     "check": "biome check"
   },
   "dependencies": {
+    "@auth/core": "0.37.0",
+    "@convex-dev/auth": "^0.0.90",
     "@convex-dev/react-query": "0.0.0-alpha.11",
     "@sentry/tanstackstart-react": "^10.17.0",
     "@t3-oss/env-core": "^0.13.8",
