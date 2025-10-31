@@ -5,7 +5,7 @@ import { BrandModuleWorkflow, WorkflowContext } from '../types';
 import { BrandModuleTypes } from '.';
 
 export class LogoWorkflow implements BrandModuleWorkflow {
-  moduleType = BrandModuleTypes.Logos;
+  moduleType = BrandModuleTypes.Logo;
 
   // Optional: Declare dependencies if you want to wait for brandName
   // For now, we'll work with companyDescription as fallback

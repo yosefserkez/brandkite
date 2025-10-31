@@ -42,7 +42,7 @@ export const BRAND_MODULE_TYPES = [
   "colors",
   "typography",
   "imagery",
-  "logos",
+  "logo",
   "voice",
   "story",
 ] as const;
