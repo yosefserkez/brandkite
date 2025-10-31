@@ -3,6 +3,7 @@ import { internal } from "../_generated/api";
 import { getWorkflowRegistry } from './registry';
 import { BrandModuleWorkflow, WorkflowDependency } from './types';
 import type { BrandModuleType } from './modules';
+import { logger } from '../logger';
 
 /**
  * Configuration constants
@@ -127,10 +128,19 @@ export async function queueModulesForGeneration(
   moduleTypes: BrandModuleType[],
   companyDescription: string
 ): Promise<void> {
+  const log = logger.withContext({ companyId, moduleTypes, step: 'queueModulesForGeneration' });
+  log.info('Starting module generation queue', { moduleCount: moduleTypes.length });
+  
   const registry = getWorkflowRegistry();
   
   // Check for circular dependencies before queueing
-  detectCircularDependencies(moduleTypes as BrandModuleType[], registry);
+  try {
+    detectCircularDependencies(moduleTypes as BrandModuleType[], registry);
+    log.debug('Circular dependency check passed');
+  } catch (error) {
+    log.error('Circular dependency detected', { error });
+    throw error;
+  }
   
   // Create all modules in "queued" state
   const moduleIds: Record<string, any> = {};
@@ -143,8 +153,10 @@ export async function queueModulesForGeneration(
       now,
     });
     moduleIds[moduleType] = moduleId;
+    log.debug('Created queued module', { moduleType, moduleId });
   }
 
+  log.info('All modules queued, processing generation queue', { moduleCount: Object.keys(moduleIds).length });
   // Process the queue with dependency handling
   await processGenerationQueue(ctx, companyId, moduleIds, companyDescription);
 }
@@ -159,9 +171,11 @@ async function processGenerationQueue(
   companyDescription: string,
   attemptNumber: number = 0
 ): Promise<void> {
+  const log = logger.withContext({ companyId, attemptNumber, step: 'processGenerationQueue' });
   const registry = getWorkflowRegistry();
   
   if (attemptNumber >= MAX_QUEUE_RETRIES) {
+    log.error('Generation queue exceeded max retries', { maxRetries: MAX_QUEUE_RETRIES });
     // Mark remaining queued modules as failed
     const currentModules = await ctx.runQuery(internal.brandModules.getModulesForGeneration, {
       companyId,
@@ -169,6 +183,7 @@ async function processGenerationQueue(
     
     for (const module of currentModules) {
       if (module.generationStatus === 'queued' && moduleIds[module.type]) {
+        log.warn('Marking module as failed due to max retries', { moduleType: module.type });
         await ctx.runMutation(internal.brandModules.updateModuleInternal, {
           moduleId: moduleIds[module.type],
           data: null,
@@ -177,8 +192,11 @@ async function processGenerationQueue(
       }
     }
     
-    throw new Error(`Generation queue processing exceeded max retries (${MAX_QUEUE_RETRIES})`);
+    log.error('Generation queue processing exceeded max retries, returning without throwing', { maxRetries: MAX_QUEUE_RETRIES });
+    return; // Don't throw - gracefully handle failure
   }
+
+  log.debug('Processing generation queue', { attemptNumber, moduleCount: Object.keys(moduleIds).length });
 
   // Get current state of all modules
   const currentModules = await ctx.runQuery(internal.brandModules.getModulesForGeneration, {
@@ -192,15 +210,20 @@ async function processGenerationQueue(
     generationStatus: m.generationStatus,
   }));
 
+  log.debug('Current module statuses', {
+    statuses: moduleStatuses.map(s => ({ type: s.type, status: s.generationStatus, hasData: s.hasData }))
+  });
+
   // Find modules that can be processed now (queued with satisfied dependencies)
   const modulesToProcess: Array<{ type: BrandModuleType; id: any }> = [];
   
-  for (const moduleType of moduleIds as BrandModuleType[]) {
+  for (const moduleType of Object.keys(moduleIds) as BrandModuleType[]) {
     const moduleId = moduleIds[moduleType];
     const status = moduleStatuses.find(s => s.type === moduleType);
     
     // Skip if already processing or complete
     if (status && status.generationStatus !== 'queued') {
+      log.debug('Skipping module - not queued', { moduleType, status: status.generationStatus });
       continue;
     }
     
@@ -210,12 +233,24 @@ async function processGenerationQueue(
       const depCheck = areDependenciesSatisfied(workflow.dependencies, moduleStatuses);
       if (depCheck.satisfied) {
         modulesToProcess.push({ type: moduleType, id: moduleId });
+        log.debug('Module ready to process', { moduleType, dependencies: workflow.dependencies });
+      } else {
+        log.debug('Module dependencies not satisfied', {
+          moduleType,
+          missingDependency: depCheck.missingDependency,
+          dependencies: workflow.dependencies
+        });
       }
     }
   }
 
+  log.info('Modules ready to process', { count: modulesToProcess.length, modules: modulesToProcess.map(m => m.type) });
+
   // Process available modules
   for (const { type, id } of modulesToProcess) {
+    const moduleLog = log.withContext({ moduleType: type, moduleId: id });
+    moduleLog.info('Starting module generation');
+    
     // Mark as in_progress
     await ctx.runMutation(internal.brandModules.updateModuleInternal, {
       moduleId: id,
@@ -231,7 +266,9 @@ async function processGenerationQueue(
         moduleId: id,
         publish: false,
       } as any);
+      moduleLog.debug('Module generation scheduled');
     } catch (error) {
+      moduleLog.error('Failed to schedule module generation', { error });
       // Mark as failed if scheduling failed
       await ctx.runMutation(internal.brandModules.updateModuleInternal, {
         moduleId: id,
@@ -255,6 +292,12 @@ async function processGenerationQueue(
     const nextAttempt = attemptNumber + 1;
     const delaySeconds = Math.min(2 ** nextAttempt, MAX_BACKOFF_DELAY_SECONDS);
     
+    log.info('Scheduling retry for pending modules', {
+      pendingCount: pendingModules.length,
+      nextAttempt,
+      delaySeconds
+    });
+    
     await ctx.scheduler.runAfter(
       delaySeconds,
       internal.ai.processGenerationQueueAction,
@@ -263,6 +306,8 @@ async function processGenerationQueue(
         attemptNumber: nextAttempt,
       } as any
     );
+  } else {
+    log.info('All modules processed or queued');
   }
 }
 
@@ -274,6 +319,9 @@ export async function reprocessGenerationQueue(
   companyId: any,
   attemptNumber: number = 0
 ): Promise<void> {
+  const log = logger.withContext({ companyId, attemptNumber, step: 'reprocessGenerationQueue' });
+  log.debug('Reprocessing generation queue');
+  
   const currentModules = await ctx.runQuery(internal.brandModules.getModulesForGeneration, {
     companyId,
   });
@@ -282,8 +330,11 @@ export async function reprocessGenerationQueue(
   const queuedModules = currentModules.filter(m => m.generationStatus === 'queued');
   
   if (queuedModules.length === 0) {
+    log.debug('No queued modules found, nothing to process');
     return; // Nothing to process
   }
+
+  log.info('Found queued modules', { count: queuedModules.length });
 
   const registry = getWorkflowRegistry();
   const moduleIds: Record<string, any> = {};
@@ -297,6 +348,7 @@ export async function reprocessGenerationQueue(
   });
 
   if (!company) {
+    log.error('Company not found');
     throw new Error("Company not found");
   }
 

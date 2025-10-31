@@ -4,6 +4,7 @@ import { getWorkflowRegistry } from './workflows/registry';
 import { WorkflowContext } from './workflows/types';
 import { queueModulesForGeneration, reprocessGenerationQueue } from './workflows/orchestrator';
 import { BRAND_MODULE_TYPES, BrandModuleType, brandModuleTypeValidator } from './workflows/modules';
+import { logger } from './logger';
 
 export const generateBrandModule = internalAction({
   args: {
@@ -12,6 +13,16 @@ export const generateBrandModule = internalAction({
     existingModules: v.array(v.any()),
   },
   handler: async (ctx, args) => {
+    const log = logger.withContext({
+      moduleType: args.moduleType,
+      step: 'generateBrandModule'
+    });
+    
+    log.debug('Starting brand module generation', {
+      existingModuleCount: args.existingModules.length,
+      existingModuleTypes: args.existingModules.map(m => m.type)
+    });
+    
     // Convert existing modules array to a map
     const existingModulesMap = args.existingModules.reduce((acc, module) => {
       acc[module.type] = module.data;
@@ -23,6 +34,7 @@ export const generateBrandModule = internalAction({
     const workflow = registry.get(args.moduleType);
     
     if (!workflow) {
+      log.error('Workflow not found for module type', { moduleType: args.moduleType });
       throw new Error(`No workflow found for module type: ${args.moduleType}`);
     }
 
@@ -36,11 +48,18 @@ export const generateBrandModule = internalAction({
 
     // Check dependencies if the workflow has validation
     if (workflow.validateDependencies && !workflow.validateDependencies(context)) {
+      log.error('Dependencies not met for module', {
+        moduleType: args.moduleType,
+        dependencies: workflow.dependencies
+      });
       throw new Error(`Dependencies not met for module type: ${args.moduleType}`);
     }
 
+    log.debug('Executing workflow', { moduleType: args.moduleType });
     // Execute the workflow
     const result = await workflow.generate(context);
+    log.info('Workflow execution completed', { moduleType: args.moduleType });
+    
     return result.data;
   },
 });
@@ -52,11 +71,23 @@ export const generateInitialBrand = internalAction({
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
+    const log = logger.withContext({
+      companyId: args.companyId,
+      userId: args.userId,
+      step: 'generateInitialBrand'
+    });
+    
+    log.info('Starting initial brand generation');
+    
     // Default group: a concise set of atomic modules to bootstrap a brand
-    const moduleTypes: BrandModuleType[] = [...BRAND_MODULE_TYPES] as BrandModuleType[];
+    const moduleTypes: BrandModuleType[] = [...BRAND_MODULE_TYPES].filter(type => type !== 'tagline') as BrandModuleType[];
+    
+    log.debug('Module types to generate', { moduleTypes, count: moduleTypes.length });
     
     // Use orchestrator to queue all modules with proper dependency handling
     await queueModulesForGeneration(ctx, args.companyId, moduleTypes, args.description);
+    
+    log.info('Initial brand generation queued');
   },
 });
 

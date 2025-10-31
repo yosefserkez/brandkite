@@ -3,6 +3,7 @@ import { query, mutation, action, internalQuery, internalMutation, internalActio
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 import { BrandModuleType, brandModuleTypeValidator } from "./workflows/modules";
+import { logger } from "./logger";
 
 export const getModules = query({
   args: { companyId: v.id("companies") },
@@ -153,15 +154,29 @@ export const regenerateModuleAction = internalAction({
     publish: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    const log = logger.withContext({
+      companyId: args.companyId,
+      moduleType: args.type,
+      moduleId: args.moduleId,
+      step: 'regenerateModuleAction'
+    });
+    
+    log.info('Starting module regeneration');
+    
     const company = await ctx.runQuery(internal.companies.getForGeneration, {
       companyId: args.companyId,
     });
 
-    if (!company) throw new Error("Company not found");
+    if (!company) {
+      log.error('Company not found');
+      throw new Error("Company not found");
+    }
 
     const existingModules = await ctx.runQuery(internal.brandModules.getModulesForGeneration, {
       companyId: args.companyId,
     });
+
+    log.debug('Retrieved existing modules', { count: existingModules.length });
 
     // mark in_progress
     await ctx.runMutation(internal.brandModules.updateModuleInternal, {
@@ -169,14 +184,18 @@ export const regenerateModuleAction = internalAction({
       data: null,
       setGenerationStatus: "in_progress",
     } as any);
+    log.debug('Module marked as in_progress');
 
     try {
+      log.info('Generating module data');
       const generatedData = await ctx.runAction(internal.ai.generateBrandModule, {
         companyDescription: company.description,
         moduleType: args.type as BrandModuleType,
         existingModules,
       });
 
+      log.info('Module generation succeeded');
+      
       await ctx.runMutation(internal.brandModules.updateModuleInternal, {
         moduleId: args.moduleId,
         data: generatedData,
@@ -184,12 +203,15 @@ export const regenerateModuleAction = internalAction({
         setGenerationStatus: "succeeded",
       } as any);
 
+      log.debug('Triggering queue reprocessing');
       // Trigger queue reprocessing to check if any pending modules can now run
       await ctx.scheduler.runAfter(0, internal.ai.processGenerationQueueAction, {
         companyId: args.companyId,
         attemptNumber: 0,
       });
     } catch (error) {
+      log.error('Module generation failed', { error });
+      
       // Mark as failed if generation fails
       await ctx.runMutation(internal.brandModules.updateModuleInternal, {
         moduleId: args.moduleId,
@@ -197,6 +219,7 @@ export const regenerateModuleAction = internalAction({
         setGenerationStatus: "failed",
       } as any);
       
+      log.debug('Triggering queue reprocessing after failure');
       // Still trigger reprocessing in case this failure unblocks something
       await ctx.scheduler.runAfter(0, internal.ai.processGenerationQueueAction, {
         companyId: args.companyId,
@@ -288,11 +311,9 @@ export const updateModuleInternal = internalMutation({
             await ctx.db.patch(mod._id, { published: false });
           }
         }
+        // Only update company timestamp when publishing (user-facing action)
+        await ctx.db.patch(existing.companyId, { updatedAt: now });
       }
-    }
-
-    if (existing) {
-      await ctx.db.patch(existing.companyId, { updatedAt: now });
     }
   },
 });

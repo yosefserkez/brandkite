@@ -14,6 +14,7 @@ import type * as brandModules from "../brandModules.js";
 import type * as companies from "../companies.js";
 import type * as http from "../http.js";
 import type * as internal_ from "../internal.js";
+import type * as logger from "../logger.js";
 import type * as presence from "../presence.js";
 import type * as workflows_modules_colors from "../workflows/modules/colors.js";
 import type * as workflows_modules_differentiators from "../workflows/modules/differentiators.js";
@@ -60,6 +61,7 @@ declare const fullApi: ApiFromModules<{
   companies: typeof companies;
   http: typeof http;
   internal: typeof internal_;
+  logger: typeof logger;
   presence: typeof presence;
   "workflows/modules/colors": typeof workflows_modules_colors;
   "workflows/modules/differentiators": typeof workflows_modules_differentiators;
