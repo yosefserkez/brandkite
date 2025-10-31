@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { query, mutation, action, internalQuery, internalMutation, internalAction } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
+import { BrandModuleType, brandModuleTypeValidator } from "./workflows/modules";
 
 export const getModules = query({
   args: { companyId: v.id("companies") },
@@ -35,14 +36,10 @@ export const getModules = query({
 export const updateModule = mutation({
   args: {
     companyId: v.id("companies"),
-    type: v.union(
-      v.literal("foundations"),
-      v.literal("visual"),
-      v.literal("verbal"),
-      v.literal("applications"),
-      v.literal("governance")
-    ),
+    type: brandModuleTypeValidator,
     data: v.any(),
+    moduleId: v.optional(v.id("brandModules")),
+    publish: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -65,30 +62,39 @@ export const updateModule = mutation({
 
     if (!hasWriteAccess) throw new Error("Not authorized");
 
-    const existing = await ctx.db
-      .query("brandModules")
-      .withIndex("by_company_type", (q) => 
-        q.eq("companyId", args.companyId).eq("type", args.type)
-      )
-      .first();
-
     const now = Date.now();
 
-    if (existing) {
-      await ctx.db.patch(existing._id, {
+    if (args.moduleId) {
+      const existing = await ctx.db.get(args.moduleId);
+      if (!existing) throw new Error("Module not found");
+      await ctx.db.patch(args.moduleId, {
         data: args.data,
-        version: existing.version + 1,
+        published: args.publish ?? existing.published ?? false,
         updatedBy: userId,
         updatedAt: now,
       });
+      if (args.publish) {
+        // ensure only one published per (companyId, type, key)
+        const others = await ctx.db
+          .query("brandModules")
+          .withIndex("by_company_type", (q) => q.eq("companyId", args.companyId).eq("type", args.type))
+          .collect();
+        for (const mod of others) {
+          if (mod._id !== args.moduleId && mod.published) {
+            await ctx.db.patch(mod._id, { published: false });
+          }
+        }
+      }
     } else {
       await ctx.db.insert("brandModules", {
         companyId: args.companyId,
         type: args.type,
         data: args.data,
-        version: 1,
+        published: args.publish ?? false,
+        generationStatus: "idle",
         updatedBy: userId,
         updatedAt: now,
+        createdAt: now,
       });
     }
 
@@ -107,22 +113,34 @@ export const updateModule = mutation({
 export const regenerateModule = mutation({
   args: {
     companyId: v.id("companies"),
-    type: v.union(
-      v.literal("foundations"),
-      v.literal("visual"),
-      v.literal("verbal"),
-      v.literal("applications"),
-      v.literal("governance")
-    ),
+    type: brandModuleTypeValidator,
+    publish: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    const company = await ctx.db.get(args.companyId);
+    if (!company) throw new Error("Company not found");
+    if (company.ownerId !== userId ) throw new Error("Not authorized");
+
+    // Create a new queued instance
+    const now = Date.now();
+    const targetId = await ctx.db.insert("brandModules", {
+      companyId: args.companyId,
+      type: args.type,
+      data: null,
+      published: false,
+      generationStatus: "queued",
+      updatedAt: now,
+      createdAt: now,
+    });
 
     // Schedule the regeneration
     await ctx.scheduler.runAfter(0, internal.brandModules.regenerateModuleAction, {
       companyId: args.companyId,
       type: args.type,
+      moduleId: targetId,
+      publish: args.publish ?? false,
     });
   },
 });
@@ -130,13 +148,9 @@ export const regenerateModule = mutation({
 export const regenerateModuleAction = internalAction({
   args: {
     companyId: v.id("companies"),
-    type: v.union(
-      v.literal("foundations"),
-      v.literal("visual"),
-      v.literal("verbal"),
-      v.literal("applications"),
-      v.literal("governance")
-    ),
+    type: brandModuleTypeValidator,
+    moduleId: v.id("brandModules"),
+    publish: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const company = await ctx.runQuery(internal.companies.getForGeneration, {
@@ -149,59 +163,81 @@ export const regenerateModuleAction = internalAction({
       companyId: args.companyId,
     });
 
-    const generatedData = await ctx.runAction(internal.ai.generateBrandModule, {
-      companyDescription: company.description,
-      moduleType: args.type,
-      existingModules,
-    });
-
+    // mark in_progress
     await ctx.runMutation(internal.brandModules.updateModuleInternal, {
-      companyId: args.companyId,
-      type: args.type,
-      data: generatedData,
-    });
+      moduleId: args.moduleId,
+      data: null,
+      setGenerationStatus: "in_progress",
+    } as any);
+
+    try {
+      const generatedData = await ctx.runAction(internal.ai.generateBrandModule, {
+        companyDescription: company.description,
+        moduleType: args.type as BrandModuleType,
+        existingModules,
+      });
+
+      await ctx.runMutation(internal.brandModules.updateModuleInternal, {
+        moduleId: args.moduleId,
+        data: generatedData,
+        publish: args.publish ?? false,
+        setGenerationStatus: "succeeded",
+      } as any);
+
+      // Trigger queue reprocessing to check if any pending modules can now run
+      await ctx.scheduler.runAfter(0, internal.ai.processGenerationQueueAction, {
+        companyId: args.companyId,
+        attemptNumber: 0,
+      });
+    } catch (error) {
+      // Mark as failed if generation fails
+      await ctx.runMutation(internal.brandModules.updateModuleInternal, {
+        moduleId: args.moduleId,
+        data: null,
+        setGenerationStatus: "failed",
+      } as any);
+      
+      // Still trigger reprocessing in case this failure unblocks something
+      await ctx.scheduler.runAfter(0, internal.ai.processGenerationQueueAction, {
+        companyId: args.companyId,
+        attemptNumber: 0,
+      });
+      
+      throw error;
+    }
   },
 });
 
 export const cascadeUpdates = internalAction({
   args: {
     companyId: v.id("companies"),
-    updatedModuleType: v.string(),
+    updatedModuleType: brandModuleTypeValidator,
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
     // Define dependencies between modules
-    const dependencies: Record<string, string[]> = {
-      foundations: ["verbal", "visual", "applications"],
-      visual: ["applications"],
-      verbal: ["applications"],
-    };
+    const dependencies: Record<string, string[]> = {};
 
     const dependentModules = dependencies[args.updatedModuleType] || [];
     
-    for (const moduleType of dependentModules) {
-      // Get current module data
-      const modules = await ctx.runQuery(internal.brandModules.getModulesForGeneration, {
+    for (const moduleType of dependentModules as BrandModuleType[]) {
+      // Create new queued version for dependent module
+      const now = Date.now();
+      const existingOfType = await ctx.runQuery(internal.brandModules.getModulesForGeneration, {
         companyId: args.companyId,
       });
 
-      const company = await ctx.runQuery(internal.companies.getForGeneration, {
+      const moduleId = await ctx.runMutation(internal.brandModules.createQueuedModuleInternal as any, {
         companyId: args.companyId,
+        type: moduleType,
+        now,
       });
 
-      if (!company) continue;
-
-      // Regenerate dependent module
-      const updatedData = await ctx.runAction(internal.ai.generateBrandModule, {
-        companyDescription: company.description,
-        moduleType: moduleType as any,
-        existingModules: modules,
-      });
-
-      await ctx.runMutation(internal.brandModules.updateModuleInternal, {
+      await ctx.scheduler.runAfter(0, internal.brandModules.regenerateModuleAction, {
         companyId: args.companyId,
-        type: moduleType as any,
-        data: updatedData,
+        type: moduleType,
+        moduleId,
+        publish: false,
       });
     }
   },
@@ -219,42 +255,145 @@ export const getModulesForGeneration = internalQuery({
 
 export const updateModuleInternal = internalMutation({
   args: {
-    companyId: v.id("companies"),
-    type: v.union(
-      v.literal("foundations"),
-      v.literal("visual"),
-      v.literal("verbal"),
-      v.literal("applications"),
-      v.literal("governance")
-    ),
+    moduleId: v.id("brandModules"),
     data: v.any(),
+    publish: v.optional(v.boolean()),
+    setGenerationStatus: v.optional(v.union(
+      v.literal("idle"),
+      v.literal("queued"),
+      v.literal("in_progress"),
+      v.literal("succeeded"),
+      v.literal("failed"),
+    )),
   },
   handler: async (ctx, args) => {
-    const existing = await ctx.db
-      .query("brandModules")
-      .withIndex("by_company_type", (q) => 
-        q.eq("companyId", args.companyId).eq("type", args.type)
-      )
-      .first();
+    const existing = await ctx.db.get(args.moduleId);
 
     const now = Date.now();
 
     if (existing) {
       await ctx.db.patch(existing._id, {
         data: args.data,
-        version: existing.version + 1,
+        published: args.publish ?? existing.published ?? false,
+        generationStatus: args.setGenerationStatus ?? existing.generationStatus ?? "idle",
         updatedAt: now,
       });
-    } else {
-      await ctx.db.insert("brandModules", {
-        companyId: args.companyId,
-        type: args.type,
-        data: args.data,
-        version: 1,
-        updatedAt: now,
-      });
+      if (args.publish) {
+        const others = await ctx.db
+          .query("brandModules")
+          .withIndex("by_company_type", (q) => q.eq("companyId", existing.companyId).eq("type", existing.type))
+          .collect();
+        for (const mod of others) {
+          if (mod._id !== existing._id && mod.published) {
+            await ctx.db.patch(mod._id, { published: false });
+          }
+        }
+      }
     }
 
-    await ctx.db.patch(args.companyId, { updatedAt: now });
+    if (existing) {
+      await ctx.db.patch(existing.companyId, { updatedAt: now });
+    }
+  },
+});
+
+export const regenerateModules = mutation({
+  args: {
+    companyId: v.id("companies"),
+    modules: v.array(v.object({
+      type: brandModuleTypeValidator,
+      publish: v.optional(v.boolean()),
+    })),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    for (const m of args.modules) {
+      const now = Date.now();
+      const moduleId = await ctx.runMutation(internal.brandModules.createQueuedModuleInternal as any, {
+        companyId: args.companyId,
+        type: m.type,
+        now,
+      });
+      await ctx.scheduler.runAfter(0, internal.brandModules.regenerateModuleAction, {
+        companyId: args.companyId,
+        type: m.type,
+        moduleId,
+        publish: m.publish ?? false,
+      });
+    }
+  },
+});
+
+export const createQueuedModuleInternal = internalMutation({
+  args: {
+    companyId: v.id("companies"),
+    type: brandModuleTypeValidator,
+    now: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const id = await ctx.db.insert("brandModules", {
+      companyId: args.companyId,
+      type: args.type,
+      data: null,
+      published: false,
+      generationStatus: "queued",
+      updatedAt: args.now,
+      createdAt: args.now,
+    });
+    return id;
+  },
+});
+
+export const listModuleTypes = query({
+  args: { companyId: v.id("companies") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [] as string[];
+
+    const company = await ctx.db.get(args.companyId);
+    if (!company) return [] as string[];
+
+    if (company.ownerId !== userId && !company.isPublic) {
+      const membership = await ctx.db
+        .query("companyMembers")
+        .withIndex("by_company_user", (q) => q.eq("companyId", args.companyId).eq("userId", userId))
+        .first();
+      if (!membership) return [] as string[];
+    }
+
+    const modules = await ctx.db
+      .query("brandModules")
+      .withIndex("by_company", (q) => q.eq("companyId", args.companyId))
+      .collect();
+    const types = Array.from(new Set(modules.map((m) => m.type)));
+    types.sort();
+    return types;
+  },
+});
+
+export const getModulesByType = query({
+  args: { companyId: v.id("companies"), type: brandModuleTypeValidator },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [] as any[];
+
+    const company = await ctx.db.get(args.companyId);
+    if (!company) return [] as any[];
+
+    if (company.ownerId !== userId && !company.isPublic) {
+      const membership = await ctx.db
+        .query("companyMembers")
+        .withIndex("by_company_user", (q) => q.eq("companyId", args.companyId).eq("userId", userId))
+        .first();
+      if (!membership) return [] as any[];
+    }
+
+    const modules = await ctx.db
+      .query("brandModules")
+      .withIndex("by_company_type", (q) => q.eq("companyId", args.companyId).eq("type", args.type))
+      .collect();
+    return modules.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
   },
 });

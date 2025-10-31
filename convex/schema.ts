@@ -26,20 +26,23 @@ const applicationTables = {
 
   brandModules: defineTable({
     companyId: v.id("companies"),
-    type: v.union(
-      v.literal("foundations"),
-      v.literal("visual"),
-      v.literal("verbal"),
-      v.literal("applications"),
-      v.literal("governance")
-    ),
+    type: v.string(),
     data: v.any(),
-    version: v.number(),
+    published: v.boolean(),
+    generationStatus: v.union(
+      v.literal("idle"),
+      v.literal("queued"),
+      v.literal("in_progress"),
+      v.literal("succeeded"),
+      v.literal("failed"),
+    ), 
     updatedBy: v.optional(v.id("users")),
     updatedAt: v.number(),
+    createdAt: v.number(),
   })
     .index("by_company", ["companyId"])
-    .index("by_company_type", ["companyId", "type"]),
+    .index("by_company_type", ["companyId", "type"]) 
+    .index("by_company_type_current", ["companyId", "type", "published"]),
 
   brandAssets: defineTable({
     companyId: v.id("companies"),
