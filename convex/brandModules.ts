@@ -152,6 +152,7 @@ export const regenerateModuleAction = internalAction({
     type: brandModuleTypeValidator,
     moduleId: v.id("brandModules"),
     publish: v.optional(v.boolean()),
+    inputContent: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const log = logger.withContext({
@@ -192,6 +193,7 @@ export const regenerateModuleAction = internalAction({
         companyDescription: company.description,
         moduleType: args.type as BrandModuleType,
         existingModules,
+        inputContent: args.inputContent,
       });
 
       log.info('Module generation succeeded');

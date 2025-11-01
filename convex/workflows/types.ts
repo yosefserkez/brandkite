@@ -9,6 +9,7 @@ export interface WorkflowContext {
   companyDescription: string;
   existingModules: Record<string, any>;
   ctx: ActionCtx;
+  inputContent?: string; // Optional content from user inputs (urls, documents, etc.)
 }
 
 /**

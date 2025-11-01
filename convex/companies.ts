@@ -1,11 +1,14 @@
 import {
   query,
   mutation,
+  action,
+  internalAction,
   internalQuery,
 } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
+import { ProcessCompanyInputsWorkflow } from "./workflows/companyContext";
 
 export const list = query({
   args: {},
@@ -74,6 +77,7 @@ export const create = mutation({
     name: v.string(),
     description: v.string(),
     isPublic: v.boolean(),
+    inputContent: v.optional(v.string()), // Combined content from user inputs (urls, documents, rawText)
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -89,14 +93,39 @@ export const create = mutation({
       updatedAt: now,
     });
 
-    // Generate initial brand modules using AI
+    // Generate context modules first (team, customer, product, market, etc.), then brand modules
     await ctx.scheduler.runAfter(0, internal.ai.generateInitialBrand, {
       companyId,
       description: args.description,
       userId,
+      inputContent: args.inputContent || undefined,
     });
 
     return companyId;
+  },
+});
+
+export const processCompanyInputs = action({
+  args: {
+    urls: v.optional(v.array(v.string())),
+    rawText: v.optional(v.string()),
+    documents: v.optional(
+      v.array(
+        v.object({
+          type: v.union(v.literal("text"), v.literal("pdf"), v.literal("url")),
+          title: v.optional(v.string()),
+          content: v.string(),
+        })
+      )
+    ),
+  },
+  handler: async (ctx, args): Promise<any> => {
+    // Call internal action to process inputs
+    return await ctx.runAction(internal.companies.processInputsInternal, {
+      urls: args.urls,
+      rawText: args.rawText,
+      documents: args.documents,
+    });
   },
 });
 
@@ -129,5 +158,26 @@ export const getForGeneration = internalQuery({
   args: { companyId: v.id("companies") },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.companyId);
+  },
+});
+
+
+export const processInputsInternal = internalAction({
+  args: {
+    urls: v.optional(v.array(v.string())),
+    rawText: v.optional(v.string()),
+    documents: v.optional(
+      v.array(
+        v.object({
+          type: v.union(v.literal("text"), v.literal("pdf"), v.literal("url")),
+          title: v.optional(v.string()),
+          content: v.string(),
+        })
+      )
+    ),
+  },
+  handler: async (ctx, args) => {
+    const workflow = new ProcessCompanyInputsWorkflow();
+    return await workflow.generate(ctx, args);
   },
 });

@@ -20,12 +20,24 @@ export { TypographyWorkflow } from './typography';
 export { ImageryWorkflow } from './imagery';
 export { VoiceWorkflow } from './voice';
 export { StoryWorkflow } from './story';
+export { TeamWorkflow } from './team';
+export { CustomerWorkflow } from './customer';
+export { ProductWorkflow } from './product';
+export { MarketWorkflow } from './market';
+export { BusinessWorkflow } from './business';
+export { BrandContextWorkflow } from './brandContext';
 
 /**
  * Single source of truth for brand module types
  * Add new module types here and they'll be available everywhere
  */
 export const BRAND_MODULE_TYPES = [
+  "team",
+  "customer",
+  "product",
+  "market",
+  "business",
+  "brandContext",
   "name",
   "tagline",
   "mission",

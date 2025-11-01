@@ -126,7 +126,8 @@ export async function queueModulesForGeneration(
   ctx: ActionCtx,
   companyId: any,
   moduleTypes: BrandModuleType[],
-  companyDescription: string
+  companyDescription: string,
+  inputContent?: string
 ): Promise<void> {
   const log = logger.withContext({ companyId, moduleTypes, step: 'queueModulesForGeneration' });
   log.info('Starting module generation queue', { moduleCount: moduleTypes.length });
@@ -158,17 +159,18 @@ export async function queueModulesForGeneration(
 
   log.info('All modules queued, processing generation queue', { moduleCount: Object.keys(moduleIds).length });
   // Process the queue with dependency handling
-  await processGenerationQueue(ctx, companyId, moduleIds, companyDescription);
+  await processGenerationQueue(ctx, companyId, moduleIds, companyDescription, inputContent);
 }
 
 /**
  * Process the generation queue, handling dependencies
  */
-async function processGenerationQueue(
+export async function processGenerationQueue(
   ctx: ActionCtx,
   companyId: any,
   moduleIds: Record<string, any>,
   companyDescription: string,
+  inputContent?: string,
   attemptNumber: number = 0
 ): Promise<void> {
   const log = logger.withContext({ companyId, attemptNumber, step: 'processGenerationQueue' });
@@ -265,6 +267,7 @@ async function processGenerationQueue(
         type,
         moduleId: id,
         publish: false,
+        inputContent: inputContent ?? undefined,
       } as any);
       moduleLog.debug('Module generation scheduled');
     } catch (error) {
@@ -304,6 +307,7 @@ async function processGenerationQueue(
       {
         companyId,
         attemptNumber: nextAttempt,
+        inputContent: inputContent ?? undefined,
       } as any
     );
   } else {
@@ -352,6 +356,7 @@ export async function reprocessGenerationQueue(
     throw new Error("Company not found");
   }
 
-  await processGenerationQueue(ctx, companyId, moduleIds, company.description, attemptNumber);
+  // For reprocessing, we don't have inputContent (it's only needed for initial generation)
+  await processGenerationQueue(ctx, companyId, moduleIds, company.description, undefined, attemptNumber);
 }
 
