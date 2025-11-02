@@ -1,4 +1,4 @@
-import type { BrandModuleType } from "@convex/workflows/modules";
+import type { BrandModuleType } from "@convex/workflows";
 import { useMutation, useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../../convex/_generated/api";
@@ -11,7 +11,7 @@ export type GenerationStatus =
 	| "succeeded"
 	| "failed";
 
-export interface BrandModuleVersionDoc {
+export type BrandModuleVersionDoc = {
 	_id: Id<"brandModules">;
 	companyId: Id<"companies">;
 	type: BrandModuleType;
@@ -20,9 +20,9 @@ export interface BrandModuleVersionDoc {
 	generationStatus: GenerationStatus;
 	createdAt: number;
 	computedVersion?: number;
-}
+};
 
-export interface UseBrandModuleResult {
+type UseBrandModuleResult = {
 	versions: BrandModuleVersionDoc[];
 	selected: BrandModuleVersionDoc | null;
 	selectedId: Id<"brandModules"> | null;
@@ -33,11 +33,12 @@ export interface UseBrandModuleResult {
 	publishSelected: () => Promise<void>;
 	saveSelected: (nextData: unknown) => Promise<void>;
 	regenerate: (publish?: boolean) => Promise<void>;
-}
+};
+export default UseBrandModuleResult;
 
 export function useBrandModule(
 	companyId: Id<"companies">,
-	moduleType: BrandModuleType,
+	moduleType: BrandModuleType
 ): UseBrandModuleResult {
 	const versions = useQuery(api.brandModules.getModulesByType, {
 		companyId,
@@ -63,11 +64,15 @@ export function useBrandModule(
 
 	// After regeneration, when the server pushes the new version, select the newest one
 	useEffect(() => {
-		if (!shouldSelectNewestAfterRegen) return;
-		if (!versions || versions.length === 0) return;
+		if (!shouldSelectNewestAfterRegen) {
+			return;
+		}
+		if (!versions || versions.length === 0) {
+			return;
+		}
 
 		const newest = [...versions].sort(
-			(a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0),
+			(a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0)
 		)[0];
 
 		const threshold = regenRequestedAt ?? 0;
@@ -83,9 +88,11 @@ export function useBrandModule(
 	}, [versions, selectedId, shouldSelectNewestAfterRegen, regenRequestedAt]);
 
 	const withComputedVersions = useMemo(() => {
-		if (!versions) return [] as BrandModuleVersionDoc[];
+		if (!versions) {
+			return [] as BrandModuleVersionDoc[];
+		}
 		const asc = [...versions].sort(
-			(a, b) => (a.createdAt ?? 0) - (b.createdAt ?? 0),
+			(a, b) => (a.createdAt ?? 0) - (b.createdAt ?? 0)
 		);
 		const versionMap = new Map<string, number>();
 		for (const [i, m] of asc.entries()) {
@@ -98,12 +105,16 @@ export function useBrandModule(
 	}, [versions]);
 
 	const selected = useMemo(() => {
-		if (!withComputedVersions || !selectedId) return null;
+		if (!(withComputedVersions && selectedId)) {
+			return null;
+		}
 		return withComputedVersions.find((v) => v._id === selectedId) ?? null;
 	}, [withComputedVersions, selectedId]);
 
 	const publishSelected = useCallback(async () => {
-		if (!selected) return;
+		if (!selected) {
+			return;
+		}
 		setIsPublishing(true);
 		try {
 			await updateModule({
@@ -120,7 +131,9 @@ export function useBrandModule(
 
 	const saveSelected = useCallback(
 		async (nextData: unknown) => {
-			if (!selected) return;
+			if (!selected) {
+				return;
+			}
 			setIsSaving(true);
 			try {
 				await updateModule({
@@ -133,7 +146,7 @@ export function useBrandModule(
 				setIsSaving(false);
 			}
 		},
-		[companyId, moduleType, selected, updateModule],
+		[companyId, moduleType, selected, updateModule]
 	);
 
 	const regenerate = useCallback(
@@ -151,7 +164,7 @@ export function useBrandModule(
 				setIsRegenerating(false);
 			}
 		},
-		[companyId, moduleType, regenerateModule],
+		[companyId, moduleType, regenerateModule]
 	);
 
 	return {

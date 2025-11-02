@@ -8,7 +8,7 @@ export function SignInFormEmailLink() {
 	const [step, setStep] = useState<"signIn" | "linkSent">("signIn");
 
 	return (
-		<div className="max-w-[384px] mx-auto flex flex-col gap-4">
+		<div className="mx-auto flex max-w-[384px] flex-col gap-4">
 			{step === "signIn" ? (
 				<>
 					<h2 className="font-semibold text-2xl tracking-tight">
@@ -23,9 +23,9 @@ export function SignInFormEmailLink() {
 					</h2>
 					<p>A sign-in link has been sent to your email address.</p>
 					<Button
-						className="p-0 self-start"
-						variant="link"
+						className="self-start p-0"
 						onClick={() => setStep("signIn")}
+						variant="link"
 					>
 						Cancel
 					</Button>
@@ -51,16 +51,15 @@ function SignInWithMagicLink({
 				const formData = new FormData(event.currentTarget);
 				signIn("resend", formData)
 					.then(handleLinkSent)
-					.catch((error) => {
-						console.error(error);
+					.catch((_error) => {
 						toast.error("Could not send sign-in link");
 						setSubmitting(false);
 					});
 			}}
 		>
 			<label htmlFor="email">Email</label>
-			<Input name="email" id={useId()} className="mb-4" autoComplete="email" />
-			<Button type="submit" disabled={submitting}>
+			<Input autoComplete="email" className="mb-4" id={useId()} name="email" />
+			<Button disabled={submitting} type="submit">
 				Send sign-in link
 			</Button>
 		</form>

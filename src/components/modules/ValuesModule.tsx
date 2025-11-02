@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
-import type { UseBrandModuleResult } from "../../hooks/useBrandModule";
+import type UseBrandModuleResult from "../../hooks/useBrandModule";
 import { ModuleCard } from "./ModuleCard";
 
-interface ValuesModuleProps {
+type ValuesModuleProps = {
 	companyId: Id<"companies">;
-}
+};
 
 export default function ValuesModule({ companyId }: ValuesModuleProps) {
 	return (
 		<ModuleCard
 			companyId={companyId}
+			icon="💎"
 			moduleType="values"
 			title="Values"
-			icon="💎"
 		>
 			{(ctx) => <ValuesModuleBody ctx={ctx} />}
 		</ModuleCard>
@@ -42,26 +42,26 @@ function ValuesModuleBody({ ctx }: { ctx: UseBrandModuleResult }) {
 			<div className="space-y-2">
 				{draft.map((v, i) => (
 					<input
+						className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
 						key={`value-${i}-${v}`}
-						className="px-3 py-2 text-sm rounded-md border border-gray-300 w-full"
-						value={v}
 						onChange={(e) => updateAt(i, e.target.value)}
+						value={v}
 					/>
 				))}
 				<button
-					type="button"
-					className="px-2.5 py-1.5 text-sm rounded-md border border-gray-200 hover:bg-gray-50"
+					className="rounded-md border border-gray-200 px-2.5 py-1.5 text-sm hover:bg-gray-50"
 					onClick={() => setDraft([...draft, ""])}
+					type="button"
 				>
 					Add value
 				</button>
 			</div>
 			<div>
 				<button
-					type="button"
-					onClick={() => ctx.saveSelected(draft)}
-					className="px-3 py-1.5 text-sm rounded-md bg-black text-white hover:bg-black/90 disabled:opacity-60"
+					className="rounded-md bg-black px-3 py-1.5 text-sm text-white hover:bg-black/90 disabled:opacity-60"
 					disabled={!ctx.selected || ctx.isSaving}
+					onClick={() => ctx.saveSelected(draft)}
+					type="button"
 				>
 					{ctx.isSaving ? "Saving..." : "Save"}
 				</button>

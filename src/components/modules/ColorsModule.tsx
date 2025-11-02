@@ -1,27 +1,27 @@
 import { useEffect, useState } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
-import type { UseBrandModuleResult } from "../../hooks/useBrandModule";
+import type UseBrandModuleResult from "../../hooks/useBrandModule";
 import { ModuleCard } from "./ModuleCard";
 
-interface ColorsModuleProps {
+type ColorsModuleProps = {
 	companyId: Id<"companies">;
-}
+};
 
 type ColorEntry = { name: string; hex: string };
-interface ColorsData {
+type ColorsData = {
 	primary: ColorEntry;
 	secondary: ColorEntry;
 	accent?: ColorEntry;
 	additional?: ColorEntry[];
-}
+};
 
 export default function ColorsModule({ companyId }: ColorsModuleProps) {
 	return (
 		<ModuleCard
 			companyId={companyId}
+			icon="🎨"
 			moduleType="colors"
 			title="Colors"
-			icon="🎨"
 		>
 			{(ctx) => <ColorsModuleBody ctx={ctx} />}
 		</ModuleCard>
@@ -38,7 +38,9 @@ function ColorsModuleBody({ ctx }: { ctx: UseBrandModuleResult }) {
 	}, [ctx.selected]);
 
 	const updateColor = (path: string[], value: string) => {
-		if (!draft) return;
+		if (!draft) {
+			return;
+		}
 		const next: any = { ...draft };
 		let ref = next;
 		for (let i = 0; i < path.length - 1; i++) {
@@ -46,29 +48,29 @@ function ColorsModuleBody({ ctx }: { ctx: UseBrandModuleResult }) {
 			ref[key] = { ...(ref[key] ?? {}) };
 			ref = ref[key];
 		}
-		ref[path[path.length - 1]] = value;
+		ref[path.at(-1)] = value;
 		setDraft(next);
 	};
 
 	return (
 		<div className="space-y-4">
 			{draft ? (
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					{(["primary", "secondary", "accent"] as const).map((k) => (
-						<div key={k} className="space-y-2">
-							<div className="text-sm font-medium text-gray-700">{k}</div>
+						<div className="space-y-2" key={k}>
+							<div className="font-medium text-gray-700 text-sm">{k}</div>
 							<div className="flex items-center gap-2">
 								<input
-									className="px-3 py-2 text-sm rounded-md border border-gray-300 w-40"
+									className="w-40 rounded-md border border-gray-300 px-3 py-2 text-sm"
+									onChange={(e) => updateColor([k, "name"], e.target.value)}
 									placeholder="Name"
 									value={(draft as any)?.[k]?.name ?? ""}
-									onChange={(e) => updateColor([k, "name"], e.target.value)}
 								/>
 								<input
-									className="px-3 py-2 text-sm rounded-md border border-gray-300 w-40"
+									className="w-40 rounded-md border border-gray-300 px-3 py-2 text-sm"
+									onChange={(e) => updateColor([k, "hex"], e.target.value)}
 									placeholder="#000000"
 									value={(draft as any)?.[k]?.hex ?? ""}
-									onChange={(e) => updateColor([k, "hex"], e.target.value)}
 								/>
 								<div
 									className="h-8 w-8 rounded border"
@@ -86,10 +88,10 @@ function ColorsModuleBody({ ctx }: { ctx: UseBrandModuleResult }) {
 
 			<div>
 				<button
-					type="button"
-					onClick={() => ctx.saveSelected(draft)}
-					className="px-3 py-1.5 text-sm rounded-md bg-black text-white hover:bg-black/90 disabled:opacity-60"
+					className="rounded-md bg-black px-3 py-1.5 text-sm text-white hover:bg-black/90 disabled:opacity-60"
 					disabled={!ctx.selected || ctx.isSaving}
+					onClick={() => ctx.saveSelected(draft)}
+					type="button"
 				>
 					{ctx.isSaving ? "Saving..." : "Save"}
 				</button>

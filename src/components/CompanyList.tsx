@@ -4,10 +4,10 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { CreateCompanyModal } from "./CreateCompanyModal";
 
-interface CompanyListProps {
+type CompanyListProps = {
 	selectedCompanyId: Id<"companies"> | null;
 	onSelectCompany: (id: Id<"companies">) => void;
-}
+};
 
 export function CompanyList({
 	selectedCompanyId,

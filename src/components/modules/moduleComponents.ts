@@ -5,12 +5,12 @@ import GenericModule from "./GenericModule";
 import ValuesModule from "./ValuesModule";
 import VisionModule from "./VisionModule";
 
-export interface ModuleEntryProps {
+export type ModuleEntryProps = {
 	companyId: Id<"companies">;
 	moduleType?: string;
 	title?: string;
 	icon?: string;
-}
+};
 
 export const moduleComponents: Record<
 	string,

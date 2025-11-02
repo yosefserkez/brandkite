@@ -1,12 +1,12 @@
 import type { Id } from "../../../convex/_generated/dataModel";
 import { ModuleCard } from "./ModuleCard";
 
-interface GenericModuleProps {
+type GenericModuleProps = {
 	companyId: Id<"companies">;
 	moduleType?: string;
 	title?: string;
 	icon?: string;
-}
+};
 
 export default function GenericModule({
 	companyId,
@@ -17,9 +17,9 @@ export default function GenericModule({
 	return (
 		<ModuleCard
 			companyId={companyId}
+			icon={icon ?? ""}
 			moduleType={moduleType ?? ""}
 			title={title ?? ""}
-			icon={icon ?? ""}
 		>
 			{(ctx) => (
 				<div className="space-y-3">

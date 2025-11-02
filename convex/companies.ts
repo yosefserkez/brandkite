@@ -15,7 +15,7 @@ import {
 	type BrandDocument,
 	brandContextValidator,
 } from "./modules/brandContext";
-import { brandModuleTypeValidator } from "./workflows/modules";
+import { brandModuleTypeValidator } from "./workflows";
 
 export const list = query({
 	args: {},

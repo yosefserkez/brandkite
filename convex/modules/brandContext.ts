@@ -6,7 +6,7 @@ import { workflow } from "..";
 import { internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
 import { zodToConvex } from "../lib/zodToConvex";
-import { BrandModuleTypes } from "../workflows/modules";
+import { BrandModuleTypes } from "../workflows";
 
 // Reusable Zod schemas
 const entitySchema = z.object({

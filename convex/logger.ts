@@ -90,7 +90,6 @@ class FileDestination implements LoggerDestination {
 			const fs = require("node:fs");
 			fs.appendFileSync(this.filePath, logMessage);
 		} catch (_error) {
-			console.log("Error writing to file", _error);
 			// Silently fail if file writing doesn't work
 			// (e.g., in environments where fs is not available)
 		}
