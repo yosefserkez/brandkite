@@ -1,75 +1,48 @@
 import { v } from "convex/values";
 
-// Export all workflow modules for automatic registration
-export { LogoWorkflow } from './logo';
-export { NameWorkflow } from './name';
-export { TaglineWorkflow } from './tagline';
-export { MissionWorkflow } from './mission';
-export { VisionWorkflow } from './vision';
-export { ValuesWorkflow } from './values';
-export { PurposeWorkflow } from './purpose';
-export { PersonasWorkflow } from './personas';
-export { PositioningWorkflow } from './positioning';
-export { ToneWorkflow } from './tone';
-export { PromiseWorkflow } from './promise';
-export { NarrativesWorkflow } from './narratives';
-export { PersonalityWorkflow } from './personality';
-export { DifferentiatorsWorkflow } from './differentiators';
-export { ColorsWorkflow } from './colors';
-export { TypographyWorkflow } from './typography';
-export { ImageryWorkflow } from './imagery';
-export { VoiceWorkflow } from './voice';
-export { StoryWorkflow } from './story';
-export { TeamWorkflow } from './team';
-export { CustomerWorkflow } from './customer';
-export { ProductWorkflow } from './product';
-export { MarketWorkflow } from './market';
-export { BusinessWorkflow } from './business';
-export { BrandContextWorkflow } from './brandContext';
-
 /**
  * Single source of truth for brand module types
  * Add new module types here and they'll be available everywhere
  */
 export const BRAND_MODULE_TYPES = [
-  "team",
-  "customer",
-  "product",
-  "market",
-  "business",
-  "brandContext",
-  "name",
-  "tagline",
-  "mission",
-  "vision",
-  "values",
-  "purpose",
-  "personas",  
-  "positioning",
-  "tone",
-  "promise",
-  "narratives",
-  "personality",
-  "differentiators",
-  "colors",
-  "typography",
-  "imagery",
-  "logo",
-  "voice",
-  "story",
+	"team",
+	"customer",
+	"product",
+	"market",
+	"business",
+	"brandContext",
+	"name",
+	"tagline",
+	"mission",
+	"vision",
+	"values",
+	"purpose",
+	"personas",
+	"positioning",
+	"tone",
+	"promise",
+	"narratives",
+	"personality",
+	"differentiators",
+	"colors",
+	"typography",
+	"imagery",
+	"logo",
+	"voice",
+	"story",
 ] as const;
 
 /**
  * TypeScript type for brand module types.
  * Can be used in both frontend and backend
  */
-export type BrandModuleType = typeof BRAND_MODULE_TYPES[number];
+export type BrandModuleType = (typeof BRAND_MODULE_TYPES)[number];
 
 /**
  * Helper function to convert lowercase string to PascalCase
  */
 function toPascalCase(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+	return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 /**
@@ -79,9 +52,9 @@ function toPascalCase(str: string): string {
  * Can be used in both frontend and backend
  */
 export const BrandModuleTypes = Object.fromEntries(
-  BRAND_MODULE_TYPES.map((type) => [toPascalCase(type), type])
+	BRAND_MODULE_TYPES.map((type) => [toPascalCase(type), type])
 ) as Record<string, BrandModuleType> & {
-  [K in BrandModuleType as `${Capitalize<K>}`]: K;
+	[K in BrandModuleType as `${Capitalize<K>}`]: K;
 };
 
 /**
@@ -90,8 +63,8 @@ export const BrandModuleTypes = Object.fromEntries(
  * Can only be used in Convex functions (backend)
  */
 export const brandModuleTypeValidator = v.union(
-  ...(BRAND_MODULE_TYPES.map((type) => v.literal(type)) as [
-    ReturnType<typeof v.literal<BrandModuleType>>,
-    ...ReturnType<typeof v.literal<BrandModuleType>>[]
-  ])
+	...(BRAND_MODULE_TYPES.map((type) => v.literal(type)) as [
+		ReturnType<typeof v.literal<BrandModuleType>>,
+		...ReturnType<typeof v.literal<BrandModuleType>>[],
+	])
 );

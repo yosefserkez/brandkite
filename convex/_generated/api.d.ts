@@ -13,11 +13,15 @@ import type * as auth from "../auth.js";
 import type * as brandModules from "../brandModules.js";
 import type * as companies from "../companies.js";
 import type * as http from "../http.js";
+import type * as index from "../index.js";
 import type * as internal_ from "../internal.js";
+import type * as lib_firecrawl from "../lib/firecrawl.js";
+import type * as lib_zodToConvex from "../lib/zodToConvex.js";
 import type * as logger from "../logger.js";
+import type * as modules_brandContext from "../modules/brandContext.js";
+import type * as modules_name from "../modules/name.js";
 import type * as presence from "../presence.js";
 import type * as workflows_companyContext from "../workflows/companyContext.js";
-import type * as workflows_modules_brandContext from "../workflows/modules/brandContext.js";
 import type * as workflows_modules_business from "../workflows/modules/business.js";
 import type * as workflows_modules_colors from "../workflows/modules/colors.js";
 import type * as workflows_modules_customer from "../workflows/modules/customer.js";
@@ -27,7 +31,6 @@ import type * as workflows_modules_index from "../workflows/modules/index.js";
 import type * as workflows_modules_logo from "../workflows/modules/logo.js";
 import type * as workflows_modules_market from "../workflows/modules/market.js";
 import type * as workflows_modules_mission from "../workflows/modules/mission.js";
-import type * as workflows_modules_name from "../workflows/modules/name.js";
 import type * as workflows_modules_narratives from "../workflows/modules/narratives.js";
 import type * as workflows_modules_personality from "../workflows/modules/personality.js";
 import type * as workflows_modules_personas from "../workflows/modules/personas.js";
@@ -67,11 +70,15 @@ declare const fullApi: ApiFromModules<{
   brandModules: typeof brandModules;
   companies: typeof companies;
   http: typeof http;
+  index: typeof index;
   internal: typeof internal_;
+  "lib/firecrawl": typeof lib_firecrawl;
+  "lib/zodToConvex": typeof lib_zodToConvex;
   logger: typeof logger;
+  "modules/brandContext": typeof modules_brandContext;
+  "modules/name": typeof modules_name;
   presence: typeof presence;
   "workflows/companyContext": typeof workflows_companyContext;
-  "workflows/modules/brandContext": typeof workflows_modules_brandContext;
   "workflows/modules/business": typeof workflows_modules_business;
   "workflows/modules/colors": typeof workflows_modules_colors;
   "workflows/modules/customer": typeof workflows_modules_customer;
@@ -81,7 +88,6 @@ declare const fullApi: ApiFromModules<{
   "workflows/modules/logo": typeof workflows_modules_logo;
   "workflows/modules/market": typeof workflows_modules_market;
   "workflows/modules/mission": typeof workflows_modules_mission;
-  "workflows/modules/name": typeof workflows_modules_name;
   "workflows/modules/narratives": typeof workflows_modules_narratives;
   "workflows/modules/personality": typeof workflows_modules_personality;
   "workflows/modules/personas": typeof workflows_modules_personas;
@@ -112,4 +118,200 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  workflow: {
+    journal: {
+      load: FunctionReference<
+        "query",
+        "internal",
+        { workflowId: string },
+        {
+          journalEntries: Array<{
+            _creationTime: number;
+            _id: string;
+            step: {
+              args: any;
+              argsSize: number;
+              completedAt?: number;
+              functionType: "query" | "mutation" | "action";
+              handle: string;
+              inProgress: boolean;
+              name: string;
+              runResult?:
+                | { kind: "success"; returnValue: any }
+                | { error: string; kind: "failed" }
+                | { kind: "canceled" };
+              startedAt: number;
+              workId?: string;
+            };
+            stepNumber: number;
+            workflowId: string;
+          }>;
+          logLevel: "DEBUG" | "TRACE" | "INFO" | "REPORT" | "WARN" | "ERROR";
+          ok: boolean;
+          workflow: {
+            _creationTime: number;
+            _id: string;
+            args: any;
+            generationNumber: number;
+            logLevel?: any;
+            name?: string;
+            onComplete?: { context?: any; fnHandle: string };
+            runResult?:
+              | { kind: "success"; returnValue: any }
+              | { error: string; kind: "failed" }
+              | { kind: "canceled" };
+            startedAt?: any;
+            state?: any;
+            workflowHandle: string;
+          };
+        }
+      >;
+      startSteps: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          generationNumber: number;
+          steps: Array<{
+            retry?:
+              | boolean
+              | { base: number; initialBackoffMs: number; maxAttempts: number };
+            schedulerOptions?: { runAt?: number } | { runAfter?: number };
+            step: {
+              args: any;
+              argsSize: number;
+              completedAt?: number;
+              functionType: "query" | "mutation" | "action";
+              handle: string;
+              inProgress: boolean;
+              name: string;
+              runResult?:
+                | { kind: "success"; returnValue: any }
+                | { error: string; kind: "failed" }
+                | { kind: "canceled" };
+              startedAt: number;
+              workId?: string;
+            };
+          }>;
+          workflowId: string;
+          workpoolOptions?: {
+            defaultRetryBehavior?: {
+              base: number;
+              initialBackoffMs: number;
+              maxAttempts: number;
+            };
+            logLevel?: "DEBUG" | "TRACE" | "INFO" | "REPORT" | "WARN" | "ERROR";
+            maxParallelism?: number;
+            retryActionsByDefault?: boolean;
+          };
+        },
+        Array<{
+          _creationTime: number;
+          _id: string;
+          step: {
+            args: any;
+            argsSize: number;
+            completedAt?: number;
+            functionType: "query" | "mutation" | "action";
+            handle: string;
+            inProgress: boolean;
+            name: string;
+            runResult?:
+              | { kind: "success"; returnValue: any }
+              | { error: string; kind: "failed" }
+              | { kind: "canceled" };
+            startedAt: number;
+            workId?: string;
+          };
+          stepNumber: number;
+          workflowId: string;
+        }>
+      >;
+    };
+    workflow: {
+      cancel: FunctionReference<
+        "mutation",
+        "internal",
+        { workflowId: string },
+        null
+      >;
+      cleanup: FunctionReference<
+        "mutation",
+        "internal",
+        { workflowId: string },
+        boolean
+      >;
+      complete: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          generationNumber: number;
+          runResult:
+            | { kind: "success"; returnValue: any }
+            | { error: string; kind: "failed" }
+            | { kind: "canceled" };
+          workflowId: string;
+        },
+        null
+      >;
+      create: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          maxParallelism?: number;
+          onComplete?: { context?: any; fnHandle: string };
+          startAsync?: boolean;
+          workflowArgs: any;
+          workflowHandle: string;
+          workflowName: string;
+        },
+        string
+      >;
+      getStatus: FunctionReference<
+        "query",
+        "internal",
+        { workflowId: string },
+        {
+          inProgress: Array<{
+            _creationTime: number;
+            _id: string;
+            step: {
+              args: any;
+              argsSize: number;
+              completedAt?: number;
+              functionType: "query" | "mutation" | "action";
+              handle: string;
+              inProgress: boolean;
+              name: string;
+              runResult?:
+                | { kind: "success"; returnValue: any }
+                | { error: string; kind: "failed" }
+                | { kind: "canceled" };
+              startedAt: number;
+              workId?: string;
+            };
+            stepNumber: number;
+            workflowId: string;
+          }>;
+          logLevel: "DEBUG" | "TRACE" | "INFO" | "REPORT" | "WARN" | "ERROR";
+          workflow: {
+            _creationTime: number;
+            _id: string;
+            args: any;
+            generationNumber: number;
+            logLevel?: any;
+            name?: string;
+            onComplete?: { context?: any; fnHandle: string };
+            runResult?:
+              | { kind: "success"; returnValue: any }
+              | { error: string; kind: "failed" }
+              | { kind: "canceled" };
+            startedAt?: any;
+            state?: any;
+            workflowHandle: string;
+          };
+        }
+      >;
+    };
+  };
+};
