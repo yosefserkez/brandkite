@@ -1,14 +1,59 @@
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
+import type { Infer } from "convex/values";
 import { v } from "convex/values";
 import z from "zod";
 import { workflow } from "..";
 import { internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
-import { zodToConvex } from "../lib/zodToConvex";
 import { BrandModuleTypes } from "../workflows";
 
-// Reusable Zod schemas
+// Reusable Convex validators
+const entityValidator = v.object({
+	name: v.string(),
+	summary: v.string(),
+	url: v.string(),
+	imageUrl: v.string(),
+});
+
+const teamMemberValidator = v.object({
+	name: v.string(),
+	summary: v.string(),
+	url: v.string(),
+	imageUrl: v.string(),
+	role: v.optional(v.string()),
+});
+
+const documentValidator = v.object({
+	name: v.optional(v.string()),
+	summary: v.string(),
+	url: v.optional(v.string()),
+});
+
+export const brandContextValidator = v.object({
+	summary: v.string(),
+	team: v.optional(v.array(teamMemberValidator)),
+	product: v.object({
+		summary: v.string(),
+	}),
+	market: v.object({
+		summary: v.string(),
+		competitors: v.array(entityValidator),
+	}),
+	customer: v.object({
+		summary: v.string(),
+	}),
+	brand: v.object({
+		summary: v.string(),
+		inspirations: v.array(entityValidator),
+	}),
+	business: v.object({
+		summary: v.string(),
+	}),
+	documents: v.array(documentValidator),
+});
+
+// Zod schema for AI generation (keeping this for generateObject compatibility)
 const entitySchema = z.object({
 	name: z.string().describe("Name of the entity"),
 	summary: z.string().describe("Summary of the entity"),
@@ -26,13 +71,7 @@ const teamMemberSchema = entitySchema.extend({
 	role: z.string().optional().describe("Role of the team member"),
 });
 
-const documentSchema = z.object({
-	name: z.string().optional(),
-	summary: z.string(),
-	url: z.string().optional(),
-});
-
-export const brandContextSchema = z.object({
+const brandContextSchema = z.object({
 	summary: z
 		.string()
 		.describe(
@@ -99,23 +138,13 @@ export const brandContextSchema = z.object({
 		.describe("Business model, strategy, and commercial approach"),
 });
 
-export const brandContextValidator = zodToConvex(brandContextSchema);
+export type BrandContext = Infer<typeof brandContextValidator>;
 
-export type BrandContext = z.infer<typeof brandContextSchema> & {
-	documents: BrandDocument[];
-};
-
-export type BrandDocument = z.infer<typeof documentSchema>;
+export type BrandDocument = Infer<typeof documentValidator>;
 
 export const generateBrandContext = internalAction({
 	args: {
-		documents: v.array(
-			v.object({
-				name: v.optional(v.string()),
-				summary: v.string(),
-				url: v.optional(v.string()),
-			})
-		),
+		documents: v.array(documentValidator),
 	},
 	handler: async (_ctx, args): Promise<{ brandContext: BrandContext }> => {
 		const docsContent = args.documents
@@ -143,7 +172,7 @@ export const generateBrandContext = internalAction({
 export const brandContextWorkflow = workflow.define({
 	args: {
 		companyId: v.id("companies"),
-		documents: v.array(zodToConvex(documentSchema)),
+		documents: v.array(documentValidator),
 		publish: v.optional(v.boolean()),
 	},
 	handler: async (step, args): Promise<{ brandContext: BrandContext }> => {

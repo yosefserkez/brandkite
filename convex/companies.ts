@@ -8,7 +8,6 @@ import {
 	mutation,
 	query,
 } from "./_generated/server";
-import { workflow } from "./index";
 import { companySummaryFormat, scrape } from "./lib/firecrawl";
 import {
 	type BrandContext,
@@ -138,10 +137,10 @@ export const create = mutation({
 		}
 
 		// generate name
-		await workflow.start(ctx, internal.modules.name.nameWorkflow, {
-			companyId,
-			inputContent: "test input content",
-		});
+		// await workflow.start(ctx, internal.modules.name.nameWorkflow, {
+		// 	companyId,
+		// 	inputContent: "test input content",
+		// });
 
 		return companyId;
 	},
