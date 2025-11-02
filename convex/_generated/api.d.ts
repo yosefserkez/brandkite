@@ -14,7 +14,6 @@ import type * as companies from "../companies.js";
 import type * as http from "../http.js";
 import type * as index from "../index.js";
 import type * as lib_firecrawl from "../lib/firecrawl.js";
-import type * as lib_zodToConvex from "../lib/zodToConvex.js";
 import type * as logger from "../logger.js";
 import type * as modules_brandContext from "../modules/brandContext.js";
 import type * as presence from "../presence.js";
@@ -41,7 +40,6 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   index: typeof index;
   "lib/firecrawl": typeof lib_firecrawl;
-  "lib/zodToConvex": typeof lib_zodToConvex;
   logger: typeof logger;
   "modules/brandContext": typeof modules_brandContext;
   presence: typeof presence;
