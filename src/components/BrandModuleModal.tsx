@@ -35,8 +35,7 @@ export function BrandModuleModal({
 		setIsSaving(true);
 		try {
 			await updateModule({
-				companyId,
-				type: moduleType,
+				moduleId: data?._id,
 				data: editedData,
 			});
 			onClose();

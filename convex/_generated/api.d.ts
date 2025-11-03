@@ -14,8 +14,10 @@ import type * as companies from "../companies.js";
 import type * as http from "../http.js";
 import type * as index from "../index.js";
 import type * as lib_firecrawl from "../lib/firecrawl.js";
+import type * as lib_validationHelpers from "../lib/validationHelpers.js";
 import type * as logger from "../logger.js";
 import type * as modules_brandContext from "../modules/brandContext.js";
+import type * as modules_name from "../modules/name.js";
 import type * as presence from "../presence.js";
 import type * as workflows_index from "../workflows/index.js";
 
@@ -40,8 +42,10 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   index: typeof index;
   "lib/firecrawl": typeof lib_firecrawl;
+  "lib/validationHelpers": typeof lib_validationHelpers;
   logger: typeof logger;
   "modules/brandContext": typeof modules_brandContext;
+  "modules/name": typeof modules_name;
   presence: typeof presence;
   "workflows/index": typeof workflows_index;
 }>;
@@ -58,30 +62,94 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   workflow: {
+    event: {
+      create: FunctionReference<
+        "mutation",
+        "internal",
+        { name: string; workflowId: string },
+        string
+      >;
+      send: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          eventId?: string;
+          name?: string;
+          result:
+            | { kind: "success"; returnValue: any }
+            | { error: string; kind: "failed" }
+            | { kind: "canceled" };
+          workflowId?: string;
+          workpoolOptions?: {
+            defaultRetryBehavior?: {
+              base: number;
+              initialBackoffMs: number;
+              maxAttempts: number;
+            };
+            logLevel?: "DEBUG" | "TRACE" | "INFO" | "REPORT" | "WARN" | "ERROR";
+            maxParallelism?: number;
+            retryActionsByDefault?: boolean;
+          };
+        },
+        string
+      >;
+    };
     journal: {
       load: FunctionReference<
         "query",
         "internal",
-        { workflowId: string },
+        { shortCircuit?: boolean; workflowId: string },
         {
+          blocked?: boolean;
           journalEntries: Array<{
             _creationTime: number;
             _id: string;
-            step: {
-              args: any;
-              argsSize: number;
-              completedAt?: number;
-              functionType: "query" | "mutation" | "action";
-              handle: string;
-              inProgress: boolean;
-              name: string;
-              runResult?:
-                | { kind: "success"; returnValue: any }
-                | { error: string; kind: "failed" }
-                | { kind: "canceled" };
-              startedAt: number;
-              workId?: string;
-            };
+            step:
+              | {
+                  args: any;
+                  argsSize: number;
+                  completedAt?: number;
+                  functionType: "query" | "mutation" | "action";
+                  handle: string;
+                  inProgress: boolean;
+                  kind?: "function";
+                  name: string;
+                  runResult?:
+                    | { kind: "success"; returnValue: any }
+                    | { error: string; kind: "failed" }
+                    | { kind: "canceled" };
+                  startedAt: number;
+                  workId?: string;
+                }
+              | {
+                  args: any;
+                  argsSize: number;
+                  completedAt?: number;
+                  handle: string;
+                  inProgress: boolean;
+                  kind: "workflow";
+                  name: string;
+                  runResult?:
+                    | { kind: "success"; returnValue: any }
+                    | { error: string; kind: "failed" }
+                    | { kind: "canceled" };
+                  startedAt: number;
+                  workflowId?: string;
+                }
+              | {
+                  args: { eventId?: string };
+                  argsSize: number;
+                  completedAt?: number;
+                  eventId?: string;
+                  inProgress: boolean;
+                  kind: "event";
+                  name: string;
+                  runResult?:
+                    | { kind: "success"; returnValue: any }
+                    | { error: string; kind: "failed" }
+                    | { kind: "canceled" };
+                  startedAt: number;
+                };
             stepNumber: number;
             workflowId: string;
           }>;
@@ -115,21 +183,52 @@ export declare const components: {
               | boolean
               | { base: number; initialBackoffMs: number; maxAttempts: number };
             schedulerOptions?: { runAt?: number } | { runAfter?: number };
-            step: {
-              args: any;
-              argsSize: number;
-              completedAt?: number;
-              functionType: "query" | "mutation" | "action";
-              handle: string;
-              inProgress: boolean;
-              name: string;
-              runResult?:
-                | { kind: "success"; returnValue: any }
-                | { error: string; kind: "failed" }
-                | { kind: "canceled" };
-              startedAt: number;
-              workId?: string;
-            };
+            step:
+              | {
+                  args: any;
+                  argsSize: number;
+                  completedAt?: number;
+                  functionType: "query" | "mutation" | "action";
+                  handle: string;
+                  inProgress: boolean;
+                  kind?: "function";
+                  name: string;
+                  runResult?:
+                    | { kind: "success"; returnValue: any }
+                    | { error: string; kind: "failed" }
+                    | { kind: "canceled" };
+                  startedAt: number;
+                  workId?: string;
+                }
+              | {
+                  args: any;
+                  argsSize: number;
+                  completedAt?: number;
+                  handle: string;
+                  inProgress: boolean;
+                  kind: "workflow";
+                  name: string;
+                  runResult?:
+                    | { kind: "success"; returnValue: any }
+                    | { error: string; kind: "failed" }
+                    | { kind: "canceled" };
+                  startedAt: number;
+                  workflowId?: string;
+                }
+              | {
+                  args: { eventId?: string };
+                  argsSize: number;
+                  completedAt?: number;
+                  eventId?: string;
+                  inProgress: boolean;
+                  kind: "event";
+                  name: string;
+                  runResult?:
+                    | { kind: "success"; returnValue: any }
+                    | { error: string; kind: "failed" }
+                    | { kind: "canceled" };
+                  startedAt: number;
+                };
           }>;
           workflowId: string;
           workpoolOptions?: {
@@ -146,21 +245,52 @@ export declare const components: {
         Array<{
           _creationTime: number;
           _id: string;
-          step: {
-            args: any;
-            argsSize: number;
-            completedAt?: number;
-            functionType: "query" | "mutation" | "action";
-            handle: string;
-            inProgress: boolean;
-            name: string;
-            runResult?:
-              | { kind: "success"; returnValue: any }
-              | { error: string; kind: "failed" }
-              | { kind: "canceled" };
-            startedAt: number;
-            workId?: string;
-          };
+          step:
+            | {
+                args: any;
+                argsSize: number;
+                completedAt?: number;
+                functionType: "query" | "mutation" | "action";
+                handle: string;
+                inProgress: boolean;
+                kind?: "function";
+                name: string;
+                runResult?:
+                  | { kind: "success"; returnValue: any }
+                  | { error: string; kind: "failed" }
+                  | { kind: "canceled" };
+                startedAt: number;
+                workId?: string;
+              }
+            | {
+                args: any;
+                argsSize: number;
+                completedAt?: number;
+                handle: string;
+                inProgress: boolean;
+                kind: "workflow";
+                name: string;
+                runResult?:
+                  | { kind: "success"; returnValue: any }
+                  | { error: string; kind: "failed" }
+                  | { kind: "canceled" };
+                startedAt: number;
+                workflowId?: string;
+              }
+            | {
+                args: { eventId?: string };
+                argsSize: number;
+                completedAt?: number;
+                eventId?: string;
+                inProgress: boolean;
+                kind: "event";
+                name: string;
+                runResult?:
+                  | { kind: "success"; returnValue: any }
+                  | { error: string; kind: "failed" }
+                  | { kind: "canceled" };
+                startedAt: number;
+              };
           stepNumber: number;
           workflowId: string;
         }>
@@ -213,21 +343,52 @@ export declare const components: {
           inProgress: Array<{
             _creationTime: number;
             _id: string;
-            step: {
-              args: any;
-              argsSize: number;
-              completedAt?: number;
-              functionType: "query" | "mutation" | "action";
-              handle: string;
-              inProgress: boolean;
-              name: string;
-              runResult?:
-                | { kind: "success"; returnValue: any }
-                | { error: string; kind: "failed" }
-                | { kind: "canceled" };
-              startedAt: number;
-              workId?: string;
-            };
+            step:
+              | {
+                  args: any;
+                  argsSize: number;
+                  completedAt?: number;
+                  functionType: "query" | "mutation" | "action";
+                  handle: string;
+                  inProgress: boolean;
+                  kind?: "function";
+                  name: string;
+                  runResult?:
+                    | { kind: "success"; returnValue: any }
+                    | { error: string; kind: "failed" }
+                    | { kind: "canceled" };
+                  startedAt: number;
+                  workId?: string;
+                }
+              | {
+                  args: any;
+                  argsSize: number;
+                  completedAt?: number;
+                  handle: string;
+                  inProgress: boolean;
+                  kind: "workflow";
+                  name: string;
+                  runResult?:
+                    | { kind: "success"; returnValue: any }
+                    | { error: string; kind: "failed" }
+                    | { kind: "canceled" };
+                  startedAt: number;
+                  workflowId?: string;
+                }
+              | {
+                  args: { eventId?: string };
+                  argsSize: number;
+                  completedAt?: number;
+                  eventId?: string;
+                  inProgress: boolean;
+                  kind: "event";
+                  name: string;
+                  runResult?:
+                    | { kind: "success"; returnValue: any }
+                    | { error: string; kind: "failed" }
+                    | { kind: "canceled" };
+                  startedAt: number;
+                };
             stepNumber: number;
             workflowId: string;
           }>;
@@ -248,6 +409,45 @@ export declare const components: {
             state?: any;
             workflowHandle: string;
           };
+        }
+      >;
+      listSteps: FunctionReference<
+        "query",
+        "internal",
+        {
+          order: "asc" | "desc";
+          paginationOpts: {
+            cursor: string | null;
+            endCursor?: string | null;
+            id?: number;
+            maximumBytesRead?: number;
+            maximumRowsRead?: number;
+            numItems: number;
+          };
+          workflowId: string;
+        },
+        {
+          continueCursor: string;
+          isDone: boolean;
+          page: Array<{
+            args: any;
+            completedAt?: number;
+            eventId?: string;
+            kind: "function" | "workflow" | "event";
+            name: string;
+            nestedWorkflowId?: string;
+            runResult?:
+              | { kind: "success"; returnValue: any }
+              | { error: string; kind: "failed" }
+              | { kind: "canceled" };
+            startedAt: number;
+            stepId: string;
+            stepNumber: number;
+            workId?: string;
+            workflowId: string;
+          }>;
+          pageStatus?: "SplitRecommended" | "SplitRequired" | null;
+          splitCursor?: string | null;
         }
       >;
     };

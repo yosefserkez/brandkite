@@ -8,13 +8,14 @@ import {
 	mutation,
 	query,
 } from "./_generated/server";
+import { workflow } from "./index";
 import { companySummaryFormat, scrape } from "./lib/firecrawl";
 import {
 	type BrandContext,
 	type BrandDocument,
 	brandContextValidator,
 } from "./modules/brandContext";
-import { brandModuleTypeValidator } from "./workflows";
+import { BrandModuleTypes } from "./workflows";
 
 export const list = query({
 	args: {},
@@ -96,14 +97,7 @@ export const create = mutation({
 		name: v.string(),
 		description: v.string(),
 		isPublic: v.boolean(),
-		contextModuleData: v.optional(
-			v.array(
-				v.object({
-					type: brandModuleTypeValidator,
-					data: v.any(),
-				})
-			)
-		),
+		brandContext: brandContextValidator,
 	},
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
@@ -123,24 +117,20 @@ export const create = mutation({
 			updatedAt: now,
 		});
 
-		// Generate context modules first (team, customer, product, market, etc.), then brand modules
 		// we should have the context modules
-		if (args.contextModuleData) {
-			for (const module of args.contextModuleData) {
-				await ctx.runMutation(internal.brandModules.upsertModuleInternal, {
-					companyId,
-					type: module.type,
-					data: module.data,
-					publish: true,
-				});
-			}
+		if (args.brandContext) {
+			await ctx.runMutation(internal.brandModules.createModuleInternal, {
+				companyId,
+				type: BrandModuleTypes.BrandContext,
+				data: args.brandContext as BrandContext,
+				publish: true,
+			});
 		}
 
-		// generate name
-		// await workflow.start(ctx, internal.modules.name.nameWorkflow, {
-		// 	companyId,
-		// 	inputContent: "test input content",
-		// });
+		await workflow.start(ctx, internal.modules.name.nameWorkflow, {
+			companyId,
+			publish: true,
+		});
 
 		return companyId;
 	},

@@ -118,16 +118,13 @@ export function useBrandModule(
 		setIsPublishing(true);
 		try {
 			await updateModule({
-				companyId,
 				moduleId: selected._id,
-				type: moduleType,
-				data: selected.data ?? {},
 				publish: true,
 			});
 		} finally {
 			setIsPublishing(false);
 		}
-	}, [companyId, moduleType, selected, updateModule]);
+	}, [selected, updateModule]);
 
 	const saveSelected = useCallback(
 		async (nextData: unknown) => {
@@ -137,16 +134,14 @@ export function useBrandModule(
 			setIsSaving(true);
 			try {
 				await updateModule({
-					companyId,
 					moduleId: selected._id,
-					type: moduleType,
 					data: nextData,
 				});
 			} finally {
 				setIsSaving(false);
 			}
 		},
-		[companyId, moduleType, selected, updateModule]
+		[selected, updateModule]
 	);
 
 	const regenerate = useCallback(

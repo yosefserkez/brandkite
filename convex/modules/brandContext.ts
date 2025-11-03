@@ -1,4 +1,5 @@
-import { openai } from "@ai-sdk/openai";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+
 import { generateObject } from "ai";
 import type { Infer } from "convex/values";
 import { v } from "convex/values";
@@ -71,7 +72,7 @@ const teamMemberSchema = entitySchema.extend({
 	role: z.string().optional().describe("Role of the team member"),
 });
 
-const brandContextSchema = z.object({
+export const brandContextSchema = z.object({
 	summary: z
 		.string()
 		.describe(
@@ -142,6 +143,10 @@ export type BrandContext = Infer<typeof brandContextValidator>;
 
 export type BrandDocument = Infer<typeof documentValidator>;
 
+const openrouter = createOpenRouter({
+	apiKey: process.env.OPENROUTER_API_KEY,
+});
+
 export const generateBrandContext = internalAction({
 	args: {
 		documents: v.array(documentValidator),
@@ -152,7 +157,7 @@ export const generateBrandContext = internalAction({
 			.join("\n\n");
 
 		const { object } = await generateObject({
-			model: openai("gpt-4o"),
+			model: openrouter.chat("google/gemini-2.5-flash-lite-preview-09-2025"),
 			system:
 				"You are a business analyst. Extract and structure brand information from the provided content.",
 			schema: z.object({ value: brandContextSchema }),
@@ -180,7 +185,7 @@ export const brandContextWorkflow = workflow.define({
 			internal.modules.brandContext.generateBrandContext,
 			args
 		);
-		await step.runMutation(internal.brandModules.upsertModuleInternal, {
+		await step.runMutation(internal.brandModules.upsertModuleByTypeInternal, {
 			companyId: args.companyId,
 			type: BrandModuleTypes.BrandContext,
 			data: brandContext,

@@ -2,6 +2,20 @@ import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+export const GENERATION_STATUS = [
+	"idle",
+	"queued",
+	"in_progress",
+	"succeeded",
+	"failed",
+] as const;
+
+export const GENERATION_STATUS_VALIDATOR = v.union(
+	...GENERATION_STATUS.map((status) => v.literal(status))
+);
+
+export type GenerationStatus = (typeof GENERATION_STATUS)[number];
+
 const applicationTables = {
 	companies: defineTable({
 		name: v.string(),
@@ -29,13 +43,7 @@ const applicationTables = {
 		type: v.string(),
 		data: v.any(),
 		published: v.boolean(),
-		generationStatus: v.union(
-			v.literal("idle"),
-			v.literal("queued"),
-			v.literal("in_progress"),
-			v.literal("succeeded"),
-			v.literal("failed")
-		),
+		generationStatus: GENERATION_STATUS_VALIDATOR,
 		updatedBy: v.optional(v.id("users")),
 		updatedAt: v.number(),
 		createdAt: v.number(),
