@@ -1,6 +1,7 @@
 import { Authenticated, Unauthenticated } from "convex/react";
 import { useState } from "react";
 import { Toaster } from "sonner";
+import { BrandStudioPage } from "@/components/BrandStudioPage";
 import { CompanyDashboard } from "@/components/CompanyDashboard";
 import { CompanyList } from "@/components/CompanyList";
 import { SignOutButton } from "@/components/SignOutButton";
@@ -10,6 +11,7 @@ import type { Id } from "../convex/_generated/dataModel";
 export default function Main() {
 	const [selectedCompanyId, setSelectedCompanyId] =
 		useState<Id<"companies"> | null>(null);
+	const [view, setView] = useState<"dashboard" | "studio">("studio");
 
 	return (
 		<div className="flex min-h-screen bg-gray-50">
@@ -19,10 +21,14 @@ export default function Main() {
 					selectedCompanyId={selectedCompanyId}
 				/>
 				<div className="flex flex-1 flex-col">
-					<Header />
+					<Header onViewChange={setView} view={view} />
 					<main className="flex-1 overflow-hidden">
 						{selectedCompanyId ? (
-							<CompanyDashboard companyId={selectedCompanyId} />
+							view === "studio" ? (
+								<BrandStudioPage companyId={selectedCompanyId} />
+							) : (
+								<CompanyDashboard companyId={selectedCompanyId} />
+							)
 						) : (
 							<div className="flex h-full items-center justify-center">
 								<div className="text-center">
@@ -60,12 +66,44 @@ export default function Main() {
 	);
 }
 
-function Header() {
+function Header({
+	view,
+	onViewChange,
+}: {
+	view: "dashboard" | "studio";
+	onViewChange: (view: "dashboard" | "studio") => void;
+}) {
 	return (
 		<header className="flex items-center justify-between border-gray-200 border-b bg-white px-6 py-4">
-			<h1 className="font-semibold text-gray-900 text-xl">
-				Brand Identity Manager
-			</h1>
+			<div className="flex items-center gap-4">
+				<h1 className="font-semibold text-gray-900 text-xl">
+					Brand Identity Manager
+				</h1>
+				<div className="flex rounded-lg border border-gray-200 bg-gray-50 p-1">
+					<button
+						className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+							view === "dashboard"
+								? "bg-white font-medium text-gray-900 shadow-sm"
+								: "text-gray-600 hover:text-gray-900"
+						}`}
+						onClick={() => onViewChange("dashboard")}
+						type="button"
+					>
+						Dashboard
+					</button>
+					<button
+						className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+							view === "studio"
+								? "bg-white font-medium text-gray-900 shadow-sm"
+								: "text-gray-600 hover:text-gray-900"
+						}`}
+						onClick={() => onViewChange("studio")}
+						type="button"
+					>
+						Studio
+					</button>
+				</div>
+			</div>
 			<SignOutButton />
 		</header>
 	);

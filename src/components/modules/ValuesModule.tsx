@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type UseBrandModuleResult from "../../hooks/useBrandModule";
+import { useBrandModule } from "../../hooks/useBrandModule";
+import { BlockWrapper } from "./BlockWrapper";
 import { ModuleCard } from "./ModuleCard";
 
 type ValuesModuleProps = {
@@ -8,15 +10,14 @@ type ValuesModuleProps = {
 };
 
 export default function ValuesModule({ companyId }: ValuesModuleProps) {
+	const ctx = useBrandModule(companyId, "values");
+
 	return (
-		<ModuleCard
-			companyId={companyId}
-			icon="💎"
-			moduleType="values"
-			title="Values"
-		>
-			{(ctx) => <ValuesModuleBody ctx={ctx} />}
-		</ModuleCard>
+		<BlockWrapper ctx={ctx}>
+			<ModuleCard icon="💎" title="Values">
+				<ValuesModuleBody ctx={ctx} />
+			</ModuleCard>
+		</BlockWrapper>
 	);
 }
 

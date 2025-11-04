@@ -1,4 +1,6 @@
 import type { Id } from "../../../convex/_generated/dataModel";
+import { useBrandModule } from "../../hooks/useBrandModule";
+import { BlockWrapper } from "./BlockWrapper";
 import { ModuleCard } from "./ModuleCard";
 
 type VisionModuleProps = {
@@ -6,14 +8,11 @@ type VisionModuleProps = {
 };
 
 export default function VisionModule({ companyId }: VisionModuleProps) {
+	const ctx = useBrandModule(companyId, "vision");
+
 	return (
-		<ModuleCard
-			companyId={companyId}
-			icon="🔭"
-			moduleType="vision"
-			title="Vision"
-		>
-			{(ctx) => (
+		<BlockWrapper ctx={ctx}>
+			<ModuleCard icon="🔭" title="Vision">
 				<div className="space-y-3">
 					<textarea
 						className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
@@ -26,7 +25,7 @@ export default function VisionModule({ companyId }: VisionModuleProps) {
 						}
 					/>
 				</div>
-			)}
-		</ModuleCard>
+			</ModuleCard>
+		</BlockWrapper>
 	);
 }

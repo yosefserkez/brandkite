@@ -1,86 +1,60 @@
-import type { BrandModuleType } from "@convex/workflows";
 import type { ReactNode } from "react";
-import type { Id } from "../../../convex/_generated/dataModel";
-import { useBrandModule } from "../../hooks/useBrandModule";
+import { cn } from "../../lib/utils";
 
 type ModuleCardProps = {
-	companyId: Id<"companies">;
-	moduleType: BrandModuleType;
-	title: string;
-	icon: string;
-	children: (ctx: ReturnType<typeof useBrandModule>) => ReactNode;
+	children: ReactNode;
+	title?: string;
+	icon?: string;
+	className?: string;
 };
 
+/**
+ * Simple card container with optional icon + title header.
+ * Use with BlockWrapper for a complete module layout.
+ *
+ * @example
+ * ```tsx
+ * const ctx = useBrandModule(companyId, "colors");
+ *
+ * <BlockWrapper actions={<ModuleActions ctx={ctx} />} ctx={ctx}>
+ *   <ModuleCard title="Colors" icon="🎨">
+ *     <YourContent />
+ *   </ModuleCard>
+ * </BlockWrapper>
+ * ```
+ */
 export function ModuleCard({
-	companyId,
-	moduleType,
+	children,
 	title,
 	icon,
-	children,
+	className,
 }: ModuleCardProps) {
-	const ctx = useBrandModule(companyId, moduleType);
-
 	return (
-		<div className="group rounded-md border border-gray-200/70 bg-white transition-colors hover:border-gray-300">
-			<div className="flex w-full items-start justify-between px-5 py-4 text-left">
-				<div className="flex items-start gap-3">
-					<span className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-xl">
-						{icon}
-					</span>
-					<div className="space-y-1">
-						<h3 className="font-semibold text-gray-900 text-xl">{title}</h3>
+		<div
+			className={cn(
+				"overflow-hidden rounded-md border border-gray-200/70 bg-white transition-colors group-hover:border-gray-300",
+				className
+			)}
+		>
+			{(title || icon) && (
+				<div className="flex w-full items-start justify-between px-5 py-4 text-left">
+					<div className="flex items-start gap-3">
+						{icon && (
+							<span className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-xl">
+								{icon}
+							</span>
+						)}
+						{title && (
+							<div className="space-y-1">
+								<h3 className="font-semibold text-gray-900 text-xl">{title}</h3>
+							</div>
+						)}
 					</div>
 				</div>
-			</div>
+			)}
 
-			<div className="px-5 pt-0 pb-3">
-				<div className="mb-3 flex items-center gap-2">
-					<select
-						className="rounded-md border border-gray-200 px-2 py-1 text-sm"
-						onChange={(e) =>
-							ctx.setSelectedId(e.target.value as Id<"brandModules">)
-						}
-						value={(ctx.selectedId as string) ?? ""}
-					>
-						{(ctx.versions ?? []).map((m) => (
-							<option key={m._id} value={m._id as string}>
-								v{m.computedVersion ?? "?"}
-								{/* {m.generationStatus && m.generationStatus !== "idle"
-									? ` · ${m.generationStatus}`
-									: ""} */}
-							</option>
-						))}
-					</select>
-					<button
-						className="rounded-md border border-gray-200 px-2.5 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50"
-						disabled={!ctx.selected || ctx.isPublishing}
-						onClick={ctx.publishSelected}
-						type="button"
-					>
-						Publish
-					</button>
-					<button
-						className="rounded-md border border-gray-200 px-2.5 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50"
-						disabled={ctx.isRegenerating}
-						onClick={() => ctx.regenerate(false)}
-						type="button"
-					>
-						{ctx.isRegenerating ? "..." : "Regenerate"}
-					</button>
-				</div>
-
-				{ctx.selected &&
-				(ctx.selected.generationStatus === "queued" ||
-					ctx.selected.generationStatus === "in_progress") ? (
-					<div className="animate-pulse space-y-2">
-						<div className="h-4 w-1/3 rounded bg-gray-200" />
-						<div className="h-3 w-full rounded bg-gray-200" />
-						<div className="h-3 w-5/6 rounded bg-gray-200" />
-						<div className="h-3 w-2/3 rounded bg-gray-200" />
-					</div>
-				) : (
-					children(ctx)
-				)}
+			<div className={cn("px-5 pb-5", title || icon ? "pt-0" : "pt-5")}>
+				{children}
 			</div>
 		</div>
 	);
