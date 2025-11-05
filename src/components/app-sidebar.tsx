@@ -189,7 +189,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 							<SidebarMenuItem>
 								<SidebarMenuButton
 									asChild
-									className="group rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+									className="group my-2 rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800"
 									tooltip={isCollapsed ? "New Company" : undefined}
 								>
 									{isCollapsed ? (
