@@ -298,19 +298,13 @@ export const nameWorkflow = workflow.define({
 		publish: v.optional(v.boolean()),
 	},
 	handler: async (ctx, args): Promise<{ name: Name; domains: string[] }[]> => {
-		// Wait for brandContext to be available
-
-		const brandContext = (await ctx.runQuery(
-			internal.brandModules.getCurrentModule,
-			{
+		const brandContext = (
+			await ctx.runQuery(internal.brandModules.getCurrentModule, {
 				companyId: args.companyId,
 				type: BrandModuleTypes.BrandContext,
-			}
-		)) as BrandContext | null;
-
+			})
+		)?.data as BrandContext | null;
 		// TODO:If brandContext doesn't exist, wait
-
-		logger.info("Brand context", { brandContext });
 		if (!brandContext) {
 			throw new Error("Brand context data is invalid");
 		}
@@ -323,7 +317,6 @@ export const nameWorkflow = workflow.define({
 				type: BrandModuleTypes.Name,
 			}
 		);
-		logger.info("Existing name module", { existingNameModule });
 
 		let moduleId: Id<"brandModules">;
 		let existingData: NameModuleData = [];

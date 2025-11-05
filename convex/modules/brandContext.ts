@@ -56,7 +56,9 @@ export const brandContextValidator = v.object({
 
 // Zod schema for AI generation (keeping this for generateObject compatibility)
 const entitySchema = z.object({
-	name: z.string().describe("Name of the entity"),
+	name: z
+		.string()
+		.describe("Name of the entity if provided, otherwise leave blank"),
 	summary: z.string().describe("Summary of the entity"),
 	url: z
 		.string()

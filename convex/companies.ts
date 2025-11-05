@@ -180,9 +180,9 @@ export const get = query({
 
 export const create = mutation({
 	args: {
-		name: v.string(),
-		description: v.string(),
-		isPublic: v.boolean(),
+		name: v.optional(v.string()),
+		description: v.optional(v.string()),
+		isPublic: v.optional(v.boolean()),
 		brandContext: brandContextValidator,
 	},
 	handler: async (ctx, args) => {
@@ -195,8 +195,8 @@ export const create = mutation({
 
 		// create  company with name if provided
 		const companyId = await ctx.db.insert("companies", {
-			name: args.name, // TODO: remove this field from schema
-			description: args.description, // TODO:remove this field from schema
+			name: args.name ?? "", // TODO: remove this field from schema
+			description: args.description ?? "", // TODO:remove this field from schema
 			ownerId: userId,
 			isPublic: args.isPublic ?? false,
 			createdAt: now,
@@ -231,7 +231,7 @@ export const updateInternal = internalMutation({
 	handler: async (ctx, args) => {
 		await ctx.db.patch(args.companyId, {
 			name: args.name ?? undefined,
-			isPublic: args.isPublic ?? undefined,
+			...(args.isPublic !== undefined && { isPublic: args.isPublic }),
 			updatedAt: Date.now(),
 		});
 	},
