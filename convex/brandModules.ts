@@ -165,7 +165,7 @@ export const regenerateModule = mutation({
 		const userId = await getAuthUserId(ctx);
 
 		const hasWriteAccess = await checkWriteAccess(ctx, args.companyId, userId);
-
+		logger.info("Has write access", { hasWriteAccess });
 		if (!hasWriteAccess) {
 			throw new Error("Not authorized");
 		}
@@ -173,8 +173,8 @@ export const regenerateModule = mutation({
 		// TODO: run workflow for module type. it will create the module set it as in progress and update the generation status to succeeded or failed.
 		await workflow.start(ctx, internal.modules.name.nameWorkflow, {
 			companyId: args.companyId,
-			publish: args.publish ?? false,
 		});
+		logger.info("Started workflow", { workflow: "nameWorkflow" });
 	},
 });
 
@@ -214,6 +214,17 @@ export const getModulesForGeneration = internalQuery({
 			.query("brandModules")
 			.withIndex("by_company", (q) => q.eq("companyId", args.companyId))
 			.collect(),
+});
+
+export const getCurrentModule = internalQuery({
+	args: { companyId: v.id("companies"), type: brandModuleTypeValidator },
+	handler: async (ctx, args) =>
+		await ctx.db
+			.query("brandModules")
+			.withIndex("by_company_type_current", (q) =>
+				q.eq("companyId", args.companyId).eq("type", args.type.toString())
+			)
+			.first(),
 });
 
 export const getPublishedModules = internalQuery({

@@ -6,7 +6,8 @@ import { v } from "convex/values";
 import z from "zod";
 import { workflow } from "..";
 import { internal } from "../_generated/api";
-import { internalAction } from "../_generated/server";
+import type { Id } from "../_generated/dataModel";
+import { action, internalAction } from "../_generated/server";
 import { logger } from "../logger";
 import { BrandModuleTypes } from "../workflows";
 import type { BrandContext } from "./brandContext";
@@ -36,7 +37,10 @@ const DNS_STATUS_NXDOMAIN = 3; // Domain doesn't exist (likely available)
 // Reusable Convex validators
 export const nameValidator = v.object({
 	name: v.string(),
-	reasoning: v.string(),
+	reasoning: v.object({
+		summary: v.string(),
+		details: v.string(),
+	}),
 });
 
 // Zod schema for AI generation (keeping this for generateObject compatibility)
@@ -46,14 +50,30 @@ export const nameSchema = z.object({
 		.describe(
 			"The primary recommended brand name. Should be memorable, distinctive, and aligned with the brand's values and positioning."
 		),
-	reasoning: z
-		.string()
-		.describe(
-			"Detailed explanation of why this name was chosen, including how it reflects the brand context, target audience, and market positioning."
-		),
+	reasoning: z.object({
+		summary: z
+			.string()
+			.describe(
+				"Short sentence summary of the reasoning for choosing this name."
+			),
+		details: z
+			.string()
+			.describe(
+				"Detailed explanation of why this name was chosen, including how it reflects the brand context, target audience, and market positioning."
+			),
+	}),
 });
 
 export type Name = Infer<typeof nameValidator>;
+
+// Type for a name with its available domains
+export type NameWithDomains = {
+	name: Name;
+	domains: string[];
+};
+
+// Type for the name module data (array of names with domains)
+export type NameModuleData = NameWithDomains[];
 
 /**
  * Normalizes a name for domain usage by removing special characters and spaces
@@ -166,7 +186,7 @@ export const generateNames = internalAction({
 			system:
 				"You are a creative brand naming expert. Generate compelling, memorable brand names based on the provided brand context. Consider linguistics, market appeal, memorability, and brand alignment.",
 			schema: z.array(z.object({ value: nameSchema })),
-			prompt: `Generate 20 compelling brand name options and their reasoning based on this brand context:\n\n${args.contextContent}`,
+			prompt: `Generate 5 compelling brand name options and their reasoning based on this brand context:\n\n${args.contextContent}`,
 			temperature: 0.9,
 		});
 
@@ -174,7 +194,57 @@ export const generateNames = internalAction({
 	},
 });
 
-export const generateDomains = internalAction({
+// Internal action for use by workflows
+export const generateDomainsInternal = internalAction({
+	args: {
+		name: v.string(),
+		options: v.optional(
+			v.object({
+				tlds: v.optional(v.array(v.string())),
+				variants: v.optional(
+					v.object({
+						prefixes: v.optional(v.array(v.string())),
+						suffixes: v.optional(v.array(v.string())),
+					})
+				),
+				maxResults: v.optional(v.number()),
+			})
+		),
+	},
+	handler: async (_ctx, args) => {
+		const variants = generateDomainVariants(args.name, args.options);
+		const maxResults = args.options?.maxResults || 10;
+
+		// Check domains in parallel with batching to avoid overwhelming the DNS service
+		const batchSize = 10;
+		const availableDomains: string[] = [];
+
+		for (
+			let i = 0;
+			i < variants.length && availableDomains.length < maxResults;
+			i += batchSize
+		) {
+			const batch = variants.slice(i, i + batchSize);
+
+			const results = await Promise.all(batch.map(checkDomain));
+
+			logger.info("Results", { results });
+			for (const result of results) {
+				if (result.available && result.checked) {
+					availableDomains.push(result.domain);
+					if (availableDomains.length >= maxResults) {
+						break;
+					}
+				}
+			}
+		}
+
+		return availableDomains;
+	},
+});
+
+// Public action for client use
+export const generateDomains = action({
 	args: {
 		name: v.string(),
 		options: v.optional(
@@ -230,33 +300,56 @@ export const nameWorkflow = workflow.define({
 	handler: async (ctx, args): Promise<{ name: Name; domains: string[] }[]> => {
 		// Wait for brandContext to be available
 
-		const brandContextModule = await ctx.runQuery(
-			internal.brandModules.getPublishedModules,
+		const brandContext = (await ctx.runQuery(
+			internal.brandModules.getCurrentModule,
 			{
 				companyId: args.companyId,
-				types: [BrandModuleTypes.BrandContext],
+				type: BrandModuleTypes.BrandContext,
 			}
-		);
+		)) as BrandContext | null;
 
 		// TODO:If brandContext doesn't exist, wait
 
-		const brandContext = brandContextModule[BrandModuleTypes.BrandContext]
-			?.data as BrandContext;
-
+		logger.info("Brand context", { brandContext });
 		if (!brandContext) {
 			throw new Error("Brand context data is invalid");
 		}
 
-		// create module with generation status in progress
-		const moduleId = await ctx.runMutation(
-			internal.brandModules.createModuleInternal,
+		// Check for existing name module
+		const existingNameModule = await ctx.runQuery(
+			internal.brandModules.getCurrentModule,
 			{
 				companyId: args.companyId,
 				type: BrandModuleTypes.Name,
-				publish: false,
-				generationStatus: "in_progress",
 			}
 		);
+		logger.info("Existing name module", { existingNameModule });
+
+		let moduleId: Id<"brandModules">;
+		let existingData: NameModuleData = [];
+
+		if (existingNameModule) {
+			// Use existing module and get its data
+			moduleId = existingNameModule._id;
+			existingData = (existingNameModule.data as NameModuleData) || [];
+
+			// Update status to in_progress
+			await ctx.runMutation(internal.brandModules.updateModuleInternal, {
+				moduleId,
+				generationStatus: "in_progress",
+			});
+		} else {
+			// Create new module with generation status in progress
+			moduleId = await ctx.runMutation(
+				internal.brandModules.createModuleInternal,
+				{
+					companyId: args.companyId,
+					type: BrandModuleTypes.Name,
+					publish: false,
+					generationStatus: "in_progress",
+				}
+			);
+		}
 
 		const namesWithDomainAvailability: { name: Name; domains: string[] }[] = [];
 		const MAX_NAMES = 5;
@@ -285,7 +378,7 @@ export const nameWorkflow = workflow.define({
 			const namesWithDomains = await Promise.all(
 				names.map(async (name: Name) => {
 					const domains = await ctx.runAction(
-						internal.modules.name.generateDomains,
+						internal.modules.name.generateDomainsInternal,
 						{
 							name: name.name,
 							options: domainCheckOptions,
@@ -304,8 +397,9 @@ export const nameWorkflow = workflow.define({
 			triesLeft -= 1;
 		}
 
-		const data = namesWithDomainAvailability;
-
+		// Append new names to existing data
+		const data = [...existingData, ...namesWithDomainAvailability];
+		logger.info("Data", { data });
 		// Save the name as a module
 		await ctx.runMutation(internal.brandModules.updateModuleInternal, {
 			moduleId,
@@ -313,6 +407,17 @@ export const nameWorkflow = workflow.define({
 			publish: args.publish ?? true,
 			generationStatus: "succeeded",
 		});
+
+		logger.info("Updated module", { moduleId });
+
+		// If publishing and we have names, set the first name as the company name
+		if ((args.publish ?? true) && data.length > 0) {
+			const firstName = data[0].name.name;
+			await ctx.runMutation(internal.companies.updateInternal, {
+				companyId: args.companyId,
+				name: firstName,
+			});
+		}
 
 		return data;
 	},

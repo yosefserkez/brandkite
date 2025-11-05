@@ -57,43 +57,6 @@ type LogoData = {
 	variations?: Array<{ name: string; url: string }>;
 };
 
-type BrandContext = {
-	summary: string;
-	[key: string]: unknown;
-};
-
-const NAME_SUMMARY_WORD_COUNT = 3;
-
-function getCompanyName(
-	nameModule: unknown,
-	brandContextModule: unknown,
-	fallbackName: string
-): string {
-	// Try to get name from nameModule
-	if (nameModule && Array.isArray(nameModule) && nameModule.length > 0) {
-		const firstNameOption = nameModule[0];
-		if (firstNameOption?.name?.name) {
-			return firstNameOption.name.name;
-		}
-	}
-
-	// Try to get name from brandContext summary (first few words)
-	if (brandContextModule && typeof brandContextModule === "object") {
-		const context = brandContextModule as BrandContext;
-		if (context.summary) {
-			const words = context.summary
-				.split(" ")
-				.slice(0, NAME_SUMMARY_WORD_COUNT);
-			if (words.length > 0) {
-				return words.join(" ");
-			}
-		}
-	}
-
-	// Fallback to company name or "Untitled"
-	return fallbackName || "Untitled";
-}
-
 function getCompanyInitials(name: string): string {
 	const words = name.split(" ").filter((w) => w.length > 0);
 	if (words.length >= 2) {
@@ -211,11 +174,8 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 							</SidebarMenuItem>
 							<Authenticated>
 								{companies.map((company) => {
-									const displayName = getCompanyName(
-										company.nameModule,
-										company.brandContextModule,
-										company.name
-									);
+									// Use company.name as the source of truth
+									const displayName = company.name || "Untitled";
 									const logoData = company.logoModule as LogoData | undefined;
 									const logoUrl = logoData?.url || logoData?.svg;
 

@@ -4,6 +4,7 @@ import { internal } from "./_generated/api";
 import {
 	action,
 	internalAction,
+	internalMutation,
 	internalQuery,
 	mutation,
 	query,
@@ -221,6 +222,21 @@ export const create = mutation({
 	},
 });
 
+export const updateInternal = internalMutation({
+	args: {
+		companyId: v.id("companies"),
+		name: v.optional(v.string()),
+		isPublic: v.optional(v.boolean()),
+	},
+	handler: async (ctx, args) => {
+		await ctx.db.patch(args.companyId, {
+			name: args.name ?? undefined,
+			isPublic: args.isPublic ?? undefined,
+			updatedAt: Date.now(),
+		});
+	},
+});
+
 export const update = mutation({
 	args: {
 		companyId: v.id("companies"),
@@ -239,23 +255,11 @@ export const update = mutation({
 			throw new Error("Not authorized");
 		}
 
-		const updates: {
-			updatedAt: number;
-			name?: string;
-			description?: string;
-			isPublic?: boolean;
-		} = { updatedAt: Date.now() };
-		if (args.name !== undefined) {
-			updates.name = args.name;
-		}
-		if (args.description !== undefined) {
-			updates.description = args.description;
-		}
-		if (args.isPublic !== undefined) {
-			updates.isPublic = args.isPublic;
-		}
-
-		await ctx.db.patch(args.companyId, updates);
+		await ctx.runMutation(internal.companies.updateInternal, {
+			companyId: args.companyId,
+			name: args.name,
+			isPublic: args.isPublic,
+		});
 	},
 });
 
