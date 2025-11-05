@@ -61,6 +61,90 @@ export const list = query({
 	},
 });
 
+export const listWithBrandData = query({
+	args: {},
+	handler: async (ctx) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			return [];
+		}
+
+		// Get companies where user is owner or member
+		const ownedCompanies = await ctx.db
+			.query("companies")
+			.withIndex("by_owner", (q) => q.eq("ownerId", userId))
+			.collect();
+
+		const memberCompanies = await ctx.db
+			.query("companyMembers")
+			.withIndex("by_user", (q) => q.eq("userId", userId))
+			.collect();
+
+		const memberCompanyIds = memberCompanies.map((m) => m.companyId);
+		const memberCompanyData = await Promise.all(
+			memberCompanyIds.map((id) => ctx.db.get(id))
+		);
+
+		const allCompanies = [
+			...ownedCompanies,
+			...memberCompanyData.filter(
+				(c): c is NonNullable<typeof c> => c !== null
+			),
+		];
+
+		// Remove duplicates and sort by updatedAt
+		const uniqueCompanies = allCompanies
+			.filter(
+				(company, index, self) =>
+					self.findIndex((c) => c._id === company._id) === index
+			)
+			.sort((a, b) => b.updatedAt - a.updatedAt);
+
+		// Fetch brand modules for each company
+		const companiesWithBrandData = await Promise.all(
+			uniqueCompanies.map(async (company) => {
+				// Get name module
+				const nameModule = await ctx.db
+					.query("brandModules")
+					.withIndex("by_company_type", (q) =>
+						q.eq("companyId", company._id).eq("type", BrandModuleTypes.Name)
+					)
+					.filter((q) => q.eq(q.field("published"), true))
+					.first();
+
+				// Get logo module
+				const logoModule = await ctx.db
+					.query("brandModules")
+					.withIndex("by_company_type", (q) =>
+						q.eq("companyId", company._id).eq("type", BrandModuleTypes.Logo)
+					)
+					.filter((q) => q.eq(q.field("published"), true))
+					.first();
+
+				// Get brand context module
+				const brandContextModule = await ctx.db
+					.query("brandModules")
+					.withIndex("by_company_type", (q) =>
+						q
+							.eq("companyId", company._id)
+							.eq("type", BrandModuleTypes.BrandContext)
+					)
+					.filter((q) => q.eq(q.field("published"), true))
+					.first();
+
+				return {
+					...company,
+					nameModule: nameModule?.data,
+					logoModule: logoModule?.data,
+					brandContextModule: brandContextModule?.data,
+				};
+			})
+		);
+
+		return companiesWithBrandData;
+	},
+});
+
 export const get = query({
 	args: { companyId: v.id("companies") },
 	handler: async (ctx, args) => {
@@ -172,6 +256,53 @@ export const update = mutation({
 		}
 
 		await ctx.db.patch(args.companyId, updates);
+	},
+});
+
+export const deleteCompany = mutation({
+	args: {
+		companyId: v.id("companies"),
+	},
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			throw new Error("Not authenticated");
+		}
+
+		const company = await ctx.db.get(args.companyId);
+		if (!company) {
+			throw new Error("Company not found");
+		}
+
+		// Only the owner can delete the company
+		if (company.ownerId !== userId) {
+			throw new Error(
+				"Not authorized - only the owner can delete this company"
+			);
+		}
+
+		// Delete all brand modules associated with this company
+		const brandModules = await ctx.db
+			.query("brandModules")
+			.withIndex("by_company", (q) => q.eq("companyId", args.companyId))
+			.collect();
+
+		for (const module of brandModules) {
+			await ctx.db.delete(module._id);
+		}
+
+		// Delete all company memberships
+		const memberships = await ctx.db
+			.query("companyMembers")
+			.withIndex("by_company", (q) => q.eq("companyId", args.companyId))
+			.collect();
+
+		for (const membership of memberships) {
+			await ctx.db.delete(membership._id);
+		}
+
+		// Finally, delete the company
+		await ctx.db.delete(args.companyId);
 	},
 });
 

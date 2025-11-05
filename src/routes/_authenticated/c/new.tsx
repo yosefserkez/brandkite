@@ -1,3 +1,5 @@
+import { api } from "@convex/_generated/api";
+import type { BrandContext } from "@convex/modules/brandContext";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAction, useMutation } from "convex/react";
 import { useState } from "react";
@@ -6,10 +8,8 @@ import { ContextForm } from "@/components/new-company/context-form";
 import { NewCompany } from "@/components/new-company/context-input";
 import { ContextInputProcessing } from "@/components/new-company/context-input-processing";
 import { Meteors } from "@/components/ui/meteors";
-import { api } from "../../../convex/_generated/api";
-import type { BrandContext } from "../../../convex/modules/brandContext";
 
-export const Route = createFileRoute("/c/new")({
+export const Route = createFileRoute("/_authenticated/c/new")({
 	component: NewCompanyRoute,
 });
 

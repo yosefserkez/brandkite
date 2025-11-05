@@ -19,6 +19,7 @@ import type * as logger from "../logger.js";
 import type * as modules_brandContext from "../modules/brandContext.js";
 import type * as modules_name from "../modules/name.js";
 import type * as presence from "../presence.js";
+import type * as users from "../users.js";
 import type * as workflows_index from "../workflows/index.js";
 
 import type {
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   "modules/brandContext": typeof modules_brandContext;
   "modules/name": typeof modules_name;
   presence: typeof presence;
+  users: typeof users;
   "workflows/index": typeof workflows_index;
 }>;
 declare const fullApiWithMounts: typeof fullApi;

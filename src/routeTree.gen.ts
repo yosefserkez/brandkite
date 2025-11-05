@@ -9,58 +9,75 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CNewRouteImport } from './routes/c/new'
-import { Route as CIdRouteImport } from './routes/c/$id'
+import { Route as AuthenticatedCNewRouteImport } from './routes/_authenticated/c/new'
+import { Route as AuthenticatedCIdRouteImport } from './routes/_authenticated/c/$id'
 
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CNewRoute = CNewRouteImport.update({
+const AuthenticatedCNewRoute = AuthenticatedCNewRouteImport.update({
   id: '/c/new',
   path: '/c/new',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const CIdRoute = CIdRouteImport.update({
+const AuthenticatedCIdRoute = AuthenticatedCIdRouteImport.update({
   id: '/c/$id',
   path: '/c/$id',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/c/$id': typeof CIdRoute
-  '/c/new': typeof CNewRoute
+  '/c/$id': typeof AuthenticatedCIdRoute
+  '/c/new': typeof AuthenticatedCNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/c/$id': typeof CIdRoute
-  '/c/new': typeof CNewRoute
+  '/c/$id': typeof AuthenticatedCIdRoute
+  '/c/new': typeof AuthenticatedCNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/c/$id': typeof CIdRoute
-  '/c/new': typeof CNewRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_authenticated/c/$id': typeof AuthenticatedCIdRoute
+  '/_authenticated/c/new': typeof AuthenticatedCNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/c/$id' | '/c/new'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/c/$id' | '/c/new'
-  id: '__root__' | '/' | '/c/$id' | '/c/new'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/_authenticated/c/$id'
+    | '/_authenticated/c/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CIdRoute: typeof CIdRoute
-  CNewRoute: typeof CNewRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -68,27 +85,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/c/new': {
-      id: '/c/new'
+    '/_authenticated/c/new': {
+      id: '/_authenticated/c/new'
       path: '/c/new'
       fullPath: '/c/new'
-      preLoaderRoute: typeof CNewRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedCNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/c/$id': {
-      id: '/c/$id'
+    '/_authenticated/c/$id': {
+      id: '/_authenticated/c/$id'
       path: '/c/$id'
       fullPath: '/c/$id'
-      preLoaderRoute: typeof CIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedCIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedCIdRoute: typeof AuthenticatedCIdRoute
+  AuthenticatedCNewRoute: typeof AuthenticatedCNewRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedCIdRoute: AuthenticatedCIdRoute,
+  AuthenticatedCNewRoute: AuthenticatedCNewRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CIdRoute: CIdRoute,
-  CNewRoute: CNewRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
