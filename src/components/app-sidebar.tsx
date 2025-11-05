@@ -120,7 +120,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 								onMouseEnter={() => setIsHovered(true)}
 								onMouseLeave={() => setIsHovered(false)}
 								size="lg"
-								tooltip={isCollapsed ? "Brand Studio" : undefined}
+								tooltip={isCollapsed ? "BrandKite" : undefined}
 							>
 								{isCollapsed ? (
 									<div className="flex items-center justify-center">
@@ -133,9 +133,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 								) : (
 									<Link className="flex items-center gap-2" to="/">
 										<IconBuilding className="size-5! shrink-0" />
-										<span className="font-semibold text-base">
-											Brand Studio
-										</span>
+										<span className="font-semibold text-base">BrandKite</span>
 									</Link>
 								)}
 							</SidebarMenuButton>

@@ -24,11 +24,8 @@ export default function NamesModule({
 	const data = ctx.selected?.data as NameModuleData | undefined;
 	const displayName = liveName ?? "Brand Name";
 
-	if (!(data && Array.isArray(data))) {
-		return null;
-	}
 	// Find current name in generated names
-	const currentNameData = data.find((item) => item.name.name === liveName);
+	const currentNameData = data?.find((item) => item.name.name === liveName);
 
 	return (
 		<>
@@ -42,10 +39,13 @@ export default function NamesModule({
 				]}
 				className="overflow-hidden rounded-lg"
 				ctx={ctx}
+				hideRegenerate
+				hideVersionSelector
 			>
 				<BillboardPreviewWithOverlays
 					className={className}
 					containerHeight="320px"
+					isLoading={!displayName}
 					name={displayName}
 					nameData={currentNameData}
 				/>

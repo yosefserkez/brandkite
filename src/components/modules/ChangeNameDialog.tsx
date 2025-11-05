@@ -1,19 +1,12 @@
 import { useAction, useMutation } from "convex/react";
-import { ChevronLeftIcon, Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { NameModuleData } from "../../../convex/modules/name";
 import { useCompanyName } from "../../hooks/useCompanyName";
-import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
-import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-} from "../ui/dialog";
+import { Dialog, DialogContent, DialogHeader } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { ScrollArea } from "../ui/scroll-area";
 import { BillboardPreviewWithOverlays } from "./BillboardPreviewWithOverlays";
@@ -97,13 +90,10 @@ export function ChangeNameDialog({
 		return () => clearTimeout(timeoutId);
 	}, [customName, selectedOption, generateDomainsAction]);
 
-	const handleSubmit = async () => {
+	const handleSubmit = async (nameToSave?: string) => {
 		setIsSaving(true);
 		try {
-			const newName =
-				selectedOption === "generated"
-					? generatedNames[selectedNameIndex].name.name
-					: customName.trim();
+			const newName = nameToSave || customName.trim();
 
 			if (!newName) {
 				return;
@@ -125,9 +115,7 @@ export function ChangeNameDialog({
 				companyId,
 				type: "name",
 			});
-		} catch (error) {
-			console.error("Error regenerating module", { error });
-
+		} catch {
 			// Error regenerating - could show a toast notification here
 		} finally {
 			setIsRegenerating(false);
@@ -140,13 +128,14 @@ export function ChangeNameDialog({
 				<DialogHeader className="contents space-y-0 text-left">
 					{/* <DialogTitle className="px-6 pt-6">Change Brand Name</DialogTitle> */}
 				</DialogHeader>
-				<ScrollArea className="mx-auto flex w-full max-w-7xl flex-col justify-between overflow-hidden p-6">
+				<ScrollArea className="mx-auto flex w-full max-w-7xl flex-col justify-between overflow-hidden p-6 pb-0">
 					<div className="">
 						{/* Custom Name Section - Moved to top */}
 						<div className="mb-6 space-y-4">
 							<h3 className="font-semibold text-gray-900">Custom Name</h3>
 							<div className="space-y-4">
 								<Input
+									className="ring-inset"
 									onChange={(e) => {
 										setCustomName(e.target.value);
 										if (e.target.value.trim()) {
@@ -165,77 +154,69 @@ export function ChangeNameDialog({
 								{customName.trim() && (
 									<div className="space-y-4">
 										{/* Custom name billboard preview */}
-										<div
-											className={cn(
-												"overflow-hidden rounded-lg border-2 transition-all",
-												selectedOption === "custom"
-													? "border-blue-500 ring-2 ring-blue-200"
-													: "border-gray-200"
-											)}
-										>
-											<BillboardPreviewWithOverlays
-												bottomRightContent={
-													<button
-														className="pointer-events-auto rounded bg-gray-800/80 px-3 py-1.5 text-sm text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
-														disabled={
-															isSaving ||
-															!customName.trim() ||
-															currentName === customName
+										<BillboardPreviewWithOverlays
+											bottomRightContent={
+												<Button
+													disabled={
+														isSaving ||
+														!customName.trim() ||
+														currentName === customName
+													}
+													onClick={() => {
+														setSelectedOption("custom");
+														handleSubmit(customName.trim());
+													}}
+													size="xs"
+													type="button"
+													variant="outline"
+												>
+													{(() => {
+														if (isSaving && selectedOption === "custom") {
+															return "Setting...";
 														}
-														onClick={() => {
-															setSelectedOption("custom");
-															handleSubmit();
-														}}
-														type="button"
-													>
-														{(() => {
-															if (isSaving && selectedOption === "custom") {
-																return "Setting...";
-															}
-															if (currentName === customName) {
-																return "Current";
-															}
-															return "Set Live";
-														})()}
-													</button>
-												}
-												containerHeight="400px"
-												name={customName}
-												nameData={
-													customDomains.length > 0
-														? {
-																name: {
-																	name: customName,
-																	reasoning: {
-																		summary: "",
-																		details: "",
-																	},
+														if (currentName === customName) {
+															return "Current";
+														}
+														return "Set Live";
+													})()}
+												</Button>
+											}
+											containerHeight="400px"
+											name={customName}
+											nameData={
+												customDomains.length > 0
+													? {
+															name: {
+																name: customName,
+																reasoning: {
+																	summary: "",
+																	details: "",
 																},
-																domains: customDomains,
-															}
-														: undefined
-												}
-												showReasoningDetails={false}
-											/>
+															},
+															domains: customDomains,
+														}
+													: undefined
+											}
+											showReasoningDetails={false}
+										/>
 
-											{/* Custom domain states overlay */}
-											{isCheckingDomains && (
-												<div className="absolute bottom-4 left-4 z-10 flex items-center gap-2">
-													<Loader2 className="h-4 w-4 animate-spin text-white" />
-													<span className="text-sm text-white">
-														Checking domains...
-													</span>
-												</div>
-											)}
+										{/* Custom domain states overlay */}
+										{isCheckingDomains && (
+											<div className="absolute bottom-4 left-4 z-10 flex items-center gap-2">
+												<Loader2 className="h-4 w-4 animate-spin text-white" />
+												<span className="text-sm text-white">
+													Checking domains...
+												</span>
+											</div>
+										)}
 
-											{!isCheckingDomains && customDomains.length === 0 && (
-												<div className="absolute bottom-4 left-4 z-10">
-													<span className="text-sm text-white/80">
-														No available domains
-													</span>
-												</div>
-											)}
-										</div>
+										{!isCheckingDomains && customDomains.length === 0 && (
+											<div className="absolute bottom-4 left-4 z-10">
+												<span className="text-sm text-white/80">
+													No available domains
+												</span>
+											</div>
+										)}
 									</div>
 								)}
 							</div>
@@ -249,68 +230,50 @@ export function ChangeNameDialog({
 								</h3>
 								<div className="grid grid-cols-1 gap-6">
 									{generatedNames.map((item, idx) => (
-										<button
-											className={cn(
-												"group relative overflow-hidden rounded-lg border-2 transition-all hover:shadow-lg",
-												selectedOption === "generated" &&
-													selectedNameIndex === idx
-													? "border-blue-500 ring-2 ring-blue-200"
-													: "border-gray-200 hover:border-gray-300"
-											)}
-											key={`name-${item.name.name}-${idx}`}
-											onClick={() => {
-												setSelectedOption("generated");
-												setSelectedNameIndex(idx);
-											}}
-											type="button"
-										>
-											{/* Billboard Preview with overlays */}
-											<BillboardPreviewWithOverlays
-												bottomRightContent={
-													<button
-														className="pointer-events-auto rounded bg-gray-800/80 px-3 py-1.5 text-sm text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
-														disabled={
-															isSaving || currentName === item.name.name
+										<BillboardPreviewWithOverlays
+											bottomRightContent={
+												<Button
+													disabled={isSaving || currentName === item.name.name}
+													onClick={() => {
+														setSelectedOption("generated");
+														setSelectedNameIndex(idx);
+														handleSubmit(item.name.name);
+													}}
+													size="xs"
+													type="button"
+													variant="outline"
+												>
+													{(() => {
+														if (
+															isSaving &&
+															selectedOption === "generated" &&
+															selectedNameIndex === idx
+														) {
+															return "Setting...";
 														}
-														onClick={(e) => {
-															e.stopPropagation();
-															setSelectedOption("generated");
-															setSelectedNameIndex(idx);
-															handleSubmit();
-														}}
-														type="button"
-													>
-														{(() => {
-															if (
-																isSaving &&
-																selectedOption === "generated" &&
-																selectedNameIndex === idx
-															) {
-																return "Setting...";
-															}
-															if (currentName === item.name.name) {
-																return "Current";
-															}
-															return "Set Live";
-														})()}
-													</button>
-												}
-												containerHeight="400px"
-												name={item.name.name}
-												nameData={item}
-											/>
-										</button>
+														if (currentName === item.name.name) {
+															return "Current";
+														}
+														return "Set Live";
+													})()}
+												</Button>
+											}
+											containerHeight="400px"
+											key={`name-${item.name.name}-${idx}`}
+											name={item.name.name}
+											nameData={item}
+										/>
 									))}
 								</div>
 							</div>
 						)}
 
 						{/* Regenerate Button Section */}
-						<div className="mt-8 flex justify-center border-gray-200 border-t pt-6">
+						<div className="my-6 flex justify-center">
 							<Button
 								disabled={isRegenerating}
 								onClick={handleRegenerate}
-								size="lg"
+								size="sm"
 								variant="outline"
 							>
 								{isRegenerating ? (
@@ -328,14 +291,14 @@ export function ChangeNameDialog({
 						</div>
 					</div>
 				</ScrollArea>
-				<DialogFooter className="px-6 pb-6 sm:justify-start">
+				{/* <DialogFooter className="px-6 pb-6 sm:justify-start">
 					<DialogClose asChild>
 						<Button variant="outline">
 							<ChevronLeftIcon />
 							Back
 						</Button>
 					</DialogClose>
-				</DialogFooter>
+				</DialogFooter> */}
 			</DialogContent>
 		</Dialog>
 	);

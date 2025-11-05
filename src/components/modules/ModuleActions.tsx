@@ -32,18 +32,29 @@ type ModuleActionsProps = {
 	onCopy?: () => void;
 	onDownload?: () => void;
 	onRegenerate?: () => Promise<void>;
+	hideVersionSelector?: boolean;
+	hideRegenerate?: boolean;
+};
+
+type BuildActionsOptions = {
+	ctx: UseBrandModuleResult;
+	handlers: ActionHandlers;
+	customActions?: ModuleAction[];
+	iconSize?: "sm" | "md";
+	hideRegenerate?: boolean;
 };
 
 /**
  * Builds the standard set of actions for module components.
- * Always includes regenerate, conditionally includes copy/download if handlers provided.
+ * Conditionally includes regenerate, copy/download if handlers provided.
  */
-function buildModuleActions(
-	ctx: UseBrandModuleResult,
-	handlers: ActionHandlers,
-	customActions: ModuleAction[] = [],
-	iconSize: "sm" | "md" = "md"
-): ModuleAction[] {
+function buildModuleActions({
+	ctx,
+	handlers,
+	customActions = [],
+	iconSize = "md",
+	hideRegenerate = false,
+}: BuildActionsOptions): ModuleAction[] {
 	const iconClass = iconSize === "sm" ? "h-3.5 w-3.5" : "h-4 w-4";
 	const actions: ModuleAction[] = [];
 
@@ -56,19 +67,21 @@ function buildModuleActions(
 		});
 	}
 
-	// Regenerate action (always included)
-	const regenerateHandler =
-		handlers.onRegenerate ?? (() => ctx.regenerate(false));
-	actions.push({
-		icon: (
-			<RefreshCw
-				className={`${iconClass} ${ctx.isRegenerating ? "animate-spin" : ""}`}
-			/>
-		),
-		label: ctx.isRegenerating ? "Generating..." : "Regenerate",
-		onClick: () => regenerateHandler(),
-		disabled: ctx.isRegenerating,
-	});
+	// Regenerate action (if not hidden)
+	if (!hideRegenerate) {
+		const regenerateHandler =
+			handlers.onRegenerate ?? (() => ctx.regenerate(false));
+		actions.push({
+			icon: (
+				<RefreshCw
+					className={`${iconClass} ${ctx.isRegenerating ? "animate-spin" : ""}`}
+				/>
+			),
+			label: ctx.isRegenerating ? "Generating..." : "Regenerate",
+			onClick: () => regenerateHandler(),
+			disabled: ctx.isRegenerating,
+		});
+	}
 
 	// Download action (if handler provided)
 	if (handlers.onDownload) {
@@ -115,14 +128,17 @@ export function ModuleActions({
 	onCopy,
 	onDownload,
 	onRegenerate,
+	hideVersionSelector = false,
+	hideRegenerate = false,
 }: ModuleActionsProps) {
 	const iconSize = variant === "full" ? "sm" : "md";
-	const allActions = buildModuleActions(
+	const allActions = buildModuleActions({
 		ctx,
-		{ onCopy, onDownload, onRegenerate },
-		actions,
-		iconSize
-	);
+		handlers: { onCopy, onDownload, onRegenerate },
+		customActions: actions,
+		iconSize,
+		hideRegenerate,
+	});
 
 	// Compact variant: dropdown menu
 	if (variant === "compact") {
@@ -169,24 +185,28 @@ export function ModuleActions({
 	return (
 		<div className="flex items-center gap-2">
 			{/* Version selector with publish button */}
-			<div className="flex items-center gap-3 rounded-md border border-gray-200 bg-white px-3 py-1.5 shadow-sm">
-				<VersionSelector ctx={ctx} />
-				<PublishButton ctx={ctx} />
-			</div>
+			{!hideVersionSelector && (
+				<div className="flex items-center gap-3 rounded-md border border-gray-200 bg-white px-3 py-1.5 shadow-sm">
+					<VersionSelector ctx={ctx} />
+					<PublishButton ctx={ctx} />
+				</div>
+			)}
 
 			{/* Action buttons */}
 			{allActions.map((action) => (
-				<button
-					className="flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-gray-700 text-sm shadow-sm transition-colors hover:bg-gray-50 disabled:opacity-50"
+				<Button
+					className="opacity-0 transition-opacity duration-200 group-hover:opacity-50"
 					disabled={action.disabled}
 					key={action.label}
 					onClick={action.onClick}
+					size="xs"
 					title={action.label}
 					type="button"
+					variant="ghost"
 				>
 					{action.icon}
 					<span>{action.label}</span>
-				</button>
+				</Button>
 			))}
 		</div>
 	);

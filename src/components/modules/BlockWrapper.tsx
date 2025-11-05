@@ -36,6 +36,8 @@ type BlockWrapperProps = {
 	ctx: UseBrandModuleResult;
 	showLoadingState?: boolean;
 	hideActions?: boolean;
+	hideVersionSelector?: boolean;
+	hideRegenerate?: boolean;
 };
 
 export function BlockWrapper({
@@ -48,6 +50,8 @@ export function BlockWrapper({
 	ctx,
 	showLoadingState = true,
 	hideActions = false,
+	hideVersionSelector = false,
+	hideRegenerate = false,
 }: BlockWrapperProps) {
 	const isLoading =
 		showLoadingState &&
@@ -64,13 +68,15 @@ export function BlockWrapper({
 						<ModuleActions
 							actions={actions}
 							ctx={ctx}
+							hideRegenerate={hideRegenerate}
+							hideVersionSelector={hideVersionSelector}
 							variant={actionsVariant ?? undefined}
 							{...actionHandlers}
 						/>
 					)}
 				</div>
 			)}
-			{actionsVariant === "compact" && (
+			{actionsVariant === "compact" && !hideVersionSelector && (
 				<div className="absolute right-2 bottom-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
 					<VersionSelector ctx={ctx} variant="compact" />
 				</div>
