@@ -10,6 +10,7 @@ import {
 } from "./_generated/server";
 import { workflow } from "./index";
 import { companySummaryFormat, scrape } from "./lib/firecrawl";
+import { logger } from "./logger";
 import {
 	type BrandContext,
 	type BrandDocument,
@@ -109,7 +110,7 @@ export const create = mutation({
 
 		// create  company with name if provided
 		const companyId = await ctx.db.insert("companies", {
-			name: args.name,
+			name: args.name, // TODO: remove this field from schema
 			description: args.description, // TODO:remove this field from schema
 			ownerId: userId,
 			isPublic: args.isPublic ?? false,
@@ -127,7 +128,7 @@ export const create = mutation({
 			});
 		}
 
-		await workflow.start(ctx, internal.modules.name.nameWorkflow, {
+		workflow.start(ctx, internal.modules.name.nameWorkflow, {
 			companyId,
 			publish: true,
 		});
@@ -182,6 +183,14 @@ export const getForGeneration = internalQuery({
 export const processBrandInput = action({
 	args: {
 		urls: v.optional(v.array(v.string())),
+		files: v.optional(
+			v.array(
+				v.object({
+					name: v.string(),
+					text: v.string(),
+				})
+			)
+		),
 		rawText: v.optional(v.string()),
 	},
 	handler: async (ctx, args): Promise<BrandContext> =>
@@ -194,12 +203,25 @@ export const processBrandInput = action({
 export const processBrandInputInternal = internalAction({
 	args: {
 		urls: v.optional(v.array(v.string())),
+		files: v.optional(
+			v.array(
+				v.object({
+					name: v.string(),
+					text: v.string(),
+				})
+			)
+		),
 		rawText: v.optional(v.string()),
 	},
 	returns: brandContextValidator,
 	handler: async (ctx, args): Promise<BrandContext> => {
 		const documents: BrandDocument[] = [];
 
+		logger.info("Processing brand input", {
+			urls: args.urls,
+			files: args.files,
+			rawText: args.rawText,
+		});
 		// Process URLs with Firecrawl
 		if (args.urls && args.urls.length > 0) {
 			for (const url of args.urls) {
@@ -221,6 +243,14 @@ export const processBrandInputInternal = internalAction({
 				name: "User Input",
 				summary: args.rawText,
 			});
+		}
+		if (args.files && args.files.length > 0) {
+			for (const file of args.files) {
+				documents.push({
+					name: file.name,
+					summary: `File content: ${file.text}`,
+				});
+			}
 		}
 
 		// Call brandContext workflow with documents

@@ -1,8 +1,7 @@
+import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
-import { useState } from "react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
-import { CreateCompanyModal } from "./CreateCompanyModal";
 
 type CompanyListProps = {
 	selectedCompanyId: Id<"companies"> | null;
@@ -14,7 +13,7 @@ export function CompanyList({
 	onSelectCompany,
 }: CompanyListProps) {
 	const companies = useQuery(api.companies.list) || [];
-	const [showCreateModal, setShowCreateModal] = useState(false);
+	const navigate = useNavigate();
 
 	return (
 		<div className="space-y-2 p-4">
@@ -39,14 +38,11 @@ export function CompanyList({
 
 			<button
 				className="w-full rounded-lg border-2 border-gray-300 border-dashed p-3 text-gray-500 transition-colors hover:border-gray-400 hover:text-gray-600"
-				onClick={() => setShowCreateModal(true)}
+				onClick={() => navigate({ to: "/c/new" })}
+				type="button"
 			>
 				+ New Company
 			</button>
-
-			{showCreateModal && (
-				<CreateCompanyModal onClose={() => setShowCreateModal(false)} />
-			)}
 		</div>
 	);
 }

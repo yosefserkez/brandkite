@@ -9,7 +9,6 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { ConvexReactClient } from "convex/react";
 import { Toaster } from "sonner";
-import Header from "../components/Header";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import StoreDevtools from "../lib/demo-store-devtools";
 import appCss from "../styles.css?url";
@@ -53,7 +52,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			</head>
 			<body>
 				<ConvexAuthProvider client={convex}>
-					<Header />
 					{children}
 					<TanStackDevtools
 						config={{
