@@ -65,7 +65,12 @@ export function BillboardPreviewWithOverlays({
 								{nameData.name.reasoning.summary}
 							</p>
 						</TooltipTrigger>
-						<TooltipContent className="max-w-sm" side="left">
+						<TooltipContent
+							align="end"
+							className="max-w-sm"
+							hideArrow
+							side="bottom"
+						>
 							<p className="text-sm">{nameData.name.reasoning.details}</p>
 						</TooltipContent>
 					</Tooltip>
@@ -77,7 +82,7 @@ export function BillboardPreviewWithOverlays({
 				<div className="absolute bottom-4 left-4 z-10">
 					<Tooltip>
 						<TooltipTrigger asChild>
-							<div className="pointer-events-auto flex cursor-pointer items-center gap-1.5">
+							<div className="pointer-events-auto flex cursor-help items-center gap-1.5">
 								<div className="h-2 w-2 shrink-0 rounded-full bg-green-500" />
 								<span className="font-mono text-sm text-white">
 									{nameData.domains[0]}
