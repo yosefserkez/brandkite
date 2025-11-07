@@ -1,0 +1,185 @@
+import { AnimatePresence, type MotionProps, motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+
+import { cn } from "@/lib/utils";
+
+type CharacterSet = string[] | readonly string[];
+
+type DisplayCharacter = {
+	id: string;
+	value: string;
+};
+
+const createDisplayCharacters = (text: string): DisplayCharacter[] =>
+	text.split("").map((char, index) => ({
+		id: `${text}-${index}`,
+		value: char,
+	}));
+
+interface HyperTextProps extends MotionProps {
+	/** The text content to be animated */
+	children: string;
+	/** Optional className for styling */
+	className?: string;
+	/** Duration of the animation in milliseconds */
+	duration?: number;
+	/** Delay before animation starts in milliseconds */
+	delay?: number;
+	/** Component to render as - defaults to div */
+	as?: React.ElementType;
+	/** Whether to start animation when element comes into view */
+	startOnView?: boolean;
+	/** Whether to trigger animation on hover */
+	animateOnHover?: boolean;
+	/** Custom character set for scramble effect. Defaults to uppercase alphabet */
+	characterSet?: CharacterSet;
+	/** Style for the text */
+	style?: React.CSSProperties;
+	/** Ref for the text */
+	ref?: React.RefObject<HTMLElement>;
+}
+
+const DEFAULT_CHARACTER_SET = Object.freeze(
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")
+) as readonly string[];
+
+const getRandomInt = (max: number): number => Math.floor(Math.random() * max);
+
+export function HyperText({
+	children,
+	className,
+	duration = 800,
+	delay = 0,
+	as: Component = "div",
+	startOnView = false,
+	animateOnHover = true,
+	characterSet = DEFAULT_CHARACTER_SET,
+	style,
+
+	...props
+}: HyperTextProps) {
+	const MotionComponent = motion.create(Component, {
+		forwardMotionProps: true,
+	});
+
+	const [displayText, setDisplayText] = useState<DisplayCharacter[]>(() =>
+		createDisplayCharacters(children)
+	);
+	const [isAnimating, setIsAnimating] = useState(false);
+	const iterationCount = useRef(0);
+	const elementRef = useRef<HTMLElement>(null);
+	const previousChildrenRef = useRef(children);
+
+	const handleAnimationTrigger = () => {
+		if (animateOnHover && !isAnimating) {
+			iterationCount.current = 0;
+			setIsAnimating(true);
+		}
+	};
+
+	// Handle animation start based on view or delay
+	useEffect(() => {
+		if (!startOnView) {
+			const startTimeout = setTimeout(() => {
+				setIsAnimating(true);
+			}, delay);
+			return () => clearTimeout(startTimeout);
+		}
+
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					setTimeout(() => {
+						setIsAnimating(true);
+					}, delay);
+					observer.disconnect();
+				}
+			},
+			{ threshold: 0.1, rootMargin: "-30% 0px -30% 0px" }
+		);
+
+		if (elementRef.current) {
+			observer.observe(elementRef.current);
+		}
+
+		return () => observer.disconnect();
+	}, [delay, startOnView]);
+
+	useEffect(() => {
+		if (children === previousChildrenRef.current) {
+			return;
+		}
+
+		previousChildrenRef.current = children;
+		iterationCount.current = 0;
+		setDisplayText(createDisplayCharacters(children));
+		setIsAnimating((current) => current || !animateOnHover);
+	}, [animateOnHover, children]);
+
+	// Handle scramble animation
+	useEffect(() => {
+		if (!isAnimating) {
+			return;
+		}
+
+		const maxIterations = children.length;
+		const startTime = performance.now();
+		let animationFrameId: number;
+
+		const animate = (currentTime: number) => {
+			const elapsed = currentTime - startTime;
+			const progress = Math.min(elapsed / duration, 1);
+
+			iterationCount.current = progress * maxIterations;
+
+			setDisplayText((currentText) =>
+				currentText.map((character, index) => {
+					const targetChar = children[index] ?? "";
+					if (targetChar === " ") {
+						return { ...character, value: targetChar };
+					}
+
+					if (index <= iterationCount.current) {
+						return { ...character, value: targetChar };
+					}
+
+					return {
+						...character,
+						value: characterSet[getRandomInt(characterSet.length)],
+					};
+				})
+			);
+
+			if (progress < 1) {
+				animationFrameId = requestAnimationFrame(animate);
+			} else {
+				setIsAnimating(false);
+			}
+		};
+
+		animationFrameId = requestAnimationFrame(animate);
+
+		return () => cancelAnimationFrame(animationFrameId);
+	}, [children, duration, isAnimating, characterSet]);
+
+	return (
+		<MotionComponent
+			className={cn("overflow-hidden py-2 font-bold text-4xl", className)}
+			onMouseEnter={handleAnimationTrigger}
+			ref={elementRef}
+			style={style}
+			{...props}
+		>
+			<AnimatePresence>
+				{displayText.map((character) => (
+					<motion.span
+						className={cn("font-mono", character.value === " " ? "w-3" : "")}
+						key={character.id}
+					>
+						{character.value.toUpperCase()}
+					</motion.span>
+				))}
+			</AnimatePresence>
+		</MotionComponent>
+	);
+}
