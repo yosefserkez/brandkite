@@ -1,5 +1,6 @@
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
+import { initSentryClient } from "./app/sentry.client";
 import {
 	getContext,
 	Provider,
@@ -20,6 +21,7 @@ export const getRouter = () => {
 			<Provider {...rqContext}>{props.children}</Provider>
 		),
 	});
+	initSentryClient();
 
 	setupRouterSsrQueryIntegration({
 		router,

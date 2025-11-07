@@ -1,4 +1,8 @@
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import {
+	ErrorBoundary,
+	wrapCreateRootRouteWithSentry,
+} from "@sentry/tanstackstart-react";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import {
@@ -17,7 +21,11 @@ type MyRouterContext = {
 	queryClient: QueryClient;
 };
 
-export const Route = createRootRouteWithContext<MyRouterContext>()({
+const createRootRoute = wrapCreateRootRouteWithSentry(
+	createRootRouteWithContext<MyRouterContext>()
+);
+
+export const Route = createRootRoute({
 	head: () => ({
 		meta: [
 			{
@@ -44,6 +52,16 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
+const ErrorFallback = () => (
+	<div
+		className="flex min-h-[200px] flex-col items-center justify-center gap-2 p-6 text-center"
+		role="alert"
+	>
+		<h1 className="font-semibold text-xl">Something went wrong</h1>
+		<p>Please refresh the page. If the issue persists, contact support.</p>
+	</div>
+);
+
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang="en">
@@ -52,7 +70,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			</head>
 			<body>
 				<ConvexAuthProvider client={convex}>
-					{children}
+					<ErrorBoundary fallback={ErrorFallback}>{children}</ErrorBoundary>
 					<TanStackDevtools
 						config={{
 							position: "bottom-right",
