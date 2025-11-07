@@ -16,6 +16,14 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
+const setValueNoop = (_value: string) => {
+	// noop
+};
+
+const focusNoop = (_event: React.FocusEvent<HTMLTextAreaElement>) => {
+	// noop
+};
+
 type PromptInputContextType = {
 	isLoading: boolean;
 	value: string;
@@ -24,16 +32,22 @@ type PromptInputContextType = {
 	onSubmit?: () => void;
 	disabled?: boolean;
 	textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+	onFocusTextarea: (event: React.FocusEvent<HTMLTextAreaElement>) => void;
+	onBlurTextarea: (event: React.FocusEvent<HTMLTextAreaElement>) => void;
+	isFocused: boolean;
 };
 
 const PromptInputContext = createContext<PromptInputContextType>({
 	isLoading: false,
 	value: "",
-	setValue: () => {},
+	setValue: setValueNoop,
 	maxHeight: 240,
 	onSubmit: undefined,
 	disabled: false,
 	textareaRef: React.createRef<HTMLTextAreaElement>(),
+	onFocusTextarea: focusNoop,
+	onBlurTextarea: focusNoop,
+	isFocused: false,
 });
 
 function usePromptInput() {
@@ -50,6 +64,7 @@ type PromptInputProps = {
 	onValueChange?: (value: string) => void;
 	maxHeight?: number | string;
 	onSubmit?: () => void;
+	onFocusChange?: (isFocused: boolean) => void;
 	children: React.ReactNode;
 	className?: string;
 };
@@ -61,14 +76,84 @@ function PromptInput({
 	value,
 	onValueChange,
 	onSubmit,
+	onFocusChange,
 	children,
 }: PromptInputProps) {
 	const [internalValue, setInternalValue] = useState(value || "");
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const containerRef = useRef<HTMLDivElement>(null);
+	const [isFocused, setIsFocused] = useState(false);
+	const [dynamicMaxHeight, setDynamicMaxHeight] = useState<number | string>(
+		maxHeight
+	);
+
+	useEffect(() => {
+		if (!isFocused) {
+			setDynamicMaxHeight(maxHeight);
+		}
+	}, [isFocused, maxHeight]);
+
+	const updateAvailableHeight = React.useCallback(() => {
+		if (!(containerRef.current && textareaRef.current)) {
+			return;
+		}
+
+		const containerRect = containerRef.current.getBoundingClientRect();
+		const textareaRect = textareaRef.current.getBoundingClientRect();
+		const nonTextareaHeight = containerRect.height - textareaRect.height;
+		const verticalPadding = 32;
+		const availableTextareaHeight =
+			window.innerHeight -
+			containerRect.top -
+			verticalPadding -
+			nonTextareaHeight;
+
+		if (
+			Number.isFinite(availableTextareaHeight) &&
+			availableTextareaHeight > 0
+		) {
+			setDynamicMaxHeight(availableTextareaHeight);
+		}
+	}, []);
+
+	useEffect(() => {
+		if (!isFocused) {
+			return;
+		}
+
+		updateAvailableHeight();
+
+		const handleResize = () => updateAvailableHeight();
+		window.addEventListener("resize", handleResize);
+
+		let observer: ResizeObserver | undefined;
+		if ("ResizeObserver" in window && containerRef.current) {
+			observer = new ResizeObserver(() => updateAvailableHeight());
+			observer.observe(containerRef.current);
+		}
+
+		return () => {
+			window.removeEventListener("resize", handleResize);
+			observer?.disconnect();
+		};
+	}, [isFocused, updateAvailableHeight]);
 
 	const handleChange = (newValue: string) => {
 		setInternalValue(newValue);
 		onValueChange?.(newValue);
+	};
+
+	const handleFocus = () => {
+		setIsFocused(true);
+		onFocusChange?.(true);
+		requestAnimationFrame(() => {
+			updateAvailableHeight();
+		});
+	};
+
+	const handleBlur = () => {
+		setIsFocused(false);
+		onFocusChange?.(false);
 	};
 
 	return (
@@ -78,9 +163,12 @@ function PromptInput({
 					isLoading,
 					value: value ?? internalValue,
 					setValue: onValueChange ?? handleChange,
-					maxHeight,
+					maxHeight: dynamicMaxHeight,
 					onSubmit,
 					textareaRef,
+					onFocusTextarea: handleFocus,
+					onBlurTextarea: handleBlur,
+					isFocused,
 				}}
 			>
 				<div
@@ -88,7 +176,7 @@ function PromptInput({
 						"cursor-text rounded-3xl border border-input bg-background p-2 shadow-xs",
 						className
 					)}
-					onClick={() => textareaRef.current?.focus()}
+					ref={containerRef}
 				>
 					{children}
 				</div>
@@ -104,26 +192,49 @@ export type PromptInputTextareaProps = {
 function PromptInputTextarea({
 	className,
 	onKeyDown,
+	onFocus,
+	onBlur,
 	disableAutosize = false,
 	...props
 }: PromptInputTextareaProps) {
-	const { value, setValue, maxHeight, onSubmit, disabled, textareaRef } =
-		usePromptInput();
+	const {
+		value,
+		setValue,
+		maxHeight,
+		onSubmit,
+		disabled,
+		textareaRef,
+		onFocusTextarea,
+		onBlurTextarea,
+		isFocused,
+	} = usePromptInput();
 
 	useEffect(() => {
-		if (disableAutosize) return;
-
-		if (!textareaRef.current) return;
-
-		if (textareaRef.current.scrollTop === 0) {
-			textareaRef.current.style.height = "auto";
+		if (disableAutosize) {
+			return;
 		}
 
-		textareaRef.current.style.height =
+		const textarea = textareaRef.current;
+		if (!textarea) {
+			return;
+		}
+		const contentLength = value.length;
+
+		if (isFocused) {
+			textarea.style.height =
+				typeof maxHeight === "number" ? `${maxHeight}px` : maxHeight;
+			return;
+		}
+
+		if (contentLength === 0 || textarea.scrollTop === 0) {
+			textarea.style.height = "auto";
+		}
+
+		textarea.style.height =
 			typeof maxHeight === "number"
-				? `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`
-				: `min(${textareaRef.current.scrollHeight}px, ${maxHeight})`;
-	}, [value, maxHeight, disableAutosize]);
+				? `${Math.min(textarea.scrollHeight, maxHeight)}px`
+				: `min(${textarea.scrollHeight}px, ${maxHeight})`;
+	}, [disableAutosize, isFocused, maxHeight, value, textareaRef]);
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if (e.key === "Enter" && e.metaKey) {
@@ -133,14 +244,26 @@ function PromptInputTextarea({
 		onKeyDown?.(e);
 	};
 
+	const handleFocusEvent = (event: React.FocusEvent<HTMLTextAreaElement>) => {
+		onFocusTextarea(event);
+		onFocus?.(event);
+	};
+
+	const handleBlurEvent = (event: React.FocusEvent<HTMLTextAreaElement>) => {
+		onBlurTextarea(event);
+		onBlur?.(event);
+	};
+
 	return (
 		<Textarea
 			className={cn(
-				"min-h-[44px] w-full resize-none border-none bg-transparent text-primary shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
+				"min-h-[44px] w-full resize-none border-none bg-transparent text-primary shadow-none outline-none transition-[height] duration-200 ease-in-out focus-visible:ring-0 focus-visible:ring-offset-0",
 				className
 			)}
 			disabled={disabled}
+			onBlur={handleBlurEvent}
 			onChange={(e) => setValue(e.target.value)}
+			onFocus={handleFocusEvent}
 			onKeyDown={handleKeyDown}
 			ref={textareaRef}
 			rows={1}

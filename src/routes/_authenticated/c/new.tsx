@@ -20,6 +20,7 @@ function NewCompanyRoute() {
 	const [step, setStep] = useState<Step>("input");
 	const [brandContext, setBrandContext] = useState<BrandContext | null>(null);
 	const [isProcessing, setIsProcessing] = useState(false);
+	const [isInputFocused, setIsInputFocused] = useState(false);
 
 	const processBrandInput = useAction(api.companies.processBrandInput);
 	const createCompany = useMutation(api.companies.create);
@@ -74,11 +75,11 @@ function NewCompanyRoute() {
 	};
 
 	return (
-		<div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
-			<div className="w-full max-w-4xl">
+		<div className="flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 p-4">
+			<div className="h-full w-full max-w-4xl overflow-hidden">
 				{step === "input" && (
 					<>
-						<div className="relative flex h-[180px] w-full flex-col items-center overflow-hidden lg:h-[300px] lg:justify-center">
+						<div className="relative flex h-[180px] w-full flex-col items-center overflow-hidden lg:h-[200px] lg:justify-center">
 							<Meteors number={20} />
 							<div className="m-auto flex flex-row flex-nowrap items-center justify-center gap-2">
 								<span className="pointer-events-none whitespace-nowrap bg-linear-to-b from-black to-gray-300/80 bg-clip-text text-center font-semibold text-3xl text-transparent leading-none lg:text-7xl dark:from-white dark:to-slate-900/10">
@@ -87,7 +88,20 @@ function NewCompanyRoute() {
 							</div>
 						</div>
 
-						<NewCompany onSubmit={handleInputSubmit} />
+						<NewCompany
+							onFocusChange={setIsInputFocused}
+							onSubmit={handleInputSubmit}
+						/>
+						{/* <div
+							className={cn(
+								"m-auto py-8 transition-opacity duration-500 ease-in-out",
+								isInputFocused
+									? "pointer-events-none hidden opacity-0"
+									: "opacity-100"
+							)}
+						>
+							<ModulesMarquee />
+						</div> */}
 					</>
 				)}
 				{step === "processing" && <ContextInputProcessing />}

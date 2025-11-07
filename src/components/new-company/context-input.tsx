@@ -24,12 +24,13 @@ type NewCompanyProps = {
 		rawText: string;
 		files: { name: string; text: string }[] | undefined;
 	}) => void;
+	onFocusChange?: (isFocused: boolean) => void;
 };
 
 const URL_PATTERN = /^https?:\/\/.+/i;
 const BYTES_TO_KB = 1024;
 
-export function NewCompany({ onSubmit }: NewCompanyProps) {
+export function NewCompany({ onSubmit, onFocusChange }: NewCompanyProps) {
 	const [input, setInput] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [files, setFiles] = useState<Array<{ file: File; id: string }>>([]);
@@ -179,7 +180,8 @@ export function NewCompany({ onSubmit }: NewCompanyProps) {
 				<PromptInput
 					className="relative w-full"
 					isLoading={isLoading}
-					maxHeight="400px"
+					maxHeight="300px"
+					onFocusChange={onFocusChange}
 					onSubmit={handleSubmit}
 					onValueChange={handleInputChange}
 					value={input}
@@ -228,7 +230,7 @@ export function NewCompany({ onSubmit }: NewCompanyProps) {
 					)}
 
 					<PromptInputTextarea
-						className="min-h-[400px]"
+						className="min-h-[300px]"
 						placeholder="Paste a URL, drop a file, or enter text about your idea, company, product, team, and brand..."
 					/>
 
