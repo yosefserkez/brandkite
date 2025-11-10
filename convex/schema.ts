@@ -74,6 +74,26 @@ const applicationTables = {
 	})
 		.index("by_company", ["companyId"])
 		.index("by_company_user", ["companyId", "userId"]),
+
+	logoEmbeddings: defineTable({
+		logoId: v.string(),
+		description: v.string(),
+		tags: v.optional(v.array(v.string())),
+		textEmbedding: v.array(v.float64()),
+		imageEmbedding: v.array(v.float64()),
+		previewPng: v.string(),
+		createdAt: v.number(),
+		updatedAt: v.number(),
+	})
+		.index("by_logo_id", ["logoId"])
+		.vectorIndex("by_text_embedding", {
+			vectorField: "textEmbedding",
+			dimensions: 3072,
+		})
+		.vectorIndex("by_image_embedding", {
+			vectorField: "imageEmbedding",
+			dimensions: 768,
+		}),
 };
 
 export default defineSchema({

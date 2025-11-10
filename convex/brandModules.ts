@@ -155,6 +155,15 @@ export const updateModule = mutation({
 	},
 });
 
+/**
+ * Registry of workflows for brand module types.
+ * Maps module types to their corresponding workflow definitions.
+ */
+const MODULE_WORKFLOWS = {
+	name: internal.modules.name.nameWorkflow,
+	brandContext: internal.modules.brandContext.brandContextWorkflow,
+} as const;
+
 export const regenerateModule = mutation({
 	args: {
 		companyId: v.id("companies"),
@@ -170,11 +179,23 @@ export const regenerateModule = mutation({
 			throw new Error("Not authorized");
 		}
 
-		// TODO: run workflow for module type. it will create the module set it as in progress and update the generation status to succeeded or failed.
-		await workflow.start(ctx, internal.modules.name.nameWorkflow, {
+		// Get the workflow for the module type
+		const workflowRef =
+			MODULE_WORKFLOWS[args.type as keyof typeof MODULE_WORKFLOWS];
+
+		if (!workflowRef) {
+			throw new Error(`No workflow registered for module type: ${args.type}`);
+		}
+
+		await workflow.start(ctx, workflowRef, {
+			companyId: args.companyId,
+			publish: args.publish,
+		});
+
+		logger.info("Started workflow", {
+			workflow: args.type,
 			companyId: args.companyId,
 		});
-		logger.info("Started workflow", { workflow: "nameWorkflow" });
 	},
 });
 

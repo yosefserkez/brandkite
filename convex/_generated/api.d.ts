@@ -16,6 +16,7 @@ import type * as index from "../index.js";
 import type * as lib_firecrawl from "../lib/firecrawl.js";
 import type * as lib_validationHelpers from "../lib/validationHelpers.js";
 import type * as logger from "../logger.js";
+import type * as logos from "../logo-vector-search.js";
 import type * as modules_brandContext from "../modules/brandContext.js";
 import type * as modules_name from "../modules/name.js";
 import type * as presence from "../presence.js";
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   "lib/firecrawl": typeof lib_firecrawl;
   "lib/validationHelpers": typeof lib_validationHelpers;
   logger: typeof logger;
+  logos: typeof logos;
   "modules/brandContext": typeof modules_brandContext;
   "modules/name": typeof modules_name;
   presence: typeof presence;
