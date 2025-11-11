@@ -10,7 +10,7 @@ import {
 	query,
 } from "./_generated/server";
 import { workflow } from "./index";
-import { companySummaryFormat, scrape } from "./lib/firecrawl";
+import { scrape } from "./lib/firecrawl";
 import { logger } from "./logger";
 import {
 	type BrandContext,
@@ -379,9 +379,20 @@ export const processBrandInputInternal = internalAction({
 		// Process URLs with Firecrawl
 		if (args.urls && args.urls.length > 0) {
 			for (const url of args.urls) {
-				const response = await scrape(url, ["summary", companySummaryFormat]); // we can use companySummaryFormat when we want to seed the brand context with more detailed information
+				const response = await scrape(url, ["summary", "markdown"]); // we can use companySummaryFormat to seed the brand context with more detailed scraped data with firecrawl, but json mode is currently too slow.
+
 				if (response.success) {
-					const completeSummary = `${response.data?.summary ?? ""}\n\n${JSON.stringify(response.data?.json ?? {})}`;
+					const parts: string[] = [];
+					if (response.data?.summary) {
+						parts.push(response.data?.summary);
+					}
+					if (response.data?.markdown) {
+						parts.push(response.data?.markdown);
+					}
+					if (response.data?.json) {
+						parts.push(JSON.stringify(response.data?.json));
+					}
+					const completeSummary = parts.join("\n\n");
 					documents.push({
 						name: url,
 						summary: completeSummary,
