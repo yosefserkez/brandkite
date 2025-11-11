@@ -1,6 +1,6 @@
 import type { z } from "zod";
 import { brandContextSchema } from "../modules/brandContext";
-
+import { logoSchema } from "../modules/logo";
 import { nameSchema } from "../modules/name";
 import type { BrandModuleType } from "../workflows";
 
@@ -17,6 +17,7 @@ import type { BrandModuleType } from "../workflows";
 const BRAND_MODULE_SCHEMAS: Partial<Record<BrandModuleType, z.ZodType>> = {
 	brandContext: brandContextSchema,
 	name: nameSchema,
+	logo: logoSchema,
 };
 
 export const getBrandModuleDataValidator = (

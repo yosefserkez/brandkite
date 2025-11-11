@@ -38,10 +38,12 @@ type BlockWrapperProps = {
 	hideActions?: boolean;
 	hideVersionSelector?: boolean;
 	hideRegenerate?: boolean;
+	loadingSkeleton?: ReactNode;
 };
 
 export function BlockWrapper({
 	children,
+	loadingSkeleton = <LoadingSkeleton />,
 	actions,
 	actionHandlers,
 	actionsComponent,
@@ -61,7 +63,7 @@ export function BlockWrapper({
 
 	return (
 		<div className={cn("group relative", className)}>
-			{isLoading ? <LoadingSkeleton /> : children}
+			{isLoading ? loadingSkeleton : children}
 			{!hideActions && (
 				<div className={actionsVariants({ position: actionsVariant })}>
 					{actionsComponent ?? (

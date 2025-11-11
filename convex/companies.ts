@@ -17,6 +17,7 @@ import {
 	type BrandDocument,
 	brandContextValidator,
 } from "./modules/brandContext";
+import { r2 } from "./r2";
 import { BrandModuleTypes } from "./workflows";
 
 export const list = query({
@@ -133,10 +134,14 @@ export const listWithBrandData = query({
 					.filter((q) => q.eq(q.field("published"), true))
 					.first();
 
+				const logoUrl = logoModule?.data?.storageKey
+					? await r2.getUrl(logoModule?.data?.storageKey)
+					: "";
+
 				return {
 					...company,
 					nameModule: nameModule?.data,
-					logoModule: logoModule?.data,
+					logoUrl,
 					brandContextModule: brandContextModule?.data,
 				};
 			})
@@ -159,12 +164,22 @@ export const get = query({
 			return null;
 		}
 
+		const logoModule = await ctx.db
+			.query("brandModules")
+			.withIndex("by_company_type", (q) =>
+				q.eq("companyId", args.companyId).eq("type", BrandModuleTypes.Logo)
+			)
+			.filter((q) => q.eq(q.field("published"), true))
+			.first();
+
+		const logoUrl = logoModule?.data?.storageKey
+			? await r2.getUrl(logoModule?.data?.storageKey)
+			: "";
+
+		const result = { ...company, logoUrl };
 		// Check if user has access
-		if (company.ownerId === userId) {
-			return company;
-		}
-		if (company.isPublic) {
-			return company;
+		if (company.ownerId === userId || company.isPublic) {
+			return result;
 		}
 
 		const membership = await ctx.db
@@ -174,7 +189,7 @@ export const get = query({
 			)
 			.first();
 
-		return membership ? company : null;
+		return membership ? result : null;
 	},
 });
 

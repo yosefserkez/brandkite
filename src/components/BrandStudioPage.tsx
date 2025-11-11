@@ -1,6 +1,7 @@
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
+import LogoModule from "./modules/LogoModule";
 import NamesModule from "./modules/NamesModule";
 
 type BrandStudioPageProps = {
@@ -24,7 +25,7 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 			<div className="mx-auto max-w-5xl space-y-8 px-8 py-8">
 				{/* Names & Logo block - combined as header image with logo overlay */}
 				<NamesModule companyId={companyId} />
-				{/* <LogoModule companyId={companyId} /> */}
+				<LogoModule className="h-32 w-32" companyId={companyId} />
 			</div>
 		</div>
 	);

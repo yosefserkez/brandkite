@@ -1,5 +1,10 @@
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
+import type { LogoModuleData } from "../../../convex/modules/logo";
 import { useBrandModule } from "../../hooks/useBrandModule";
+import Logo from "../logo";
+import { Ripple } from "../ui/ripple";
 import { BlockWrapper } from "./BlockWrapper";
 
 type LogoModuleProps = {
@@ -7,22 +12,23 @@ type LogoModuleProps = {
 	className?: string;
 };
 
-type LogoData = {
-	url?: string;
-	svg?: string;
-	variations?: Array<{ name: string; url: string }>;
-};
+const loadingSkeleton = (
+	<div className="h-full w-full items-center justify-center rounded-lg border-4 border-white bg-white shadow-lg">
+		<Ripple className="h-full w-full" mainCircleSize={40} numCircles={2} />
+	</div>
+);
 
 export default function LogoModule({ companyId, className }: LogoModuleProps) {
 	const ctx = useBrandModule(companyId, "logo");
 
-	const data = ctx.selected?.data as LogoData | undefined;
-	const logoUrl = data?.url || data?.svg;
+	const data = ctx.selected?.data as LogoModuleData | undefined;
+
+	const logoUrl = useQuery(api.r2.getSignedUrl, {
+		key: data?.storageKey ?? " ",
+	});
 
 	const onCopy = () => {
-		if (data?.svg) {
-			navigator.clipboard.writeText(data.svg);
-		} else if (logoUrl) {
+		if (logoUrl) {
 			navigator.clipboard.writeText(logoUrl);
 		}
 	};
@@ -43,22 +49,11 @@ export default function LogoModule({ companyId, className }: LogoModuleProps) {
 			actionsVariant="compact"
 			className={className}
 			ctx={ctx}
+			loadingSkeleton={loadingSkeleton}
 		>
 			{/* Logo container with profile photo styling */}
-			<div className="relative h-32 w-32 overflow-hidden rounded-lg border-4 border-white bg-white shadow-lg">
-				{logoUrl ? (
-					<img
-						alt="Brand logo"
-						className="h-full w-full object-contain p-2"
-						height={128}
-						src={logoUrl}
-						width={128}
-					/>
-				) : (
-					<div className="flex h-full w-full items-center justify-center bg-gray-100">
-						<span className="font-bold text-4xl text-gray-400">?</span>
-					</div>
-				)}
+			<div className="relative h-full w-full overflow-hidden rounded-lg border-4 border-white bg-white shadow-lg">
+				{logoUrl ? <Logo url={logoUrl} /> : loadingSkeleton}
 			</div>
 		</BlockWrapper>
 	);

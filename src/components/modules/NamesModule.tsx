@@ -18,7 +18,7 @@ export default function NamesModule({
 	className,
 }: NamesModuleProps) {
 	const ctx = useBrandModule(companyId, "name");
-	const { name: liveName } = useCompanyName(companyId);
+	const { name: liveName, logoUrl } = useCompanyName(companyId);
 	const [showChangeDialog, setShowChangeDialog] = useState(false);
 
 	const data = ctx.selected?.data as NameModuleData | undefined;
@@ -44,9 +44,9 @@ export default function NamesModule({
 			>
 				<BillboardPreviewWithOverlays
 					className={className}
+					company={{ name: displayName ?? "", logoUrl }}
 					containerHeight="320px"
 					isLoading={!displayName}
-					name={displayName}
 					nameData={currentNameData}
 				/>
 			</BlockWrapper>

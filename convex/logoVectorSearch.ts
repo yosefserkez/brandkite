@@ -197,12 +197,12 @@ export const ingestBatch = internalMutation({
 		}),
 });
 
-export const getLogosByIds = internalQuery({
+export const getLogoEmbeddingsByIds = internalQuery({
 	args: {
 		ids: v.array(v.id("logoEmbeddings")),
 	},
 	handler: async (ctx, args) =>
-		sentryStartSpan({ name: "logos.getLogosByIds" }, async () => {
+		sentryStartSpan({ name: "logos.getLogoEmbeddingsByIds" }, async () => {
 			const results: Doc<"logoEmbeddings">[] = [];
 			for (const id of args.ids) {
 				const doc = await ctx.db.get(id);
@@ -406,9 +406,12 @@ export const hybridSearch = action({
 			});
 
 			const ids = scored.map((item) => item.id);
-			const documents = await ctx.runQuery(internal.logos.getLogosByIds, {
-				ids,
-			});
+			const documents = await ctx.runQuery(
+				internal.logoVectorSearch.getLogoEmbeddingsByIds,
+				{
+					ids,
+				}
+			);
 
 			const docsById = new Map(documents.map((doc) => [doc._id, doc]));
 

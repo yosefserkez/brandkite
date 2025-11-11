@@ -20,10 +20,118 @@ export type LoggerDestination = {
 /**
  * Console destination (default)
  */
+const FUNCTION_PLACEHOLDER = "[Function]";
+
+type MaybeConstructor = new (...args: unknown[]) => unknown;
+type BlobLike = { size: number };
+
+function isReadableStream(value: unknown): boolean {
+	const readableStreamCtor = (
+		globalThis as {
+			ReadableStream?: MaybeConstructor;
+		}
+	).ReadableStream;
+	if (typeof readableStreamCtor !== "function") {
+		return false;
+	}
+	try {
+		return value instanceof readableStreamCtor;
+	} catch {
+		return false;
+	}
+}
+
+function isBlob(value: unknown): value is BlobLike {
+	const blobCtor = (globalThis as { Blob?: MaybeConstructor }).Blob;
+	if (typeof blobCtor !== "function") {
+		return false;
+	}
+	try {
+		return value instanceof blobCtor;
+	} catch {
+		return false;
+	}
+}
+
+function createJsonReplacer(): (key: string, value: unknown) => unknown {
+	const seen = new WeakSet<object>();
+
+	return (_key, value) => {
+		if (typeof value === "bigint") {
+			return value.toString();
+		}
+
+		if (typeof value === "function") {
+			return value.name ? `[Function ${value.name}]` : FUNCTION_PLACEHOLDER;
+		}
+
+		if (typeof value !== "object" || value === null) {
+			return value;
+		}
+
+		if (seen.has(value)) {
+			return "[Circular]";
+		}
+
+		seen.add(value);
+
+		return serializeComplexValue(value);
+	};
+}
+
+function serializeComplexValue(value: object): unknown {
+	if (isReadableStream(value)) {
+		return "[ReadableStream]";
+	}
+
+	if (isBlob(value)) {
+		return `[Blob size=${value.size}]`;
+	}
+
+	if (value instanceof ArrayBuffer) {
+		return `[ArrayBuffer byteLength=${value.byteLength}]`;
+	}
+
+	if (ArrayBuffer.isView(value)) {
+		const view = value as ArrayBufferView;
+		return `[${view.constructor.name} byteLength=${view.byteLength}]`;
+	}
+
+	if (value instanceof Error) {
+		return {
+			name: value.name,
+			message: value.message,
+			stack: value.stack,
+		};
+	}
+
+	return value;
+}
+
+function safeSerialize(value: unknown): string {
+	const replacer = createJsonReplacer();
+	try {
+		const serialized = JSON.stringify(value, replacer);
+		return serialized ?? "";
+	} catch (error) {
+		const message =
+			error instanceof Error ? error.message : "Unknown serialization error";
+		return `[Unserializable: ${message}]`;
+	}
+}
+
+function formatContext(context?: Record<string, unknown>): string {
+	if (!context) {
+		return "";
+	}
+	const serialized = safeSerialize(context);
+	return serialized.length > 0 ? ` ${serialized}` : "";
+}
+
 class ConsoleDestination implements LoggerDestination {
 	log(entry: LogEntry): void {
 		const timestamp = new Date(entry.timestamp).toISOString();
-		const contextStr = entry.context ? ` ${JSON.stringify(entry.context)}` : "";
+		const contextStr = formatContext(entry.context);
 		const errorStr = entry.error
 			? `\n${entry.error.stack || entry.error.message}`
 			: "";
@@ -77,7 +185,7 @@ class FileDestination implements LoggerDestination {
 
 	log(entry: LogEntry): void {
 		const timestamp = new Date(entry.timestamp).toISOString();
-		const contextStr = entry.context ? ` ${JSON.stringify(entry.context)}` : "";
+		const contextStr = formatContext(entry.context);
 		const errorStr = entry.error
 			? `\n${entry.error.stack || entry.error.message}`
 			: "";

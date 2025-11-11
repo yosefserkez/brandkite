@@ -174,8 +174,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 								{companies.map((company) => {
 									// Use company.name as the source of truth
 									const displayName = company.name || "Untitled";
-									const logoData = company.logoModule as LogoData | undefined;
-									const logoUrl = logoData?.url || logoData?.svg;
+									const logoUrl = company.logoUrl;
 
 									return (
 										<SidebarMenuItem key={company._id}>

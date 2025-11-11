@@ -5,14 +5,15 @@ import type { Id } from "../../convex/_generated/dataModel";
 
 type UseCompanyNameResult = {
 	name: string | undefined;
-	isLoading: boolean;
+	logoUrl: string | undefined;
+	loading: boolean;
 	updateName: (newName: string) => Promise<void>;
 };
 
 /**
  * Hook to easily access and update the company name
  * @param companyId - The ID of the company
- * @returns Object with name, isLoading state, and updateName function
+ * @returns Object with name, loading state, and updateName function
  */
 export function useCompanyName(
 	companyId: Id<"companies">
@@ -32,7 +33,8 @@ export function useCompanyName(
 
 	return {
 		name: company?.name,
-		isLoading: company === undefined,
+		logoUrl: company?.logoUrl,
+		loading: company === undefined,
 		updateName,
 	};
 }

@@ -181,8 +181,8 @@ export function ChangeNameDialog({
 													})()}
 												</Button>
 											}
+											company={{ name: customName }}
 											containerHeight="400px"
-											name={customName}
 											nameData={
 												customDomains.length > 0
 													? {
@@ -258,9 +258,9 @@ export function ChangeNameDialog({
 													})()}
 												</Button>
 											}
+											company={{ name: item.name.name }}
 											containerHeight="400px"
 											key={`name-${item.name.name}-${idx}`}
-											name={item.name.name}
 											nameData={item}
 										/>
 									))}

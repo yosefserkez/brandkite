@@ -32,6 +32,7 @@ const documentValidator = v.object({
 });
 
 export const brandContextValidator = v.object({
+	industry: v.optional(v.string()),
 	summary: v.string(),
 	team: v.optional(v.array(teamMemberValidator)),
 	product: v.object({
@@ -75,6 +76,7 @@ const teamMemberSchema = entitySchema.extend({
 });
 
 export const brandContextSchema = z.object({
+	industry: z.string().optional().describe("Industry of the brand"),
 	summary: z
 		.string()
 		.describe(

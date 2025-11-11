@@ -11,7 +11,7 @@ import { VideoText } from "../ui/video-text";
 import { BillboardPreview } from "./BillboardPreview";
 
 type BillboardPreviewWithOverlaysProps = {
-	name: string;
+	company: { name: string; logoUrl?: string };
 	containerHeight?: string;
 	className?: string;
 	nameData?: NameWithDomains;
@@ -20,8 +20,9 @@ type BillboardPreviewWithOverlaysProps = {
 	isLoading?: boolean;
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <explanation>
 export function BillboardPreviewWithOverlays({
-	name,
+	company: { name, logoUrl },
 	containerHeight = "400px",
 	className,
 	nameData,
@@ -56,6 +57,7 @@ export function BillboardPreviewWithOverlays({
 			<BillboardPreview
 				className={className}
 				containerHeight={containerHeight}
+				logo={logoUrl}
 				name={name}
 			/>
 

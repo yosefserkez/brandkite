@@ -17,6 +17,7 @@
     "@ai-sdk/react": "^2.0.8",
     "@auth/core": "0.37.0",
     "@convex-dev/auth": "^0.0.90",
+    "@convex-dev/r2": "^0.7.3",
     "@convex-dev/react-query": "0.0.0-alpha.11",
     "@convex-dev/workflow": "0.2.8-alpha.10",
     "@dnd-kit/core": "^6.3.1",

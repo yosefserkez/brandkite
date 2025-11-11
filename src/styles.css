@@ -18,6 +18,15 @@ code {
     source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
+.logo svg {
+  height: 100% !important;
+  width: 100% !important;
+}
+/* silly hack to remove the background fill that is being applied to the logo */
+.logo svg >  path:first-of-type {
+  fill: transparent !important;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);

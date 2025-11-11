@@ -16,10 +16,12 @@ import type * as index from "../index.js";
 import type * as lib_firecrawl from "../lib/firecrawl.js";
 import type * as lib_validationHelpers from "../lib/validationHelpers.js";
 import type * as logger from "../logger.js";
-import type * as logos from "../logo-vector-search.js";
+import type * as logoVectorSearch from "../logoVectorSearch.js";
 import type * as modules_brandContext from "../modules/brandContext.js";
+import type * as modules_logo from "../modules/logo.js";
 import type * as modules_name from "../modules/name.js";
 import type * as presence from "../presence.js";
+import type * as r2 from "../r2.js";
 import type * as users from "../users.js";
 import type * as workflows_index from "../workflows/index.js";
 
@@ -46,10 +48,12 @@ declare const fullApi: ApiFromModules<{
   "lib/firecrawl": typeof lib_firecrawl;
   "lib/validationHelpers": typeof lib_validationHelpers;
   logger: typeof logger;
-  logos: typeof logos;
+  logoVectorSearch: typeof logoVectorSearch;
   "modules/brandContext": typeof modules_brandContext;
+  "modules/logo": typeof modules_logo;
   "modules/name": typeof modules_name;
   presence: typeof presence;
+  r2: typeof r2;
   users: typeof users;
   "workflows/index": typeof workflows_index;
 }>;
@@ -453,6 +457,130 @@ export declare const components: {
           pageStatus?: "SplitRecommended" | "SplitRequired" | null;
           splitCursor?: string | null;
         }
+      >;
+    };
+  };
+  r2: {
+    lib: {
+      deleteMetadata: FunctionReference<
+        "mutation",
+        "internal",
+        { bucket: string; key: string },
+        null
+      >;
+      deleteObject: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          accessKeyId: string;
+          bucket: string;
+          endpoint: string;
+          key: string;
+          secretAccessKey: string;
+        },
+        null
+      >;
+      deleteR2Object: FunctionReference<
+        "action",
+        "internal",
+        {
+          accessKeyId: string;
+          bucket: string;
+          endpoint: string;
+          key: string;
+          secretAccessKey: string;
+        },
+        null
+      >;
+      getMetadata: FunctionReference<
+        "query",
+        "internal",
+        {
+          accessKeyId: string;
+          bucket: string;
+          endpoint: string;
+          key: string;
+          secretAccessKey: string;
+        },
+        {
+          bucket: string;
+          bucketLink: string;
+          contentType?: string;
+          key: string;
+          lastModified: string;
+          link: string;
+          sha256?: string;
+          size?: number;
+          url: string;
+        } | null
+      >;
+      listMetadata: FunctionReference<
+        "query",
+        "internal",
+        {
+          accessKeyId: string;
+          bucket: string;
+          cursor?: string;
+          endpoint: string;
+          limit?: number;
+          secretAccessKey: string;
+        },
+        {
+          continueCursor: string;
+          isDone: boolean;
+          page: Array<{
+            bucket: string;
+            bucketLink: string;
+            contentType?: string;
+            key: string;
+            lastModified: string;
+            link: string;
+            sha256?: string;
+            size?: number;
+            url: string;
+          }>;
+          pageStatus?: null | "SplitRecommended" | "SplitRequired";
+          splitCursor?: null | string;
+        }
+      >;
+      store: FunctionReference<
+        "action",
+        "internal",
+        {
+          accessKeyId: string;
+          bucket: string;
+          endpoint: string;
+          secretAccessKey: string;
+          url: string;
+        },
+        any
+      >;
+      syncMetadata: FunctionReference<
+        "action",
+        "internal",
+        {
+          accessKeyId: string;
+          bucket: string;
+          endpoint: string;
+          key: string;
+          onComplete?: string;
+          secretAccessKey: string;
+        },
+        null
+      >;
+      upsertMetadata: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          bucket: string;
+          contentType?: string;
+          key: string;
+          lastModified: string;
+          link: string;
+          sha256?: string;
+          size?: number;
+        },
+        { isNew: boolean }
       >;
     };
   };
