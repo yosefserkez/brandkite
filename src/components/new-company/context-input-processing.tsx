@@ -7,7 +7,7 @@ import { HeartPointer } from "../ui/heart-pointer";
 
 export function ContextInputProcessing() {
 	return (
-		<div className="">
+		<div className="m-auto w-full">
 			<HeartPointer />
 			<div className="w-full space-y-4">
 				<Terminal>

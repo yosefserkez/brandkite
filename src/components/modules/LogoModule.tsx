@@ -24,7 +24,7 @@ export default function LogoModule({ companyId, className }: LogoModuleProps) {
 	const data = ctx.selected?.data as LogoModuleData | undefined;
 
 	const logoUrl = useQuery(api.r2.getSignedUrl, {
-		key: data?.storageKey ?? " ",
+		key: data?.storageKey,
 	});
 
 	const onCopy = () => {

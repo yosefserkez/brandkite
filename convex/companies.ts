@@ -232,6 +232,10 @@ export const create = mutation({
 			companyId,
 			publish: true,
 		});
+		workflow.start(ctx, internal.modules.logo.logoWorkflow, {
+			companyId,
+			publish: true,
+		});
 
 		return companyId;
 	},

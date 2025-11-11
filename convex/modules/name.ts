@@ -8,7 +8,6 @@ import { workflow } from "..";
 import { internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { action, internalAction } from "../_generated/server";
-import { logger } from "../logger";
 import { BrandModuleTypes } from "../workflows";
 import type { BrandContext } from "./brandContext";
 
@@ -151,12 +150,6 @@ async function checkDomain(domain: string): Promise<DomainAvailabilityResult> {
 		// If status is NOERROR (0), the domain exists (not available)
 		const available = data.Status === DNS_STATUS_NXDOMAIN;
 
-		logger.info("Domain availability check result", {
-			domain,
-			data,
-			available,
-		});
-
 		return {
 			domain,
 			available,
@@ -228,7 +221,6 @@ export const generateDomainsInternal = internalAction({
 
 			const results = await Promise.all(batch.map(checkDomain));
 
-			logger.info("Results", { results });
 			for (const result of results) {
 				if (result.available && result.checked) {
 					availableDomains.push(result.domain);
@@ -277,7 +269,6 @@ export const generateDomains = action({
 
 			const results = await Promise.all(batch.map(checkDomain));
 
-			logger.info("Results", { results });
 			for (const result of results) {
 				if (result.available && result.checked) {
 					availableDomains.push(result.domain);
@@ -392,7 +383,7 @@ export const nameWorkflow = workflow.define({
 
 		// Append new names to existing data
 		const data = [...existingData, ...namesWithDomainAvailability];
-		logger.info("Data", { data });
+
 		// Save the name as a module
 		await ctx.runMutation(internal.brandModules.updateModuleInternal, {
 			moduleId,
@@ -400,8 +391,6 @@ export const nameWorkflow = workflow.define({
 			publish: args.publish ?? true,
 			generationStatus: "succeeded",
 		});
-
-		logger.info("Updated module", { moduleId });
 
 		// If publishing and we have names, set the first name as the company name
 		if ((args.publish ?? true) && data.length > 0) {

@@ -106,12 +106,10 @@ export const companySummaryFormat: FirecrawlFormatsType = {
 
 export const scrape = async (
 	url: string,
-	formats: FirecrawlFormatsType[],
-	maxAge = 3_600_000
+	formats: FirecrawlFormatsType[]
 ): Promise<FirecrawlResponse> => {
 	const scrapeResult = await firecrawl(url, {
 		formats,
-		maxAge,
 	});
 	return scrapeResult;
 };

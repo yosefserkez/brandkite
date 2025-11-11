@@ -261,14 +261,14 @@ export function ContextForm({
 				{/* Team Section */}
 				{renderSection({
 					title: "Team",
-					summaryPath: ["summary"],
-					summaryValue: brandContext.summary,
+					summaryPath: ["team", "summary"],
+					summaryValue: brandContext.team?.summary ?? "",
 					summaryPlaceholder: "Team summary...",
 					children: (
 						<div className="flex flex-wrap items-center gap-2 px-2">
 							{renderItemList(
-								brandContext.team,
-								handleRemoveItem(["team"]),
+								brandContext.team?.members,
+								handleRemoveItem(["team", "members"]),
 								(member) =>
 									`${member.name}${member.role ? ` ${member.role}` : ""}`,
 								(member) => member.name

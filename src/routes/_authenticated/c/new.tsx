@@ -76,7 +76,7 @@ function NewCompanyRoute() {
 
 	return (
 		<div className="flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 p-4">
-			<div className="h-full w-full max-w-4xl overflow-hidden">
+			<div className="flex h-full w-full max-w-4xl flex-col overflow-hidden">
 				{step === "input" && (
 					<>
 						<div className="relative flex h-[180px] w-full flex-col items-center overflow-hidden lg:h-[200px] lg:justify-center">

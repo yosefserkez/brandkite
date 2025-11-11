@@ -21,11 +21,16 @@ export default function NamesModule({
 	const { name: liveName, logoUrl } = useCompanyName(companyId);
 	const [showChangeDialog, setShowChangeDialog] = useState(false);
 
-	const data = ctx.selected?.data as NameModuleData | undefined;
+	const rawData = ctx.selected?.data;
+	const generatedNames = Array.isArray(rawData)
+		? (rawData as NameModuleData)
+		: [];
 	const displayName = liveName ?? "Brand Name";
 
 	// Find current name in generated names
-	const currentNameData = data?.find((item) => item.name.name === liveName);
+	const currentNameData = generatedNames.find(
+		(item) => item.name.name === liveName
+	);
 
 	return (
 		<>
@@ -54,7 +59,7 @@ export default function NamesModule({
 			{/* Change Name Dialog */}
 			<ChangeNameDialog
 				companyId={companyId}
-				generatedNames={data ?? []}
+				generatedNames={generatedNames}
 				onOpenChange={setShowChangeDialog}
 				open={showChangeDialog}
 			/>
