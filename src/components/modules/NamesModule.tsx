@@ -3,7 +3,10 @@ import { useState } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { NameModuleData } from "../../../convex/modules/name";
 import { useBrandModule } from "../../hooks/useBrandModule";
-import { useCompanyName } from "../../hooks/useCompanyName";
+import {
+	useCompanyBrandLogoUrl,
+	useCompanyBrandName,
+} from "../../hooks/useCompanyBrand";
 import { BillboardPreviewWithOverlays } from "./BillboardPreviewWithOverlays";
 import { BlockWrapper } from "./BlockWrapper";
 import { ChangeNameDialog } from "./ChangeNameDialog";
@@ -18,7 +21,8 @@ export default function NamesModule({
 	className,
 }: NamesModuleProps) {
 	const ctx = useBrandModule(companyId, "name");
-	const { name: liveName, logoUrl } = useCompanyName(companyId);
+	const liveName = useCompanyBrandName(companyId);
+	const logoUrl = useCompanyBrandLogoUrl(companyId);
 	const [showChangeDialog, setShowChangeDialog] = useState(false);
 
 	const rawData = ctx.selected?.data;

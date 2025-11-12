@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandTone } from "../../../convex/modules/tone";
 import { useBrandModule } from "../../hooks/useBrandModule";
-import { useCompanyName } from "../../hooks/useCompanyName";
+import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
 import { replaceCompanyName } from "../../lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { BlockWrapper } from "./BlockWrapper";
@@ -18,7 +18,7 @@ export default function ToneModule({
 	className,
 }: ToneModuleProps) {
 	const ctx = useBrandModule(companyId, "tone");
-	const { name: companyName } = useCompanyName(companyId);
+	const companyName = useCompanyBrandName(companyId);
 	const tone = ctx.selected?.data as BrandTone | undefined;
 
 	const onCopy = () => {

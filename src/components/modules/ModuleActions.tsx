@@ -186,7 +186,7 @@ export function ModuleActions({
 		<div className="flex items-center gap-2">
 			{/* Version selector with publish button */}
 			{!hideVersionSelector && (
-				<div className="flex items-center gap-3 rounded-md border border-gray-200 bg-white px-3 py-1.5 shadow-sm">
+				<div className="flex items-center gap-2">
 					<VersionSelector ctx={ctx} />
 					<PublishButton ctx={ctx} />
 				</div>
@@ -205,7 +205,7 @@ export function ModuleActions({
 					variant="ghost"
 				>
 					{action.icon}
-					<span>{action.label}</span>
+					<span className="text-xs">{action.label}</span>
 				</Button>
 			))}
 		</div>

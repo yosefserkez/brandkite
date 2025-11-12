@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandTypography } from "../../../convex/modules/typography";
 import { useBrandModule } from "../../hooks/useBrandModule";
-import { useCompanyName } from "../../hooks/useCompanyName";
-import { replaceCompanyName } from "../../lib/utils";
+import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
+import { cn, replaceCompanyName } from "../../lib/utils";
 import { BlockWrapper } from "./BlockWrapper";
 
 type TypographyModuleProps = {
@@ -11,9 +11,12 @@ type TypographyModuleProps = {
 	className?: string;
 };
 
-export default function TypographyModule({ companyId, className }: TypographyModuleProps) {
+export default function TypographyModule({
+	companyId,
+	className,
+}: TypographyModuleProps) {
 	const ctx = useBrandModule(companyId, "typography");
-	const { name: companyName } = useCompanyName(companyId);
+	const companyName = useCompanyBrandName(companyId);
 	const data = ctx.selected?.data as BrandTypography | undefined;
 
 	const sortedWeights = useMemo(() => {
@@ -33,7 +36,9 @@ export default function TypographyModule({ companyId, className }: TypographyMod
 			replaceCompanyName(data.overview, safeCompanyName),
 			"",
 			"Guidelines:",
-			...data.guidelines.map((line) => `- ${replaceCompanyName(line, safeCompanyName)}`),
+			...data.guidelines.map(
+				(line) => `- ${replaceCompanyName(line, safeCompanyName)}`
+			),
 			"",
 			`Primary font: ${data.primaryFont.name}`,
 			replaceCompanyName(data.primaryFont.summary, safeCompanyName),
@@ -85,6 +90,17 @@ export default function TypographyModule({ companyId, className }: TypographyMod
 	);
 }
 
+const SKELETON_GUIDELINE_KEYS = ["guide-1", "guide-2", "guide-3"];
+const SKELETON_CARD_KEYS = ["primary", "headline"];
+const SKELETON_WEIGHT_KEYS = [
+	"weight-1",
+	"weight-2",
+	"weight-3",
+	"weight-4",
+	"weight-5",
+];
+const SKELETON_SET_KEYS = ["set-1", "set-2", "set-3", "set-4"];
+
 function TypographySummary({
 	data,
 	companyName,
@@ -100,13 +116,32 @@ function TypographySummary({
 				</p>
 				<h2 className="font-semibold text-2xl text-gray-900">Type system</h2>
 			</header>
-			<p className="leading-relaxed text-gray-700">
+			<p className={cn("text-gray-700", "leading-relaxed")}>
 				{replaceCompanyName(data.overview, companyName)}
 			</p>
-			<ul className="space-y-2 rounded-2xl border border-gray-100 bg-gray-50 p-5 text-sm text-gray-700">
+			<ul
+				className={cn(
+					"space-y-2",
+					"rounded-2xl",
+					"border",
+					"border-gray-100",
+					"bg-gray-50",
+					"p-5",
+					"text-sm",
+					"text-gray-700"
+				)}
+			>
 				{data.guidelines.map((item) => (
 					<li className="flex gap-2" key={item}>
-						<span className="mt-1 h-1.5 w-1.5 rounded-full bg-gray-400" />
+						<span
+							style={{
+								backgroundColor: "#9CA3AF",
+								borderRadius: "9999px",
+								height: 6,
+								marginTop: 4,
+								width: 6,
+							}}
+						/>
 						<span>{replaceCompanyName(item, companyName)}</span>
 					</li>
 				))}
@@ -114,13 +149,13 @@ function TypographySummary({
 			<div className="grid gap-5 lg:grid-cols-2">
 				<TypographyFontCard
 					companyName={companyName}
-					title="Primary font"
 					font={data.primaryFont}
+					title="Primary font"
 				/>
 				<TypographyFontCard
 					companyName={companyName}
-					title="Headline font"
 					font={data.headlineFont}
+					title="Headline font"
 				/>
 			</div>
 		</div>
@@ -144,10 +179,10 @@ function TypographyFontCard({
 				</p>
 				<h3 className="font-semibold text-gray-900 text-xl">{font.name}</h3>
 			</div>
-			<p className="text-gray-700 text-sm leading-relaxed">
+			<p className={cn("text-sm", "text-gray-700", "leading-relaxed")}>
 				{replaceCompanyName(font.summary, companyName)}
 			</p>
-			<div className="space-y-2 text-sm text-gray-600">
+			<div className={cn("space-y-2", "text-sm", "text-gray-600")}>
 				<div>
 					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
 						Usage
@@ -196,7 +231,7 @@ function TypographySpecimen({
 						>
 							<div className="flex items-baseline justify-between gap-4">
 								<span
-									className="text-lg text-gray-900"
+									className={cn("text-lg", "text-gray-900")}
 									style={{ fontWeight: weight.fontWeight }}
 								>
 									{weight.label}
@@ -205,7 +240,7 @@ function TypographySpecimen({
 									{weight.fontWeight}
 								</span>
 							</div>
-							<p className="text-gray-600 text-xs leading-snug">
+							<p className={cn("text-xs", "text-gray-600", "leading-snug")}>
 								{replaceCompanyName(weight.description, companyName)}
 							</p>
 						</li>
@@ -216,7 +251,18 @@ function TypographySpecimen({
 				<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
 					Character set
 				</p>
-				<div className="space-y-2 rounded-2xl bg-white p-5 font-mono text-sm text-gray-700 shadow-sm">
+				<div
+					className={cn(
+						"space-y-2",
+						"rounded-2xl",
+						"bg-white",
+						"p-5",
+						"font-mono",
+						"text-sm",
+						"text-gray-700",
+						"shadow-sm"
+					)}
+				>
 					<p>{data.characterSet.uppercase}</p>
 					<p>{data.characterSet.lowercase}</p>
 					<p>{data.characterSet.numerals}</p>
@@ -239,13 +285,16 @@ function TypographySkeleton() {
 					<div className="h-3 w-4/6 rounded bg-gray-200" />
 				</div>
 				<div className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50 p-5">
-					{Array.from({ length: 3 }).map((_, index) => (
-						<div className="h-3 w-full rounded bg-gray-200" key={index} />
+					{SKELETON_GUIDELINE_KEYS.map((key) => (
+						<div className="h-3 w-full rounded bg-gray-200" key={key} />
 					))}
 				</div>
 				<div className="grid gap-4 lg:grid-cols-2">
-					{Array.from({ length: 2 }).map((_, index) => (
-						<div className="space-y-2 rounded-2xl border border-gray-100 bg-gray-50 p-5" key={index}>
+					{SKELETON_CARD_KEYS.map((key) => (
+						<div
+							className="space-y-2 rounded-2xl border border-gray-100 bg-gray-50 p-5"
+							key={key}
+						>
 							<div className="h-4 w-24 rounded bg-gray-200" />
 							<div className="h-6 w-32 rounded bg-gray-200" />
 							<div className="h-3 w-5/6 rounded bg-gray-200" />
@@ -260,13 +309,13 @@ function TypographySkeleton() {
 					<div className="h-8 w-5/6 rounded bg-gray-200" />
 				</div>
 				<div className="space-y-2">
-					{Array.from({ length: 5 }).map((_, index) => (
-						<div className="h-10 rounded-2xl bg-white" key={index} />
+					{SKELETON_WEIGHT_KEYS.map((key) => (
+						<div className="h-10 rounded-2xl bg-white" key={key} />
 					))}
 				</div>
 				<div className="space-y-2 rounded-2xl bg-white p-5">
-					{Array.from({ length: 4 }).map((_, index) => (
-						<div className="h-3 w-full rounded bg-gray-200" key={index} />
+					{SKELETON_SET_KEYS.map((key) => (
+						<div className="h-3 w-full rounded bg-gray-200" key={key} />
 					))}
 				</div>
 			</div>
@@ -277,10 +326,12 @@ function TypographySkeleton() {
 function TypographyEmptyState() {
 	return (
 		<div className="flex min-h-72 flex-col items-center justify-center gap-3 rounded-3xl border border-gray-200 border-dashed bg-gray-50 px-6 py-12 text-center">
-			<p className="font-medium text-gray-600 text-sm">Typography is on its way</p>
+			<p className="font-medium text-gray-600 text-sm">
+				Typography is on its way
+			</p>
 			<p className="text-gray-500 text-sm">
-				Regenerate this block once your brand context is ready to craft a tailored
-				type hierarchy.
+				Regenerate this block once your brand context is ready to craft a
+				tailored type hierarchy.
 			</p>
 		</div>
 	);

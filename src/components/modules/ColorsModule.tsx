@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandPalette } from "../../../convex/modules/colors";
 import { useBrandModule } from "../../hooks/useBrandModule";
-import { useCompanyName } from "../../hooks/useCompanyName";
+import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
 import { cn, replaceCompanyName } from "../../lib/utils";
 import { Button } from "../ui/button";
 import { BlockWrapper } from "./BlockWrapper";
@@ -22,7 +22,7 @@ export default function ColorsModule({
 	className,
 }: ColorsModuleProps) {
 	const ctx = useBrandModule(companyId, "colors");
-	const { name: companyName } = useCompanyName(companyId);
+	const companyName = useCompanyBrandName(companyId);
 	const palette = ctx.selected?.data as BrandPalette | undefined;
 	const [variant, setVariant] = useState<PaletteVariant>("full");
 

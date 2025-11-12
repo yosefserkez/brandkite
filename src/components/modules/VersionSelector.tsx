@@ -10,26 +10,18 @@ import {
 
 type VersionSelectorProps = {
 	ctx: UseBrandModuleResult;
-	variant?: "default" | "compact";
 	className?: string;
 };
 
-export function VersionSelector({
-	ctx,
-	variant = "default",
-	className,
-}: VersionSelectorProps) {
-	const isCompact = variant === "compact";
+export function VersionSelector({ ctx, className }: VersionSelectorProps) {
 	const hasVersions = ctx.versions.length > 0;
 
 	if (!hasVersions) {
 		return (
 			<div
 				className={cn(
-					className,
-					isCompact
-						? "flex h-7 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2 text-gray-500 text-xs"
-						: "flex h-auto items-center gap-1.5 text-gray-500 text-sm"
+					"flex h-7 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2 text-gray-500 text-xs",
+					className
 				)}
 			>
 				<span>No versions</span>
@@ -40,20 +32,12 @@ export function VersionSelector({
 	return (
 		<Menubar
 			className={cn(
-				className,
-				isCompact
-					? "h-7 w-fit gap-0 border-gray-200 bg-white p-0 shadow-sm"
-					: "h-auto w-fit border-0 bg-transparent p-0 shadow-none"
+				"h-7 w-fit gap-0 rounded-md border border-gray-200 bg-white p-0 text-xs shadow-sm",
+				className
 			)}
 		>
 			<MenubarMenu>
-				<MenubarTrigger
-					className={
-						isCompact
-							? "h-7 gap-1.5 px-2 text-xs"
-							: "h-auto gap-1.5 p-0 text-sm"
-					}
-				>
+				<MenubarTrigger className="h-7 gap-1.5 px-2 text-xs">
 					<span>v{ctx.selected?.computedVersion ?? "?"}</span>
 					<span
 						className={`h-1.5 w-1.5 animate-pulse rounded-full ${
@@ -62,7 +46,7 @@ export function VersionSelector({
 						title={ctx.selected?.published ? "Published" : "Not published"}
 					/>
 				</MenubarTrigger>
-				<MenubarContent align={isCompact ? "end" : "start"} sideOffset={4}>
+				<MenubarContent align="end" sideOffset={4}>
 					{ctx.versions.map((m) => (
 						<MenubarItem key={m._id} onClick={() => ctx.setSelectedId(m._id)}>
 							<span>v{m.computedVersion ?? "?"}</span>

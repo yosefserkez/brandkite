@@ -1,6 +1,5 @@
-import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
+import { useCompanyBrand } from "../hooks/useCompanyBrand";
 import ColorsModule from "./modules/ColorsModule";
 import LogoModule from "./modules/LogoModule";
 import MissionModule from "./modules/MissionModule";
@@ -15,9 +14,9 @@ type BrandStudioPageProps = {
 };
 
 export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
-	const company = useQuery(api.companies.get, { companyId });
+	const { company, loading } = useCompanyBrand(companyId);
 
-	if (!company) {
+	if (loading || !company) {
 		return (
 			<div className="flex h-full items-center justify-center">
 				<div className="h-8 w-8 animate-spin rounded-full border-blue-600 border-b-2" />
@@ -28,13 +27,18 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 	return (
 		<div className="h-full overflow-y-auto bg-gray-50">
 			{/* Module blocks */}
-			<div className="mx-auto max-w-5xl space-y-8 px-8 py-8">
+			<div className="mx-auto max-w-5xl space-y-4 px-8 py-8">
 				{/* Names & Logo block - combined as header image with logo overlay */}
 				<NamesModule companyId={companyId} />
-				<div className="flex flex-col gap-8">
-					<LogoModule className="h-32 w-32" companyId={companyId} />
-					<MissionModule companyId={companyId} />
-					<TaglineModule companyId={companyId} />
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+					<div className="col-span-1 flex flex-col gap-4">
+						<LogoModule className="h-full w-full" companyId={companyId} />
+						<div className="h-full w-full bg-linear-to-b from-brand-accent-200 to-gray-50" />
+					</div>
+					<div className="col-span-2 flex flex-col gap-4">
+						<MissionModule companyId={companyId} />
+						<TaglineModule companyId={companyId} />
+					</div>
 				</div>
 				<StoryModule companyId={companyId} />
 				<ColorsModule companyId={companyId} />

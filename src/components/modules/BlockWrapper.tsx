@@ -80,7 +80,7 @@ export function BlockWrapper({
 			)}
 			{actionsVariant === "compact" && !hideVersionSelector && (
 				<div className="absolute right-2 bottom-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-					<VersionSelector ctx={ctx} variant="compact" />
+					<VersionSelector ctx={ctx} />
 				</div>
 			)}
 		</div>

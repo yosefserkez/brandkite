@@ -4,7 +4,8 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import type { LogoModuleData } from "../../../convex/modules/logo";
 import { useBrandModule } from "../../hooks/useBrandModule";
 import Logo from "../logo";
-import { Ripple } from "../ui/ripple";
+import { SkeletonFlickeringGrid } from "../skeleton-flickering-grid";
+import { Card, CardContent } from "../ui/card";
 import { BlockWrapper } from "./BlockWrapper";
 
 type LogoModuleProps = {
@@ -14,7 +15,7 @@ type LogoModuleProps = {
 
 const loadingSkeleton = (
 	<div className="h-full w-full items-center justify-center rounded-lg border-4 border-white bg-white shadow-lg">
-		<Ripple className="h-full w-full" mainCircleSize={40} numCircles={2} />
+		<SkeletonFlickeringGrid />
 	</div>
 );
 
@@ -49,12 +50,17 @@ export default function LogoModule({ companyId, className }: LogoModuleProps) {
 			actionsVariant="compact"
 			className={className}
 			ctx={ctx}
-			loadingSkeleton={loadingSkeleton}
+			loadingSkeleton={<SkeletonFlickeringGrid height={200} />}
 		>
-			{/* Logo container with profile photo styling */}
-			<div className="relative h-full w-full overflow-hidden rounded-lg border-4 border-white bg-white shadow-lg">
-				{logoUrl ? <Logo url={logoUrl} /> : loadingSkeleton}
-			</div>
+			<Card>
+				<CardContent>
+					{logoUrl ? (
+						<Logo url={logoUrl} />
+					) : (
+						<SkeletonFlickeringGrid height={400} />
+					)}
+				</CardContent>
+			</Card>
 		</BlockWrapper>
 	);
 }

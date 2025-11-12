@@ -140,7 +140,7 @@ export default function LogoModule({ companyId }: Props) {
   return (
     <BlockWrapper
       actions={<ModuleActions ctx={ctx} onCopy={handleCopy} />}
-      versionInfo={<VersionSelector ctx={ctx} variant="compact" />}
+     versionInfo={<VersionSelector ctx={ctx} />}
       actionsPosition="top-right"
       ctx={ctx}
     >

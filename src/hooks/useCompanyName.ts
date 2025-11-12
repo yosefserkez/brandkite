@@ -2,6 +2,11 @@ import { useMutation, useQuery } from "convex/react";
 import { useCallback } from "react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
+import {
+	useCompanyBrandLogoUrl,
+	useCompanyBrandName,
+	useCompanyBrandReady,
+} from "./useCompanyBrand";
 
 type UseCompanyNameResult = {
 	name: string | undefined;
@@ -18,7 +23,17 @@ type UseCompanyNameResult = {
 export function useCompanyName(
 	companyId: Id<"companies">
 ): UseCompanyNameResult {
-	const company = useQuery(api.companies.get, { companyId });
+	const storeName = useCompanyBrandName(companyId);
+	const storeLogo = useCompanyBrandLogoUrl(companyId);
+	const storeReady = useCompanyBrandReady(companyId);
+
+	const shouldFetch =
+		!storeReady || storeName === undefined || storeLogo === undefined;
+
+	const company = useQuery(
+		api.companies.get,
+		shouldFetch ? { companyId } : "skip"
+	);
 	const updateCompanyMutation = useMutation(api.companies.update);
 
 	const updateName = useCallback(
@@ -31,10 +46,15 @@ export function useCompanyName(
 		[companyId, updateCompanyMutation]
 	);
 
+	const name =
+		storeReady && storeName !== undefined ? storeName : company?.name;
+	const logoUrl =
+		storeReady && storeLogo !== undefined ? storeLogo : company?.logoUrl;
+
 	return {
-		name: company?.name,
-		logoUrl: company?.logoUrl,
-		loading: company === undefined,
+		name,
+		logoUrl,
+		loading: shouldFetch ? company === undefined : false,
 		updateName,
 	};
 }

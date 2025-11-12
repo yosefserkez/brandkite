@@ -1,8 +1,8 @@
-import { useCompanyName } from "@/hooks/useCompanyName";
 import { replaceCompanyName } from "@/lib/utils";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandStory } from "../../../convex/modules/story";
 import { useBrandModule } from "../../hooks/useBrandModule";
+import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Ripple } from "../ui/ripple";
 import { BlockWrapper } from "./BlockWrapper";
@@ -23,7 +23,7 @@ export default function StoryModule({
 	className,
 }: StoryModuleProps) {
 	const ctx = useBrandModule(companyId, "story");
-	const { name: companyName } = useCompanyName(companyId);
+	const companyName = useCompanyBrandName(companyId);
 	const data = ctx.selected?.data as BrandStory | undefined;
 
 	const onCopy = () => {
@@ -42,16 +42,11 @@ export default function StoryModule({
 			loadingSkeleton={loadingSkeleton}
 		>
 			{/* Logo container with profile photo styling */}
-			<Card className="min-h-96">
-				<CardHeader className="m-0">
-					<div>
-						<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-							Brand story
-						</p>
-						<h2 className="font-semibold text-2xl text-gray-900">
-							How we got here
-						</h2>
-					</div>
+			<Card className="h-full">
+				<CardHeader>
+					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+						Story
+					</p>
 				</CardHeader>
 				<CardContent>
 					{data?.story ? (
