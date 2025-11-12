@@ -1,5 +1,6 @@
 import type { z } from "zod";
 import { brandContextSchema } from "../modules/brandContext";
+import { colorsSchema } from "../modules/colors";
 import { logoSchema } from "../modules/logo";
 import { nameSchema } from "../modules/name";
 import { storySchema } from "../modules/story";
@@ -17,6 +18,7 @@ import type { BrandModuleType } from "../workflows";
  */
 const BRAND_MODULE_SCHEMAS: Partial<Record<BrandModuleType, z.ZodType>> = {
 	brandContext: brandContextSchema,
+	colors: colorsSchema,
 	name: nameSchema,
 	logo: logoSchema,
 	story: storySchema,

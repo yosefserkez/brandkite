@@ -49,7 +49,8 @@ const buildStoryPrompt = (params: {
 		.join("\n");
 
 	return [
-		`Brand name: ${companyName ?? "Unnamed brand"}`,
+		`Brand name for context: ${companyName ?? "Unnamed brand"}`,
+		"Use the literal token {company_name} whenever you reference the brand in the story. Never output the actual brand name.",
 		"",
 		"Brand context:",
 		`- Summary: ${brandContext.summary}`,
@@ -82,9 +83,26 @@ const buildStoryPrompt = (params: {
 	].join("\n");
 };
 
-const normalizeStory = (story: BrandStory): BrandStory => ({
-	story: story.story.trim(),
-});
+const escapeRegExp = (value: string): string =>
+	value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const normalizeStory = (
+	story: BrandStory,
+	companyName?: string | null
+): BrandStory => {
+	const trimmedStory = story.story.trim();
+
+	if (!companyName) {
+		return { story: trimmedStory };
+	}
+
+	const escapedCompanyName = escapeRegExp(companyName);
+	const namePattern = new RegExp(`\\b${escapedCompanyName}\\b`, "gi");
+
+	return {
+		story: trimmedStory.replace(namePattern, "{company_name}"),
+	};
+};
 
 export const generateBrandStory = internalAction({
 	args: {
@@ -106,7 +124,9 @@ export const generateBrandStory = internalAction({
 			temperature: STORY_TEMPERATURE,
 		});
 
-		return { story: normalizeStory(object.value) };
+		return {
+			story: normalizeStory(object.value, args.companyName ?? undefined),
+		};
 	},
 });
 

@@ -1,6 +1,7 @@
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
+import ColorsModule from "./modules/ColorsModule";
 import LogoModule from "./modules/LogoModule";
 import NamesModule from "./modules/NamesModule";
 import StoryModule from "./modules/StoryModule";
@@ -28,6 +29,7 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 				<NamesModule companyId={companyId} />
 				<LogoModule className="h-32 w-32" companyId={companyId} />
 				<StoryModule companyId={companyId} />
+				<ColorsModule companyId={companyId} />
 			</div>
 		</div>
 	);

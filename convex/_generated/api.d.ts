@@ -18,6 +18,7 @@ import type * as lib_validationHelpers from "../lib/validationHelpers.js";
 import type * as logger from "../logger.js";
 import type * as logoVectorSearch from "../logoVectorSearch.js";
 import type * as modules_brandContext from "../modules/brandContext.js";
+import type * as modules_colors from "../modules/colors.js";
 import type * as modules_logo from "../modules/logo.js";
 import type * as modules_name from "../modules/name.js";
 import type * as modules_story from "../modules/story.js";
@@ -51,6 +52,7 @@ declare const fullApi: ApiFromModules<{
   logger: typeof logger;
   logoVectorSearch: typeof logoVectorSearch;
   "modules/brandContext": typeof modules_brandContext;
+  "modules/colors": typeof modules_colors;
   "modules/logo": typeof modules_logo;
   "modules/name": typeof modules_name;
   "modules/story": typeof modules_story;
