@@ -3,8 +3,12 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import ColorsModule from "./modules/ColorsModule";
 import LogoModule from "./modules/LogoModule";
+import MissionModule from "./modules/MissionModule";
 import NamesModule from "./modules/NamesModule";
 import StoryModule from "./modules/StoryModule";
+import TaglineModule from "./modules/TaglineModule";
+import ToneModule from "./modules/ToneModule";
+import TypographyModule from "./modules/TypographyModule";
 
 type BrandStudioPageProps = {
 	companyId: Id<"companies">;
@@ -27,9 +31,15 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 			<div className="mx-auto max-w-5xl space-y-8 px-8 py-8">
 				{/* Names & Logo block - combined as header image with logo overlay */}
 				<NamesModule companyId={companyId} />
-				<LogoModule className="h-32 w-32" companyId={companyId} />
+				<div className="flex flex-col gap-8">
+					<LogoModule className="h-32 w-32" companyId={companyId} />
+					<MissionModule companyId={companyId} />
+					<TaglineModule companyId={companyId} />
+				</div>
 				<StoryModule companyId={companyId} />
 				<ColorsModule companyId={companyId} />
+				<ToneModule companyId={companyId} />
+				<TypographyModule companyId={companyId} />
 			</div>
 		</div>
 	);

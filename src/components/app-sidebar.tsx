@@ -51,12 +51,6 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { AnimatedShinyText } from "./ui/animated-shiny-text";
 
-type LogoData = {
-	url?: string;
-	svg?: string;
-	variations?: Array<{ name: string; url: string }>;
-};
-
 function getCompanyInitials(name: string): string {
 	const words = name.split(" ").filter((w) => w.length > 0);
 	if (words.length >= 2) {
@@ -150,7 +144,11 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 							<SidebarMenuItem>
 								<SidebarMenuButton
 									asChild
-									className="group my-2 rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+									className={cn(
+										"group my-2 rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800",
+										"group-data-[collapsible=icon]:gap-0",
+										"group-data-[collapsible=icon]:justify-center"
+									)}
 									tooltip={isCollapsed ? "New Company" : undefined}
 								>
 									{isCollapsed ? (
@@ -178,7 +176,13 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 
 									return (
 										<SidebarMenuItem key={company._id}>
-											<SidebarMenuButton asChild>
+											<SidebarMenuButton
+												asChild
+												className={cn(
+													"group-data-[collapsible=icon]:gap-0",
+													"group-data-[collapsible=icon]:justify-center"
+												)}
+											>
 												<Link params={{ id: company._id }} to="/c/$id">
 													{logoUrl ? (
 														<Avatar className="size-5! rounded-sm">

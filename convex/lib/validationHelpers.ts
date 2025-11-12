@@ -3,7 +3,11 @@ import { brandContextSchema } from "../modules/brandContext";
 import { colorsSchema } from "../modules/colors";
 import { logoSchema } from "../modules/logo";
 import { nameSchema } from "../modules/name";
+import { missionSchema } from "../modules/mission";
 import { storySchema } from "../modules/story";
+import { toneSchema } from "../modules/tone";
+import { taglineSchema } from "../modules/tagline";
+import { typographySchema } from "../modules/typography";
 import type { BrandModuleType } from "../workflows";
 
 /**
@@ -21,7 +25,11 @@ const BRAND_MODULE_SCHEMAS: Partial<Record<BrandModuleType, z.ZodType>> = {
 	colors: colorsSchema,
 	name: nameSchema,
 	logo: logoSchema,
+	mission: missionSchema,
+	tagline: taglineSchema,
 	story: storySchema,
+	tone: toneSchema,
+	typography: typographySchema,
 };
 
 export const getBrandModuleDataValidator = (

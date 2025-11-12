@@ -164,7 +164,11 @@ const MODULE_WORKFLOWS = {
 	brandContext: internal.modules.brandContext.brandContextWorkflow,
 	logo: internal.modules.logo.logoWorkflow,
 	colors: internal.modules.colors.colorsWorkflow,
+	tagline: internal.modules.tagline.taglineWorkflow,
+	mission: internal.modules.mission.missionWorkflow,
 	story: internal.modules.story.storyWorkflow,
+	tone: internal.modules.tone.toneWorkflow,
+	typography: internal.modules.typography.typographyWorkflow,
 } as const;
 
 export const regenerateModule = mutation({
