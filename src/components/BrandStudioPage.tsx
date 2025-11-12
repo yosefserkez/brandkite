@@ -3,6 +3,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import LogoModule from "./modules/LogoModule";
 import NamesModule from "./modules/NamesModule";
+import StoryModule from "./modules/StoryModule";
 
 type BrandStudioPageProps = {
 	companyId: Id<"companies">;
@@ -26,6 +27,7 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 				{/* Names & Logo block - combined as header image with logo overlay */}
 				<NamesModule companyId={companyId} />
 				<LogoModule className="h-32 w-32" companyId={companyId} />
+				<StoryModule companyId={companyId} />
 			</div>
 		</div>
 	);
