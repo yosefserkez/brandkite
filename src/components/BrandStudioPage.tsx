@@ -30,7 +30,7 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 			<div className="mx-auto max-w-5xl space-y-4 overflow-hidden px-8 py-8">
 				{/* Names & Logo block - combined as header image with logo overlay */}
 				<NamesModule companyId={companyId} />
-				<div className="grid grid-cols-1 gap-4 pb-8 md:grid-cols-4">
+				<div className="flex flex-col gap-4 pb-8 md:grid md:grid-cols-4 md:grid-rows-1">
 					<div className="col-span-1 flex flex-col gap-4">
 						<LogoModule className="h-full w-full" companyId={companyId} />
 						<div className="h-full w-full rounded-t-lg bg-linear-to-b from-brand-primary-50 to-gray-50" />

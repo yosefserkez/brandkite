@@ -227,7 +227,7 @@ function TypographyShowcase({
 					primaryFontName={data.primaryFont.name}
 				/>
 			</div>
-			<div className="grid grid-cols-2">
+			<div className="grid gap-8 md:grid-cols-2 md:gap-0">
 				<ul className="space-y-3 text-gray-950 text-lg">
 					{sortedWeights.map((weight) => (
 						<li
@@ -267,7 +267,7 @@ function TypographyShowcase({
 					style={{ fontFamily: fontFamilyStack }}
 				>
 					<div className="space-y-3">
-						<div className="flex flex-nowrap text-2xl tracking-tight">
+						<div className="flex flex-wrap text-2xl tracking-tight">
 							<span className="text-gray-950">A</span>
 							<span className="text-gray-950">B</span>
 							<span className="text-gray-900">C</span>
@@ -321,10 +321,10 @@ function TypographyGuidelines({
 			<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
 				Guidelines
 			</p>
-			<ul className="wrap-break-word text-gray-400 text-xs tracking-tight">
+			<ul className="wrap-break-word flex flex-col gap-2 text-gray-400 text-xs tracking-tight">
 				{data.guidelines.map((item) => (
-					<li className="flex gap-2" key={item}>
-						<span>- {replaceCompanyName(item, companyName)}</span>
+					<li className="" key={item}>
+						<span>{replaceCompanyName(item, companyName)}</span>
 					</li>
 				))}
 			</ul>

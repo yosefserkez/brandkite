@@ -274,7 +274,7 @@ function SidebarTrigger({
 			variant="ghost"
 			{...props}
 		>
-			<PanelLeftIcon />
+			<PanelLeftIcon className="text-gray-400" />
 			<span className="sr-only">Toggle Sidebar</span>
 		</Button>
 	);

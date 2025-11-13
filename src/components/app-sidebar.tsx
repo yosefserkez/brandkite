@@ -119,7 +119,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 								{isCollapsed ? (
 									<div className="flex items-center justify-center">
 										{isHovered ? (
-											<PanelLeftIcon className="size-5" />
+											<PanelLeftIcon className="size-5 text-gray-400" />
 										) : (
 											<IconBuilding className="size-5" />
 										)}
