@@ -75,7 +75,7 @@ function NewCompanyRoute() {
 	};
 
 	return (
-		<div className="flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 p-4">
+		<div className="flex min-h-screen items-center justify-center overflow-hidden bg-white p-4">
 			<div className="flex h-full w-full max-w-4xl flex-col overflow-hidden">
 				{step === "input" && (
 					<>

@@ -4,6 +4,7 @@ import type { BrandStory } from "../../../convex/modules/story";
 import { useBrandModule } from "../../hooks/useBrandModule";
 import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
 import { SkeletonFlickeringGrid } from "../skeleton-flickering-grid";
+import { SuspenseCard } from "../suspense-card";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { BlockWrapper } from "./BlockWrapper";
 
@@ -33,7 +34,7 @@ export default function StoryModule({
 			actionHandlers={{ onCopy }}
 			className={className}
 			ctx={ctx}
-			loadingSkeleton={<SkeletonFlickeringGrid />}
+			loadingSkeleton={<SuspenseCard headerText="Story" />}
 		>
 			{/* Logo container with profile photo styling */}
 			<Card className="h-full">

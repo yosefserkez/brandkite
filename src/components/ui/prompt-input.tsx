@@ -163,7 +163,7 @@ function PromptInput({
 					isLoading,
 					value: value ?? internalValue,
 					setValue: onValueChange ?? handleChange,
-					maxHeight: dynamicMaxHeight,
+					maxHeight,
 					onSubmit,
 					textareaRef,
 					onFocusTextarea: handleFocus,

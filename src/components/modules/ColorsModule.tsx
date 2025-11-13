@@ -11,6 +11,7 @@ import {
 } from "../../lib/color-scale";
 import { cn, replaceCompanyName } from "../../lib/utils";
 import { SkeletonFlickeringGrid } from "../skeleton-flickering-grid";
+import { SuspenseCard } from "../suspense-card";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { BlockWrapper } from "./BlockWrapper";
@@ -74,7 +75,7 @@ export default function ColorsModule({
 			actionHandlers={{ onCopy }}
 			className={className}
 			ctx={ctx}
-			loadingSkeleton={<SkeletonFlickeringGrid />}
+			loadingSkeleton={<SuspenseCard headerText="Color system" />}
 		>
 			<Card>
 				<CardHeader>
@@ -363,18 +364,4 @@ function getAccessibleTextColor(hex: string): string {
 			LUMINANCE_BLUE_WEIGHT * b) /
 		RGB_COMPONENT_MAX;
 	return luminance > LUMINANCE_THRESHOLD ? DARK_TEXT_HEX : LIGHT_TEXT_HEX;
-}
-
-function EmptyState() {
-	return (
-		<div className="flex flex-1 items-center justify-center rounded-xl border border-gray-200 border-dashed bg-gray-50 px-6 py-12 text-center">
-			<div className="space-y-3">
-				<p className="font-medium text-gray-600 text-sm">Palette on the way</p>
-				<p className="text-gray-500 text-sm">
-					We&apos;re compiling color insights from your brand context. Refresh
-					in a moment to see the full palette.
-				</p>
-			</div>
-		</div>
-	);
 }

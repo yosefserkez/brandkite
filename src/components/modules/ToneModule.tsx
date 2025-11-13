@@ -1,10 +1,10 @@
 import { useMemo } from "react";
-
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandTone } from "../../../convex/modules/tone";
 import { useBrandModule } from "../../hooks/useBrandModule";
 import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
 import { replaceCompanyName } from "../../lib/utils";
+import { SuspenseCard } from "../suspense-card";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { BlockWrapper } from "./BlockWrapper";
 
@@ -13,10 +13,7 @@ type ToneModuleProps = {
 	className?: string;
 };
 
-export default function ToneModule({
-	companyId,
-	className,
-}: ToneModuleProps) {
+export default function ToneModule({ companyId, className }: ToneModuleProps) {
 	const ctx = useBrandModule(companyId, "tone");
 	const companyName = useCompanyBrandName(companyId);
 	const tone = ctx.selected?.data as BrandTone | undefined;
@@ -43,7 +40,7 @@ export default function ToneModule({
 	const content = tone ? (
 		<ToneContent companyName={companyName} tone={tone} />
 	) : (
-		<ToneSkeleton />
+		<SuspenseCard headerText="Tone of voice" />
 	);
 
 	return (
@@ -51,7 +48,7 @@ export default function ToneModule({
 			actionHandlers={{ onCopy }}
 			className={className}
 			ctx={ctx}
-			loadingSkeleton={<ToneSkeleton />}
+			loadingSkeleton={<SuspenseCard headerText="Tone of voice" />}
 		>
 			{content}
 		</BlockWrapper>
@@ -71,35 +68,32 @@ function ToneContent({
 	);
 
 	return (
-		<div className="grid h-full gap-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
-			<section className="flex flex-col justify-between gap-6">
-				<header className="space-y-3">
+		<Card className="h-full">
+			<CardHeader className="space-y-4">
+				<div className="space-y-2">
 					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
 						Tone of voice
 					</p>
-					<h2 className="font-semibold text-2xl text-gray-900">
-						How {(companyName ?? "{company_name}")} speaks
-					</h2>
-				</header>
-				<p className="text-gray-700 text-base leading-relaxed">
-					{replaceCompanyName(tone.summary, companyName)}
-				</p>
-			</section>
-			<section className="grid gap-4 lg:grid-cols-3">
+					<p className="space-y-2 text-gray-700 text-sm">
+						{replaceCompanyName(tone.summary, companyName)}
+					</p>
+				</div>
+			</CardHeader>
+			<CardContent className="mt-2 space-y-4">
 				{normalizedExamples.map((example, index) => (
-					<ToneExampleCard
+					<ToneExampleRow
 						companyName={companyName}
 						example={example}
 						index={index}
 						key={`${example.title}-${index}`}
 					/>
 				))}
-			</section>
-		</div>
+			</CardContent>
+		</Card>
 	);
 }
 
-function ToneExampleCard({
+function ToneExampleRow({
 	example,
 	index,
 	companyName,
@@ -110,56 +104,21 @@ function ToneExampleCard({
 }) {
 	const number = String(index + 1).padStart(2, "0");
 	return (
-		<Card className="flex h-full flex-col justify-between border-none bg-gray-50 shadow-none ring-1 ring-inset ring-gray-200">
-			<CardHeader className="space-y-2">
-				<span className="font-semibold text-gray-400 text-sm">{number}</span>
-				<CardTitle className="text-gray-900 text-lg">
-					{replaceCompanyName(example.title, companyName)}
-				</CardTitle>
-				<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+		<div className="flex flex-col">
+			<div className="flex items-center gap-2 align-center">
+				<span className="font-medium text-gray-400 text-lg">{number}</span>
+				<p className="font-medium text-gray-400 text-sm">
 					{replaceCompanyName(example.context, companyName)}
 				</p>
-			</CardHeader>
-			<CardContent className="text-gray-600 text-sm leading-relaxed">
-				{replaceCompanyName(example.description, companyName)}
-			</CardContent>
-		</Card>
-	);
-}
-
-function ToneSkeleton() {
-	return (
-		<div className="grid h-full animate-pulse gap-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
-			<div className="flex flex-col justify-between gap-4">
-				<div className="space-y-3">
-					<div className="h-3 w-24 rounded bg-gray-200" />
-					<div className="h-6 w-40 rounded bg-gray-200" />
-				</div>
-				<div className="space-y-3">
-					<div className="h-3 w-full rounded bg-gray-200" />
-					<div className="h-3 w-5/6 rounded bg-gray-200" />
-					<div className="h-3 w-4/6 rounded bg-gray-200" />
-				</div>
 			</div>
-			<div className="grid gap-4 lg:grid-cols-3">
-				{[0, 1, 2].map((item) => (
-					<div
-						className="flex flex-col justify-between rounded-2xl bg-gray-50 p-5"
-						key={`tone-skeleton-${item}`}
-					>
-						<div className="space-y-3">
-							<div className="h-3 w-10 rounded bg-gray-200" />
-							<div className="h-4 w-3/4 rounded bg-gray-200" />
-							<div className="h-3 w-2/3 rounded bg-gray-200" />
-						</div>
-						<div className="space-y-2 pt-4">
-							<div className="h-3 w-full rounded bg-gray-200" />
-							<div className="h-3 w-5/6 rounded bg-gray-200" />
-						</div>
-					</div>
-				))}
+			<div className="flex-1 space-y-2">
+				<CardTitle className="text-gray-700 text-lg">
+					{replaceCompanyName(example.title, companyName)}
+				</CardTitle>
+				<p className="text-gray-500 text-sm leading-relaxed">
+					{replaceCompanyName(example.description, companyName)}
+				</p>
 			</div>
 		</div>
 	);
 }
-

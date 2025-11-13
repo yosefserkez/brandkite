@@ -27,7 +27,7 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 	return (
 		<div className="h-full overflow-y-auto bg-white">
 			{/* Module blocks */}
-			<div className="mx-auto max-w-5xl space-y-4 px-8 py-8">
+			<div className="mx-auto max-w-5xl space-y-4 overflow-hidden px-8 py-8">
 				{/* Names & Logo block - combined as header image with logo overlay */}
 				<NamesModule companyId={companyId} />
 				<div className="grid grid-cols-1 gap-4 pb-8 md:grid-cols-3">
