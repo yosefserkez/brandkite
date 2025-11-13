@@ -14,49 +14,12 @@ const MODEL_NAME = "x-ai/grok-4-fast";
 const SYSTEM_PROMPT =
 	"You are a senior brand color strategist. Create emotionally resonant yet practical color palettes that translate a brand strategy into a usable design system. Use the literal token {company_name} whenever you reference the brand in the story. Never output the actual brand name.";
 
-const SHADE_STOP_LABELS = [
-	"950",
-	"900",
-	"800",
-	"700",
-	"600",
-	"500",
-	"400",
-	"300",
-	"200",
-	"100",
-	"50",
-] as const;
-const SHADE_STOPS: readonly number[] = SHADE_STOP_LABELS.map((label) =>
-	Number.parseInt(label, 10)
-);
 const HEX_PREFIX = "#";
 const HEX_FULL_LENGTH = 6;
 const HEX_START_INDEX = 0;
 const PALETTE_COLOR_COUNT = 3;
 
 const hexRegex = /^#?[0-9A-F]{6}$/i;
-
-const shadeStopSchema = z
-	.number()
-	.describe(
-		"Shade scale step using Tailwind-style numbers (950, 900, …, 50) darkest to lightest."
-	)
-	.refine(
-		(value) => SHADE_STOPS.includes(value as (typeof SHADE_STOPS)[number]),
-		"Shade stops must be one of 950, 900, 800, 700, 600, 500, 400, 300, 200, 100, 50."
-	);
-
-const shadeSchema = z.object({
-	stop: shadeStopSchema,
-	hex: z
-		.string()
-		.describe("Hex value for this shade, uppercase and prefixed with #.")
-		.refine(
-			(value) => hexRegex.test(value),
-			"Must be a valid 6-digit hex color."
-		),
-});
 
 const paletteColorSchema = z.object({
 	name: z
@@ -84,26 +47,20 @@ const paletteColorSchema = z.object({
 	usage: z
 		.string()
 		.describe(
-			"Specific guidance (1-2 sentences) for when and where to apply the color across digital/print."
+			"Concise specific guidance (1-2 sentences) for when and where to apply the color across digital/print."
 		),
-	scale: z
-		.array(shadeSchema)
-		.describe(
-			"Ordered from darkest (950) to lightest (50). Provide exactly one entry per shade stop."
-		)
-		.length(SHADE_STOPS.length),
 });
 
 export const colorsSchema = z.object({
 	overview: z
 		.string()
 		.describe(
-			"2-3 sentence narrative weaving the three colors together similar to a brand rationale paragraph."
+			"2-3 concise sentences weaving the three colors together similar to a brand rationale paragraph."
 		),
 	howToUse: z
 		.string()
 		.describe(
-			"1-2 sentence macro guidance on orchestrating the palette (hierarchy, accessibility, balance)."
+			"1-2 concise sentence macro guidance on orchestrating the palette (hierarchy, accessibility, balance)."
 		),
 	colors: z
 		.array(paletteColorSchema)
@@ -113,7 +70,6 @@ export const colorsSchema = z.object({
 
 export type BrandPalette = z.infer<typeof colorsSchema>;
 export type BrandPaletteColor = z.infer<typeof paletteColorSchema>;
-export type BrandPaletteShade = z.infer<typeof shadeSchema>;
 
 export const colorsValidator = v.object({
 	overview: v.string(),
@@ -125,12 +81,6 @@ export const colorsValidator = v.object({
 			hex: v.string(),
 			summary: v.string(),
 			usage: v.string(),
-			scale: v.array(
-				v.object({
-					stop: v.number(),
-					hex: v.string(),
-				})
-			),
 		})
 	),
 });
@@ -188,7 +138,6 @@ const buildPrompt = (args: GeneratePaletteArgs): string => {
 		"- Provide exactly three colors (anchor, support, accent) that work digitally and in print.",
 		"- Names should be evocative and short. Avoid generic color words.",
 		"- Hex values must be 6-digit uppercase codes prefixed with #.",
-		"- Each color must include the ordered scale stops 950, 900, 800, 700, 600, 500, 400, 300, 200, 100, 50.",
 		"- Summaries and usage guidance should cite how each color reinforces the brand strategy and how to deploy it.",
 		"- Overview paragraph should read like the sample provided in the reference.",
 		"- howToUse should give practical guidance on hierarchy, accessibility, and balance.",
@@ -206,23 +155,6 @@ const normalizeHex = (value: string): string => {
 	return `${HEX_PREFIX}${upper}`;
 };
 
-const normalizeScale = (
-	scale: BrandPaletteShade[],
-	fallbackHex: string
-): BrandPaletteShade[] => {
-	const normalized = new Map<number, string>();
-	for (const shade of scale ?? []) {
-		if (SHADE_STOPS.includes(shade.stop as (typeof SHADE_STOPS)[number])) {
-			normalized.set(shade.stop, normalizeHex(shade.hex));
-		}
-	}
-	const base = normalizeHex(fallbackHex);
-	return SHADE_STOPS.map((stop) => ({
-		stop,
-		hex: normalized.get(stop) ?? base,
-	}));
-};
-
 const normalizePalette = (palette: BrandPalette): BrandPalette => ({
 	overview: palette.overview.trim(),
 	howToUse: palette.howToUse.trim(),
@@ -232,7 +164,6 @@ const normalizePalette = (palette: BrandPalette): BrandPalette => ({
 		hex: normalizeHex(color.hex),
 		summary: color.summary.trim(),
 		usage: color.usage.trim(),
-		scale: normalizeScale(color.scale, color.hex),
 	})),
 });
 

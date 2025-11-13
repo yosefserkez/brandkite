@@ -1,10 +1,18 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandPalette } from "../../../convex/modules/colors";
 import { useBrandModule } from "../../hooks/useBrandModule";
 import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
+import {
+	BRAND_SHADE_BASE_STOP,
+	BRAND_SHADE_STOPS,
+	type BrandColorScaleEntry,
+	generateColorScale,
+} from "../../lib/color-scale";
 import { cn, replaceCompanyName } from "../../lib/utils";
-import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader } from "../ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { BlockWrapper } from "./BlockWrapper";
 
 type ColorsModuleProps = {
@@ -12,10 +20,20 @@ type ColorsModuleProps = {
 	className?: string;
 };
 
-type PaletteVariant = "full" | "compact";
-
-const SKELETON_COLOR_COLUMNS = 3;
-const SKELETON_SHADE_ROWS = 6;
+const SKELETON_COLOR_KEYS = ["anchor", "support", "accent"] as const;
+const SKELETON_ROW_ALTERNATION_MODULUS = 2;
+const SKELETON_ROW_EVEN_REMAINDER = 0;
+const HEX_CHANNEL_LENGTH = 2;
+const HEX_CHANNEL_GREEN_OFFSET = HEX_CHANNEL_LENGTH;
+const HEX_CHANNEL_BLUE_OFFSET = HEX_CHANNEL_LENGTH * 2;
+const HEX_RADIX = 16;
+const RGB_COMPONENT_MAX = 255;
+const LUMINANCE_RED_WEIGHT = 0.299;
+const LUMINANCE_GREEN_WEIGHT = 0.587;
+const LUMINANCE_BLUE_WEIGHT = 0.114;
+const LUMINANCE_THRESHOLD = 0.65;
+const DARK_TEXT_HEX = "#111827";
+const LIGHT_TEXT_HEX = "#F9FAFB";
 
 export default function ColorsModule({
 	companyId,
@@ -24,7 +42,6 @@ export default function ColorsModule({
 	const ctx = useBrandModule(companyId, "colors");
 	const companyName = useCompanyBrandName(companyId);
 	const palette = ctx.selected?.data as BrandPalette | undefined;
-	const [variant, setVariant] = useState<PaletteVariant>("full");
 
 	const onCopy = () => {
 		if (!palette) {
@@ -43,7 +60,17 @@ export default function ColorsModule({
 		navigator.clipboard.writeText(text);
 	};
 
-	const hasPalette = Boolean(palette?.colors?.length ?? false);
+	const colorsWithScale = useMemo(() => {
+		if (!palette) {
+			return [];
+		}
+		return palette.colors.map((color) => ({
+			...color,
+			scale: generateColorScale(color.hex),
+		}));
+	}, [palette]);
+
+	const hasPalette = colorsWithScale.length > 0;
 
 	return (
 		<BlockWrapper
@@ -52,252 +79,294 @@ export default function ColorsModule({
 			ctx={ctx}
 			loadingSkeleton={<PaletteSkeleton />}
 		>
-			<div className="flex h-full flex-col gap-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-				<PaletteHeader
-					companyName={companyName ?? ""}
-					hasPalette={hasPalette}
-					onVariantChange={setVariant}
-					palette={palette}
-					variant={variant}
-				/>
-				{hasPalette ? (
-					<PaletteBody
-						companyName={companyName ?? ""}
-						palette={palette as BrandPalette}
-						variant={variant}
-					/>
-				) : (
-					<EmptyState />
-				)}
-			</div>
+			<Card>
+				<CardHeader>
+					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+						Color system
+					</p>
+					<div className="mb-8 space-y-2 text-gray-700 text-sm">
+						<p>{replaceCompanyName(palette?.overview ?? "", companyName)}</p>
+						<p className="text-gray-600">
+							{replaceCompanyName(palette?.howToUse ?? "", companyName)}
+						</p>
+					</div>
+				</CardHeader>
+				<CardContent>
+					{hasPalette ? (
+						<PaletteBody
+							colors={colorsWithScale}
+							companyName={companyName ?? ""}
+						/>
+					) : (
+						<EmptyState />
+					)}
+				</CardContent>
+			</Card>
 		</BlockWrapper>
 	);
 }
 
-function PaletteHeader(props: {
-	hasPalette: boolean;
-	onVariantChange: (variant: PaletteVariant) => void;
-	palette?: BrandPalette;
-	companyName: string;
-	variant: PaletteVariant;
-}) {
-	const { palette, variant, onVariantChange, hasPalette, companyName } = props;
-	return (
-		<header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-			<div className="space-y-3">
-				<div>
-					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-						Brand palette
-					</p>
-					<h2 className="font-semibold text-2xl text-gray-900">Color system</h2>
-				</div>
-				{palette ? (
-					<div className="space-y-2 text-gray-700 text-sm">
-						<p>{replaceCompanyName(palette.overview, companyName)}</p>
-						<p className="text-gray-600">
-							{replaceCompanyName(palette.howToUse, companyName)}
-						</p>
-					</div>
-				) : (
-					<p className="text-gray-500 text-sm">
-						AI is generating your color palette. This usually takes a few
-						seconds.
-					</p>
-				)}
-			</div>
-			<div className="flex items-center gap-2 self-start rounded-full border border-gray-200 bg-gray-50 p-1">
-				<ToggleButton
-					disabled={!hasPalette}
-					isActive={variant === "full"}
-					label="Full view"
-					onClick={() => onVariantChange("full")}
-				/>
-				<ToggleButton
-					disabled={!hasPalette}
-					isActive={variant === "compact"}
-					label="Compact"
-					onClick={() => onVariantChange("compact")}
-				/>
-			</div>
-		</header>
-	);
-}
+type PaletteColorWithScale = BrandPalette["colors"][number] & {
+	scale: BrandColorScaleEntry[];
+};
 
 function PaletteBody(props: {
 	companyName: string;
-	palette: BrandPalette;
-	variant: PaletteVariant;
+	colors: PaletteColorWithScale[];
 }) {
-	const { palette, variant, companyName } = props;
+	const { colors, companyName } = props;
 
-	if (variant === "compact") {
-		return (
-			<CompactPaletteView colors={palette.colors} companyName={companyName} />
-		);
-	}
-
-	return <FullPaletteView colors={palette.colors} companyName={companyName} />;
+	return <PaletteView colors={colors} companyName={companyName} />;
 }
 
-function FullPaletteView({
+function PaletteView({
 	colors,
 	companyName,
 }: {
-	colors: BrandPalette["colors"];
+	colors: PaletteColorWithScale[];
 	companyName: string;
 }) {
 	return (
 		<div className="grid gap-6 lg:grid-cols-3">
-			{colors.map((color) => (
-				<div
-					className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 shadow-sm"
-					key={color.name}
-				>
-					<div className="flex flex-1 flex-col">
-						{color.scale.map((shade) => (
-							<PaletteShadeRow key={shade.stop} shade={shade} />
-						))}
-					</div>
-					<div className="space-y-3 bg-white px-5 py-5">
-						<div className="flex items-start justify-between gap-3">
-							<div className="space-y-1">
-								<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-									{replaceCompanyName(color.role, companyName)}
-								</p>
-								<h3 className="font-semibold text-gray-900 text-xl">
-									{color.name}
-								</h3>
-							</div>
-							<code className="rounded bg-gray-100 px-2 py-1 font-mono text-gray-700 text-xs">
-								{color.hex}
-							</code>
+			{colors.map((color) => {
+				const { topShades, mainShade, bottomShades } = partitionColorScale(
+					color.scale
+				);
+
+				if (!mainShade) {
+					return null;
+				}
+
+				return (
+					<div
+						className="flex flex-col overflow-hidden rounded"
+						key={color.name}
+					>
+						<div className="flex flex-col">
+							{topShades.map((shade) => (
+								<ShadeSwatch key={shade.stop} shade={shade} />
+							))}
 						</div>
-						<p className="text-gray-700 text-sm">
-							{replaceCompanyName(color.summary, companyName)}
-						</p>
-						<div className="space-y-1">
-							<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-								Usage
-							</p>
-							<p className="text-gray-600 text-sm">
-								{replaceCompanyName(color.usage, companyName)}
-							</p>
+						<MainShadeSwatch
+							color={color}
+							companyName={companyName}
+							shade={mainShade}
+						/>
+						<div className="flex flex-col">
+							{bottomShades.map((shade) => (
+								<ShadeSwatch key={shade.stop} shade={shade} />
+							))}
 						</div>
 					</div>
-				</div>
-			))}
+				);
+			})}
 		</div>
 	);
 }
 
-function CompactPaletteView({
-	colors,
-	companyName,
-}: {
-	colors: BrandPalette["colors"];
-	companyName: string;
-}) {
-	return (
-		<div className="space-y-5">
-			{colors.map((color) => (
-				<div
-					className="space-y-4 rounded-2xl border border-gray-100 bg-gray-50 p-5 shadow-sm"
-					key={color.name}
-				>
-					<div className="flex items-start justify-between gap-4">
-						<div className="space-y-1">
-							<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-								{color.role}
-							</p>
-							<h3 className="font-semibold text-gray-900 text-lg">
-								{replaceCompanyName(color.name, companyName)}
-							</h3>
-							<p className="text-gray-600 text-sm">
-								{replaceCompanyName(color.summary, companyName)}
-							</p>
-						</div>
-						<div className="flex flex-col items-end gap-1">
-							<code className="rounded bg-white px-2 py-1 font-mono text-gray-700 text-xs shadow-sm">
-								{replaceCompanyName(color.hex, companyName)}
-							</code>
-							<span className="text-gray-500 text-xs">
-								{color.scale.length} shades
-							</span>
-						</div>
-					</div>
-					<div className="flex overflow-hidden rounded-full border border-gray-200">
-						{color.scale.map((shade) => (
-							<div
-								className="h-10 flex-1"
-								key={shade.stop}
-								style={{ backgroundColor: shade.hex }}
-							/>
-						))}
-					</div>
-					<p className="text-gray-600 text-sm">
-						{replaceCompanyName(color.usage, companyName)}
-					</p>
-				</div>
-			))}
-		</div>
+type PartitionedColorScale = {
+	topShades: BrandColorScaleEntry[];
+	mainShade: BrandColorScaleEntry | undefined;
+	bottomShades: BrandColorScaleEntry[];
+};
+
+function partitionColorScale(
+	scale: BrandColorScaleEntry[]
+): PartitionedColorScale {
+	const topShades = scale.filter((shade) => shade.stop > BRAND_SHADE_BASE_STOP);
+	const bottomShades = scale.filter(
+		(shade) => shade.stop < BRAND_SHADE_BASE_STOP
 	);
+	const mainShade = scale.find((shade) => shade.stop === BRAND_SHADE_BASE_STOP);
+
+	return {
+		topShades,
+		mainShade,
+		bottomShades,
+	};
 }
 
-function PaletteShadeRow({
-	shade,
-}: {
-	shade: BrandPalette["colors"][number]["scale"][number];
-}) {
+function ShadeSwatch({ shade }: { shade: BrandColorScaleEntry }) {
 	const textColor = useMemo(
 		() => getAccessibleTextColor(shade.hex),
 		[shade.hex]
 	);
+	const [isHovered, setIsHovered] = useState(false);
+	const handleCopy = useCallback(() => {
+		copyHexToClipboard(shade.hex);
+	}, [shade.hex]);
+	const handlePointerEnter = useCallback(() => {
+		setIsHovered(true);
+	}, []);
+	const handlePointerLeave = useCallback(() => {
+		setIsHovered(false);
+	}, []);
 
 	return (
-		<div
-			className="flex h-10 items-center justify-between px-4 font-medium text-sm"
+		<button
+			aria-label={`Copy ${shade.hex} for shade ${shade.stop}`}
+			className={cn(
+				"relative flex h-12 w-full cursor-pointer items-center justify-end px-5 text-right font-semibold text-xs uppercase tracking-wide transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+			)}
+			onBlur={handlePointerLeave}
+			onClick={handleCopy}
+			onFocus={handlePointerEnter}
+			onMouseEnter={handlePointerEnter}
+			onMouseLeave={handlePointerLeave}
 			style={{
 				backgroundColor: shade.hex,
 				color: textColor,
 			}}
+			type="button"
 		>
-			<span>{shade.stop}</span>
-			<span className="font-mono text-xs opacity-80">{shade.hex}</span>
-		</div>
+			<span
+				className={cn(
+					"transition-opacity",
+					isHovered ? "opacity-0" : "opacity-50"
+				)}
+			>
+				{shade.stop}
+			</span>
+			<span
+				className={cn(
+					"pointer-events-none absolute right-5 font-mono text-xs transition-opacity",
+					isHovered ? "opacity-50" : "opacity-0"
+				)}
+			>
+				{shade.hex}
+			</span>
+		</button>
 	);
 }
 
-function ToggleButton(props: {
-	disabled?: boolean;
-	isActive: boolean;
-	label: string;
-	onClick: () => void;
-}) {
-	const { disabled, onClick, label, isActive } = props;
-	return (
-		<Button
-			className={cn(
-				"h-8 rounded-full px-3 font-medium text-xs",
-				isActive ? "bg-gray-900 text-white" : "bg-transparent text-gray-600"
-			)}
-			disabled={disabled}
-			onClick={onClick}
-			type="button"
-			variant="ghost"
-		>
-			{label}
-		</Button>
+type MainShadeSwatchProps = {
+	color: PaletteColorWithScale;
+	companyName: string;
+	shade: BrandColorScaleEntry;
+};
+
+function MainShadeSwatch({ color, companyName, shade }: MainShadeSwatchProps) {
+	const [open, setOpen] = useState(false);
+	const textColor = useMemo(
+		() => getAccessibleTextColor(shade.hex),
+		[shade.hex]
 	);
+	const role = replaceCompanyName(color.role, companyName);
+	const name = replaceCompanyName(color.name, companyName);
+	const summary = replaceCompanyName(color.summary, companyName);
+	const usage = replaceCompanyName(color.usage, companyName);
+
+	const handleCopy = useCallback(() => {
+		copyHexToClipboard(shade.hex);
+	}, [shade.hex]);
+
+	const handlePointerEnter = useCallback(() => {
+		setOpen(true);
+	}, []);
+
+	const handlePointerLeave = useCallback(() => {
+		setOpen(false);
+	}, []);
+
+	return (
+		<Popover onOpenChange={setOpen} open={open}>
+			<PopoverTrigger asChild>
+				<button
+					aria-label={`Copy ${shade.hex} for ${name}`}
+					className={cn(
+						"relative flex min-h-[180px] w-full cursor-pointer flex-col items-center justify-center gap-3 px-6 py-12 text-center transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+					)}
+					onBlur={handlePointerLeave}
+					onClick={handleCopy}
+					onFocus={handlePointerEnter}
+					onMouseEnter={handlePointerEnter}
+					onMouseLeave={handlePointerLeave}
+					style={{
+						backgroundColor: shade.hex,
+						color: textColor,
+					}}
+					type="button"
+				>
+					<div className="pointer-events-none absolute top-6 right-5 text-right font-semibold text-xs uppercase tracking-wide opacity-50">
+						{open ? (
+							<span className="pointer-events-none right-5 block text-xs transition-opacity">
+								{shade.stop}
+							</span>
+						) : (
+							<span className="pointer-events-none top-0 right-5 block font-mono text-xs transition-opacity">
+								{shade.hex}
+							</span>
+						)}
+					</div>
+					<span className="font-medium text-xs uppercase tracking-[0.3em] opacity-80">
+						{role}
+					</span>
+					<span className="font-semibold text-2xl leading-tight">{name}</span>
+				</button>
+			</PopoverTrigger>
+			<PopoverContent
+				align="center"
+				className="w-80 space-y-4 text-left text-sm"
+				onMouseEnter={handlePointerEnter}
+				onMouseLeave={handlePointerLeave}
+			>
+				<div className="space-y-1">
+					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+						Role
+					</p>
+					<p className="font-semibold text-base text-gray-900">{role}</p>
+				</div>
+				<div className="space-y-1">
+					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+						Summary
+					</p>
+					<p className="text-gray-700">{summary}</p>
+				</div>
+				<div className="space-y-1">
+					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+						Usage
+					</p>
+					<p className="text-gray-700">{usage}</p>
+				</div>
+				<div className="flex items-center justify-between rounded-md bg-gray-100 px-3 py-2 font-mono text-gray-700 text-xs">
+					<span>Hex</span>
+					<span>{shade.hex}</span>
+				</div>
+			</PopoverContent>
+		</Popover>
+	);
+}
+
+function copyHexToClipboard(hex: string): void {
+	if (typeof navigator === "undefined" || !navigator.clipboard) {
+		return;
+	}
+	navigator.clipboard
+		.writeText(hex)
+		.then(() => toast.success(`Hex code ${hex} copied to clipboard.`));
 }
 
 function getAccessibleTextColor(hex: string): string {
 	const normalized = hex.replace("#", "");
-	const r = Number.parseInt(normalized.slice(0, 2), 16);
-	const g = Number.parseInt(normalized.slice(2, 4), 16);
-	const b = Number.parseInt(normalized.slice(4, 6), 16);
+	const r = Number.parseInt(normalized.slice(0, HEX_CHANNEL_LENGTH), HEX_RADIX);
+	const g = Number.parseInt(
+		normalized.slice(HEX_CHANNEL_GREEN_OFFSET, HEX_CHANNEL_BLUE_OFFSET),
+		HEX_RADIX
+	);
+	const b = Number.parseInt(
+		normalized.slice(
+			HEX_CHANNEL_BLUE_OFFSET,
+			HEX_CHANNEL_BLUE_OFFSET + HEX_CHANNEL_LENGTH
+		),
+		HEX_RADIX
+	);
 
-	const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-	return luminance > 0.65 ? "#111827" : "#F9FAFB";
+	const luminance =
+		(LUMINANCE_RED_WEIGHT * r +
+			LUMINANCE_GREEN_WEIGHT * g +
+			LUMINANCE_BLUE_WEIGHT * b) /
+		RGB_COMPONENT_MAX;
+	return luminance > LUMINANCE_THRESHOLD ? DARK_TEXT_HEX : LIGHT_TEXT_HEX;
 }
 
 function PaletteSkeleton() {
@@ -310,26 +379,25 @@ function PaletteSkeleton() {
 				<div className="h-3 w-5/6 rounded bg-gray-200" />
 			</div>
 			<div className="grid flex-1 gap-4 lg:grid-cols-3">
-				{Array.from({ length: SKELETON_COLOR_COLUMNS }).map(
-					(_, columnIndex) => (
-						<div
-							className="flex flex-col gap-2 rounded-xl bg-gray-50 p-3"
-							key={columnIndex}
-						>
-							{Array.from({ length: SKELETON_SHADE_ROWS }).map(
-								(__, rowIndex) => (
-									<div
-										className={cn(
-											"h-8 rounded",
-											rowIndex % 2 === 0 ? "bg-gray-200" : "bg-gray-100"
-										)}
-										key={`${columnIndex}-${rowIndex}`}
-									/>
-								)
-							)}
-						</div>
-					)
-				)}
+				{SKELETON_COLOR_KEYS.map((key) => (
+					<div
+						className="flex flex-col gap-2 rounded-xl bg-gray-50 p-3"
+						key={key}
+					>
+						{BRAND_SHADE_STOPS.map((stop, index) => (
+							<div
+								className={cn(
+									"h-8 rounded",
+									index % SKELETON_ROW_ALTERNATION_MODULUS ===
+										SKELETON_ROW_EVEN_REMAINDER
+										? "bg-gray-200"
+										: "bg-gray-100"
+								)}
+								key={`${key}-${stop}`}
+							/>
+						))}
+					</div>
+				))}
 			</div>
 		</div>
 	);

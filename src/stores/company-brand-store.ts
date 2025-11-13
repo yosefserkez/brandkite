@@ -1,6 +1,7 @@
 import { Store } from "@tanstack/store";
 import type { BrandPalette } from "../../convex/modules/colors";
 import type { BrandTypography } from "../../convex/modules/typography";
+import { BRAND_SHADE_STOPS, generateColorScale } from "../lib/color-scale";
 
 type BrandColorRole = "primary" | "secondary" | "accent";
 
@@ -38,29 +39,17 @@ const COLOR_ROLES: readonly BrandColorRole[] = [
 
 const WHITESPACE_REGEX = /\s/;
 
-const SHADE_STOPS = [
-	"950",
-	"900",
-	"800",
-	"700",
-	"600",
-	"500",
-	"400",
-	"300",
-	"200",
-	"100",
-	"50",
-] as const;
-
-const DEFAULT_COLOR_FALLBACKS: Record<string, string> = SHADE_STOPS.reduce(
-	(acc, stop) => {
-		acc[`primary-${stop}`] = "#111827";
-		acc[`secondary-${stop}`] = "#1F2937";
-		acc[`accent-${stop}`] = "#0EA5E9";
-		return acc;
-	},
-	{} as Record<string, string>
-);
+const DEFAULT_COLOR_FALLBACKS: Record<string, string> =
+	BRAND_SHADE_STOPS.reduce(
+		(acc, stop) => {
+			const key = String(stop);
+			acc[`primary-${key}`] = "#111827";
+			acc[`secondary-${key}`] = "#1F2937";
+			acc[`accent-${key}`] = "#0EA5E9";
+			return acc;
+		},
+		{} as Record<string, string>
+	);
 
 const DEFAULT_FONT_STACK =
 	"-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif";
@@ -104,7 +93,7 @@ export function setCompanyPalette(palette: BrandPalette | null): void {
 			if (!role) {
 				continue;
 			}
-			colorScales[role] = color.scale.reduce((acc, shade) => {
+			colorScales[role] = generateColorScale(color.hex).reduce((acc, shade) => {
 				acc[String(shade.stop)] = shade.hex;
 				return acc;
 			}, {} as ColorScale);
@@ -151,12 +140,13 @@ function applyColorTokens(
 
 	for (const role of COLOR_ROLES) {
 		const scale = colorScales[role];
-		for (const stop of SHADE_STOPS) {
-			const key = `${role}-${stop}`;
+		for (const stop of BRAND_SHADE_STOPS) {
+			const stopKey = String(stop);
+			const key = `${role}-${stopKey}`;
 			const value =
-				scale?.[stop] ??
+				scale?.[stopKey] ??
 				DEFAULT_COLOR_FALLBACKS[key] ??
-				DEFAULT_COLOR_FALLBACKS[`primary-${stop}`];
+				DEFAULT_COLOR_FALLBACKS[`primary-${stopKey}`];
 			root.style.setProperty(`--brand-${role}-${stop}`, value);
 		}
 
@@ -199,7 +189,7 @@ function clearBrandCssTokens(): void {
 	}
 	const root = document.documentElement;
 	for (const role of COLOR_ROLES) {
-		for (const stop of SHADE_STOPS) {
+		for (const stop of BRAND_SHADE_STOPS) {
 			root.style.removeProperty(`--brand-${role}-${stop}`);
 		}
 		root.style.removeProperty(`--brand-${role}`);
