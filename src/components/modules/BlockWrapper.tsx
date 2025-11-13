@@ -10,20 +10,18 @@ import {
 } from "./ModuleActions";
 import { VersionSelector } from "./VersionSelector";
 
-const actionsVariants = cva(
-	"opacity-0 transition-opacity duration-200 group-hover:opacity-100",
-	{
-		variants: {
-			position: {
-				compact: "absolute top-2 right-2 z-10",
-				full: "flex items-center gap-2 py-2",
-			},
+const actionsVariants = cva("", {
+	variants: {
+		position: {
+			compact:
+				"absolute top-2 right-2 z-10 rounded-md bg-white/80 shadow-sm backdrop-blur-md dark:bg-black/80",
+			full: "flex items-center gap-2 py-2",
 		},
-		defaultVariants: {
-			position: "full",
-		},
-	}
-);
+	},
+	defaultVariants: {
+		position: "full",
+	},
+});
 
 type BlockWrapperProps = {
 	children: ReactNode;
@@ -60,26 +58,44 @@ export function BlockWrapper({
 		ctx?.selected &&
 		(ctx.selected.generationStatus === "queued" ||
 			ctx.selected.generationStatus === "in_progress");
+	// Always use compact actions variant on mobile (sm and down).
+	const isMobile =
+		typeof window !== "undefined"
+			? window.matchMedia("(max-width: 640px)").matches
+			: false;
+	const effectiveActionsVariant = isMobile ? "compact" : actionsVariant;
 
 	return (
 		<div className={cn("group relative", className)}>
 			{isLoading ? loadingSkeleton : children}
 			{!hideActions && (
-				<div className={actionsVariants({ position: actionsVariant })}>
+				<div
+					className={cn(
+						isMobile
+							? "opacity-50"
+							: "opacity-0 transition-opacity duration-200 group-hover:opacity-100",
+						actionsVariants({ position: effectiveActionsVariant })
+					)}
+				>
 					{actionsComponent ?? (
 						<ModuleActions
 							actions={actions}
 							ctx={ctx}
 							hideRegenerate={hideRegenerate}
 							hideVersionSelector={hideVersionSelector}
-							variant={actionsVariant ?? undefined}
+							variant={effectiveActionsVariant ?? undefined}
 							{...actionHandlers}
 						/>
 					)}
 				</div>
 			)}
-			{actionsVariant === "compact" && !hideVersionSelector && (
-				<div className="absolute right-2 bottom-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+			{effectiveActionsVariant === "compact" && !hideVersionSelector && (
+				<div
+					className={cn(
+						"absolute right-2 bottom-2 transition-opacity duration-200 group-hover:opacity-100",
+						isMobile ? "opacity-50" : "opacity-0"
+					)}
+				>
 					<VersionSelector ctx={ctx} />
 				</div>
 			)}

@@ -27,15 +27,15 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 	return (
 		<div className="h-full overflow-y-auto bg-white">
 			{/* Module blocks */}
-			<div className="mx-auto max-w-5xl space-y-4 overflow-hidden px-8 py-8">
+			<div className="mx-auto max-w-5xl space-y-10 overflow-hidden px-4 py-4">
 				{/* Names & Logo block - combined as header image with logo overlay */}
 				<NamesModule companyId={companyId} />
-				<div className="flex flex-col gap-4 pb-8 md:grid md:grid-cols-4 md:grid-rows-1">
-					<div className="col-span-1 flex flex-col gap-4">
+				<div className="flex flex-col gap-10 md:grid md:grid-cols-4 md:grid-rows-1 md:gap-4 md:pb-6">
+					<div className="col-span-1 flex flex-col gap-10 md:gap-4">
 						<LogoModule className="h-full w-full" companyId={companyId} />
-						<div className="h-full w-full rounded-t-lg bg-linear-to-b from-brand-primary-50 to-gray-50" />
+						<div className="hidden h-full w-full rounded-t-lg bg-linear-to-b from-brand-primary-50 to-gray-50 md:block" />
 					</div>
-					<div className="col-span-3 flex flex-col gap-4">
+					<div className="col-span-3 flex flex-col gap-10 md:gap-4">
 						<MissionModule companyId={companyId} />
 						<TaglineModule companyId={companyId} />
 					</div>

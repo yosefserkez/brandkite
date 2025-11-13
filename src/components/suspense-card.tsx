@@ -14,7 +14,7 @@ export function SuspenseCard({
 		<Card className="h-full overflow-hidden">
 			<CardHeader className="space-y-4">
 				<div className="space-y-2">
-					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+					<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
 						{headerText}
 					</p>
 				</div>

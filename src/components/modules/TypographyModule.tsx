@@ -31,11 +31,13 @@ export default function TypographyModule({
 		if (!data) {
 			return [] as BrandTypography["weights"];
 		}
-		return [...data.weights].sort((a, b) => a.fontWeight - b.fontWeight);
+		return [...(data?.weights ?? [])].sort(
+			(a, b) => a.fontWeight - b.fontWeight
+		);
 	}, [data]);
 
 	const onCopy = () => {
-		if (!data) {
+		if (!data || data?.weights || data?.primaryFont || data?.headlineFont) {
 			return;
 		}
 		const safeCompanyName = companyName ?? "";
@@ -82,35 +84,37 @@ export default function TypographyModule({
 			ctx={ctx}
 			loadingSkeleton={<SuspenseCard headerText="Typography system" />}
 		>
-			<Card>
-				<CardHeader>
-					<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
-						Typography system
-					</p>
-					<div className="wrap-break-word text-gray-950 text-sm tracking-tight">
-						<p>{replaceCompanyName(data?.overview ?? "", companyName ?? "")}</p>
-						{data ? (
-							<p className="pb-4 text-gray-600">
-								{replaceCompanyName(
-									data.primaryFont.summary,
-									companyName ?? ""
-								)}
+			{data ? (
+				<Card>
+					<CardHeader>
+						<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
+							Typography system
+						</p>
+						<div className="wrap-break-word text-gray-950 text-sm tracking-tight">
+							<p>
+								{replaceCompanyName(data?.overview ?? "", companyName ?? "")}
 							</p>
-						) : null}
-					</div>
-				</CardHeader>
-				<CardContent>
-					{data ? (
+							{data ? (
+								<p className="pb-4 text-gray-600">
+									{replaceCompanyName(
+										data?.primaryFont?.summary ?? "",
+										companyName ?? ""
+									)}
+								</p>
+							) : null}
+						</div>
+					</CardHeader>
+					<CardContent>
 						<TypographyContent
 							companyName={companyName ?? ""}
 							data={data}
 							sortedWeights={sortedWeights}
 						/>
-					) : (
-						<SuspenseCard headerText="Typography system" />
-					)}
-				</CardContent>
-			</Card>
+					</CardContent>
+				</Card>
+			) : (
+				<SuspenseCard headerText="Typography system" />
+			)}
 		</BlockWrapper>
 	);
 }
@@ -150,29 +154,31 @@ function TypographyShowcase({
 		[sortedWeights]
 	);
 	useEffect(() => {
-		loadGoogleFontFamily(data.primaryFont.name, fontWeights);
-		loadGoogleFontFamily(data.headlineFont.name, fontWeights);
-	}, [data.headlineFont.name, data.primaryFont.name, fontWeights]);
+		loadGoogleFontFamily(data.primaryFont?.name, fontWeights);
+		loadGoogleFontFamily(data.headlineFont?.name, fontWeights);
+	}, [data.headlineFont?.name, data.primaryFont?.name, fontWeights]);
 
 	const [activeFont, setActiveFont] = useState<"primary" | "headline">(
 		"primary"
 	);
 	const specimenCopy = replaceCompanyName(data.specimenCopy, companyName);
 	const activeFontData =
-		activeFont === "primary" ? data.primaryFont : data.headlineFont;
+		activeFont === "primary"
+			? (data.primaryFont ?? null)
+			: (data.headlineFont ?? null);
 	const fontFamilyStack = useMemo(
-		() => buildFontStack(activeFontData.name),
+		() => buildFontStack(activeFontData?.name ?? ""),
 		[activeFontData.name]
 	);
 	const fontDescriptor =
 		activeFont === "primary" ? "Primary font" : "Headline font";
 	const activeFontSummary = replaceCompanyName(
-		activeFontData.summary,
+		activeFontData?.summary ?? "",
 		companyName
 	);
 	const activeFontUsage = replaceCompanyName(activeFontData.usage, companyName);
 	const activeFontPairing = replaceCompanyName(
-		activeFontData.pairing,
+		activeFontData?.pairing ?? "",
 		companyName
 	);
 

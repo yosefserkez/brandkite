@@ -2,7 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SignInFormEmailLink } from "@/components/signInWithMagicLink";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import {
+	SidebarInset,
+	SidebarProvider,
+	SidebarTrigger,
+} from "@/components/ui/sidebar";
 
 export const Route = createFileRoute("/")({
 	component: IndexRoute,
@@ -23,6 +27,12 @@ function IndexRoute() {
 					<AppSidebar variant="inset" />
 					<SidebarInset>
 						<div className="flex flex-1 flex-col">
+							<header className="flex items-center gap-2 border-b bg-background p-4 md:hidden">
+								<SidebarTrigger className="-ml-1" />
+								{/* <span className="font-medium text-muted-foreground text-sm">
+									BrandKite
+								</span> */}
+							</header>
 							<main className="flex-1 overflow-hidden">
 								<div className="flex h-full items-center justify-center">
 									<div className="text-center">

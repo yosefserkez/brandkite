@@ -175,8 +175,8 @@ function applyTypographyTokens(typography: BrandTypography | null): void {
 		return;
 	}
 
-	const primaryStack = buildFontStack(typography.primaryFont.name);
-	const headlineStack = buildFontStack(typography.headlineFont.name);
+	const primaryStack = buildFontStack(typography.primaryFont?.name ?? "");
+	const headlineStack = buildFontStack(typography.headlineFont?.name ?? "");
 
 	root.style.setProperty("--font-brand-primary", primaryStack);
 	root.style.setProperty("--font-brand-headline", headlineStack);

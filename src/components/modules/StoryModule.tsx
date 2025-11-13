@@ -45,7 +45,7 @@ export default function StoryModule({
 				</CardHeader>
 				<CardContent>
 					{data?.story ? (
-						<p className="wrap-break-word text-gray-950 text-xl tracking-tight">
+						<p className="wrap-break-word text-justify text-gray-950 text-xl tracking-tight">
 							{replaceCompanyName(data.story, companyName)}
 						</p>
 					) : (

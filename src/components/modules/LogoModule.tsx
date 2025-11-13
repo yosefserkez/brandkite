@@ -13,12 +13,6 @@ type LogoModuleProps = {
 	className?: string;
 };
 
-const loadingSkeleton = (
-	<div className="h-full w-full items-center justify-center rounded-lg border-4 border-white bg-white shadow-lg">
-		<SkeletonFlickeringGrid />
-	</div>
-);
-
 export default function LogoModule({ companyId, className }: LogoModuleProps) {
 	const ctx = useBrandModule(companyId, "logo");
 

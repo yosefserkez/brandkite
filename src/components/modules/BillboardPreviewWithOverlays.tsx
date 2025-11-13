@@ -65,7 +65,7 @@ export function BillboardPreviewWithOverlays({
 
 			{/* Reasoning - top right */}
 			{nameData && showReasoningDetails && (
-				<div className="absolute top-4 right-4 z-10 max-w-md text-right">
+				<div className="absolute right-4 bottom-4 z-10 max-w-md text-right md:top-4">
 					<Tooltip
 						onOpenChange={isMobile ? setIsReasoningTooltipOpen : undefined}
 						open={isMobile ? isReasoningTooltipOpen : undefined}
