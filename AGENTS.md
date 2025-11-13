@@ -232,3 +232,4 @@ Use fn comps vs class comps
 No array indices as keys
 No duplicate props in JSX
 No semicolons that change JSX el semantics
+Do not try and sort classes. User will do so after. Ignore related linting issues.

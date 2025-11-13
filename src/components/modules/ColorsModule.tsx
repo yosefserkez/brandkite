@@ -79,12 +79,12 @@ export default function ColorsModule({
 		>
 			<Card>
 				<CardHeader>
-					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-						Color system
+					<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
+						Color System
 					</p>
-					<div className="space-y-2 text-gray-700 text-sm">
+					<div className="wrap-break-word text-gray-950 text-sm tracking-tight">
 						<p>{replaceCompanyName(palette?.overview ?? "", companyName)}</p>
-						<p className="text-gray-600">
+						<p className="pt-2 text-gray-600">
 							{replaceCompanyName(palette?.howToUse ?? "", companyName)}
 						</p>
 					</div>

@@ -1,9 +1,17 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandTypography } from "../../../convex/modules/typography";
 import { useBrandModule } from "../../hooks/useBrandModule";
 import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
 import { cn, replaceCompanyName } from "../../lib/utils";
+
+const WHITESPACE_PATTERN = /\s/;
+const LOADED_GOOGLE_FONT_URLS = new Set<string>();
+
+import { SuspenseCard } from "../suspense-card";
+import { Card, CardContent, CardHeader } from "../ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { BlockWrapper } from "./BlockWrapper";
 
 type TypographyModuleProps = {
@@ -72,135 +80,42 @@ export default function TypographyModule({
 			actionHandlers={{ onCopy }}
 			className={className}
 			ctx={ctx}
-			loadingSkeleton={<TypographySkeleton />}
+			loadingSkeleton={<SuspenseCard headerText="Typography system" />}
 		>
-			{data ? (
-				<div className="gap-8 rounded-3xl border border-gray-200 bg-white p-8 shadow-sm lg:grid lg:grid-cols-[1.2fr,0.8fr]">
-					<TypographySummary companyName={companyName ?? ""} data={data} />
-					<TypographySpecimen
-						companyName={companyName ?? ""}
-						data={data}
-						sortedWeights={sortedWeights}
-					/>
-				</div>
-			) : (
-				<TypographyEmptyState />
-			)}
+			<Card>
+				<CardHeader>
+					<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
+						Typography system
+					</p>
+					<div className="wrap-break-word text-gray-950 text-sm tracking-tight">
+						<p>{replaceCompanyName(data?.overview ?? "", companyName ?? "")}</p>
+						{data ? (
+							<p className="pb-4 text-gray-600">
+								{replaceCompanyName(
+									data.primaryFont.summary,
+									companyName ?? ""
+								)}
+							</p>
+						) : null}
+					</div>
+				</CardHeader>
+				<CardContent>
+					{data ? (
+						<TypographyContent
+							companyName={companyName ?? ""}
+							data={data}
+							sortedWeights={sortedWeights}
+						/>
+					) : (
+						<SuspenseCard headerText="Typography system" />
+					)}
+				</CardContent>
+			</Card>
 		</BlockWrapper>
 	);
 }
 
-const SKELETON_GUIDELINE_KEYS = ["guide-1", "guide-2", "guide-3"];
-const SKELETON_CARD_KEYS = ["primary", "headline"];
-const SKELETON_WEIGHT_KEYS = [
-	"weight-1",
-	"weight-2",
-	"weight-3",
-	"weight-4",
-	"weight-5",
-];
-const SKELETON_SET_KEYS = ["set-1", "set-2", "set-3", "set-4"];
-
-function TypographySummary({
-	data,
-	companyName,
-}: {
-	data: BrandTypography;
-	companyName: string;
-}) {
-	return (
-		<div className="flex flex-col gap-6">
-			<header className="space-y-2">
-				<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-					Typography
-				</p>
-				<h2 className="font-semibold text-2xl text-gray-900">Type system</h2>
-			</header>
-			<p className={cn("text-gray-700", "leading-relaxed")}>
-				{replaceCompanyName(data.overview, companyName)}
-			</p>
-			<ul
-				className={cn(
-					"space-y-2",
-					"rounded-2xl",
-					"border",
-					"border-gray-100",
-					"bg-gray-50",
-					"p-5",
-					"text-sm",
-					"text-gray-700"
-				)}
-			>
-				{data.guidelines.map((item) => (
-					<li className="flex gap-2" key={item}>
-						<span
-							style={{
-								backgroundColor: "#9CA3AF",
-								borderRadius: "9999px",
-								height: 6,
-								marginTop: 4,
-								width: 6,
-							}}
-						/>
-						<span>{replaceCompanyName(item, companyName)}</span>
-					</li>
-				))}
-			</ul>
-			<div className="grid gap-5 lg:grid-cols-2">
-				<TypographyFontCard
-					companyName={companyName}
-					font={data.primaryFont}
-					title="Primary font"
-				/>
-				<TypographyFontCard
-					companyName={companyName}
-					font={data.headlineFont}
-					title="Headline font"
-				/>
-			</div>
-		</div>
-	);
-}
-
-function TypographyFontCard({
-	font,
-	title,
-	companyName,
-}: {
-	font: BrandTypography["primaryFont"];
-	title: string;
-	companyName: string;
-}) {
-	return (
-		<div className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50 p-5">
-			<div>
-				<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-					{title}
-				</p>
-				<h3 className="font-semibold text-gray-900 text-xl">{font.name}</h3>
-			</div>
-			<p className={cn("text-sm", "text-gray-700", "leading-relaxed")}>
-				{replaceCompanyName(font.summary, companyName)}
-			</p>
-			<div className={cn("space-y-2", "text-sm", "text-gray-600")}>
-				<div>
-					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-						Usage
-					</p>
-					<p>{replaceCompanyName(font.usage, companyName)}</p>
-				</div>
-				<div>
-					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-						Pairing
-					</p>
-					<p>{replaceCompanyName(font.pairing, companyName)}</p>
-				</div>
-			</div>
-		</div>
-	);
-}
-
-function TypographySpecimen({
+function TypographyContent({
 	data,
 	companyName,
 	sortedWeights,
@@ -210,129 +125,340 @@ function TypographySpecimen({
 	sortedWeights: BrandTypography["weights"];
 }) {
 	return (
-		<div className="flex h-full flex-col gap-6 rounded-3xl border border-gray-100 bg-gray-50 p-6">
-			<div className="space-y-3">
-				<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-					Specimen
-				</p>
-				<p className="font-semibold text-2xl text-gray-900">
-					{replaceCompanyName(data.specimenCopy, companyName)}
-				</p>
+		<div className="space-y-8">
+			<TypographyShowcase
+				companyName={companyName}
+				data={data}
+				sortedWeights={sortedWeights}
+			/>
+			<TypographyGuidelines companyName={companyName} data={data} />
+		</div>
+	);
+}
+
+function TypographyShowcase({
+	data,
+	companyName,
+	sortedWeights,
+}: {
+	data: BrandTypography;
+	companyName: string;
+	sortedWeights: BrandTypography["weights"];
+}) {
+	const fontWeights = useMemo(
+		() => extractFontWeights(sortedWeights),
+		[sortedWeights]
+	);
+	useEffect(() => {
+		loadGoogleFontFamily(data.primaryFont.name, fontWeights);
+		loadGoogleFontFamily(data.headlineFont.name, fontWeights);
+	}, [data.headlineFont.name, data.primaryFont.name, fontWeights]);
+
+	const [activeFont, setActiveFont] = useState<"primary" | "headline">(
+		"primary"
+	);
+	const specimenCopy = replaceCompanyName(data.specimenCopy, companyName);
+	const activeFontData =
+		activeFont === "primary" ? data.primaryFont : data.headlineFont;
+	const fontFamilyStack = useMemo(
+		() => buildFontStack(activeFontData.name),
+		[activeFontData.name]
+	);
+	const fontDescriptor =
+		activeFont === "primary" ? "Primary font" : "Headline font";
+	const activeFontSummary = replaceCompanyName(
+		activeFontData.summary,
+		companyName
+	);
+	const activeFontUsage = replaceCompanyName(activeFontData.usage, companyName);
+	const activeFontPairing = replaceCompanyName(
+		activeFontData.pairing,
+		companyName
+	);
+
+	return (
+		<section>
+			<div className="flex flex-wrap items-center justify-between gap-4 pb-6">
+				<div className="flex items-start gap-2">
+					<div>
+						<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+							{fontDescriptor}
+						</p>
+						<p className="font-semibold text-gray-900 text-lg">
+							{activeFontData.name}
+						</p>
+					</div>
+					<Popover>
+						<PopoverTrigger asChild>
+							<button
+								aria-label={`View ${activeFontData.name} details`}
+								className="flex h-6 w-6 items-center justify-center rounded-full border border-gray-200 bg-white font-semibold text-gray-500 text-xs transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
+								type="button"
+							>
+								?
+							</button>
+						</PopoverTrigger>
+						<PopoverContent className="w-80 space-y-4 text-left text-sm">
+							<div className="space-y-1">
+								<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+									Summary
+								</p>
+								<p className="text-gray-700">{activeFontSummary}</p>
+							</div>
+							<div className="space-y-1">
+								<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+									Usage
+								</p>
+								<p className="text-gray-700">{activeFontUsage}</p>
+							</div>
+							<div className="space-y-1">
+								<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+									Pairing
+								</p>
+								<p className="text-gray-700">{activeFontPairing}</p>
+							</div>
+						</PopoverContent>
+					</Popover>
+				</div>
+				<TypographyFontToggle
+					activeFont={activeFont}
+					headlineFontName={data.headlineFont.name}
+					onChange={setActiveFont}
+					primaryFontName={data.primaryFont.name}
+				/>
 			</div>
-			<div className="space-y-3">
-				<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-					Weight scale
-				</p>
-				<ul className="space-y-2">
+			<div className="grid grid-cols-2">
+				<ul className="space-y-3 text-gray-950 text-lg">
 					{sortedWeights.map((weight) => (
 						<li
-							className="space-y-1 rounded-2xl bg-white px-5 py-3 shadow-sm"
+							className="group m-0"
 							key={`${weight.label}-${weight.fontWeight}`}
 						>
-							<div className="flex items-baseline justify-between gap-4">
-								<span
-									className={cn("text-lg", "text-gray-900")}
-									style={{ fontWeight: weight.fontWeight }}
-								>
-									{weight.label}
-								</span>
-								<span className="text-gray-400 text-xs">
-									{weight.fontWeight}
-								</span>
-							</div>
-							<p className={cn("text-xs", "text-gray-600", "leading-snug")}>
-								{replaceCompanyName(weight.description, companyName)}
-							</p>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<button
+										className="grid w-full grid-cols-2 items-center justify-start bg-transparent p-0 text-left leading-tight outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+										style={{
+											fontFamily: fontFamilyStack,
+											fontWeight: weight.fontWeight,
+										}}
+										type="button"
+									>
+										<span>{weight.label}</span>
+										<span className="text-left font-normal text-gray-400 text-xs">
+											{weight.fontWeight}
+										</span>
+									</button>
+								</TooltipTrigger>
+								<TooltipContent>
+									<p className="max-w-xs text-balance">
+										<span className="font-medium text-xs tracking-wide">
+											{weight.label}:
+										</span>{" "}
+										{replaceCompanyName(weight.description, companyName)}
+									</p>
+								</TooltipContent>
+							</Tooltip>
 						</li>
 					))}
 				</ul>
-			</div>
-			<div className="space-y-3">
-				<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-					Character set
-				</p>
 				<div
-					className={cn(
-						"space-y-2",
-						"rounded-2xl",
-						"bg-white",
-						"p-5",
-						"font-mono",
-						"text-sm",
-						"text-gray-700",
-						"shadow-sm"
-					)}
+					className="space-y-6 text-left"
+					style={{ fontFamily: fontFamilyStack }}
 				>
-					<p>{data.characterSet.uppercase}</p>
-					<p>{data.characterSet.lowercase}</p>
-					<p>{data.characterSet.numerals}</p>
-					<p>{data.characterSet.punctuation}</p>
-				</div>
-			</div>
-		</div>
-	);
-}
-
-function TypographySkeleton() {
-	return (
-		<div className="gap-8 rounded-3xl border border-gray-200 bg-white p-8 shadow-sm lg:grid lg:grid-cols-[1.2fr,0.8fr]">
-			<div className="space-y-5">
-				<div className="h-4 w-24 rounded bg-gray-200" />
-				<div className="h-7 w-40 rounded bg-gray-200" />
-				<div className="space-y-2">
-					<div className="h-3 w-full rounded bg-gray-200" />
-					<div className="h-3 w-5/6 rounded bg-gray-200" />
-					<div className="h-3 w-4/6 rounded bg-gray-200" />
-				</div>
-				<div className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50 p-5">
-					{SKELETON_GUIDELINE_KEYS.map((key) => (
-						<div className="h-3 w-full rounded bg-gray-200" key={key} />
-					))}
-				</div>
-				<div className="grid gap-4 lg:grid-cols-2">
-					{SKELETON_CARD_KEYS.map((key) => (
-						<div
-							className="space-y-2 rounded-2xl border border-gray-100 bg-gray-50 p-5"
-							key={key}
-						>
-							<div className="h-4 w-24 rounded bg-gray-200" />
-							<div className="h-6 w-32 rounded bg-gray-200" />
-							<div className="h-3 w-5/6 rounded bg-gray-200" />
-							<div className="h-3 w-4/6 rounded bg-gray-200" />
+					<div className="space-y-3">
+						<div className="flex flex-nowrap text-2xl tracking-tight">
+							<span className="text-gray-950">A</span>
+							<span className="text-gray-950">B</span>
+							<span className="text-gray-900">C</span>
+							<span className="text-gray-900">D</span>
+							<span className="text-gray-900">E</span>
+							<span className="text-gray-900">F</span>
+							<span className="text-gray-800">G</span>
+							<span className="text-gray-800">H</span>
+							<span className="text-gray-700">I</span>
+							<span className="text-gray-700">J</span>
+							<span className="text-gray-700">K</span>
+							<span className="text-gray-600">L</span>
+							<span className="text-gray-600">M</span>
+							<span className="text-gray-500">N</span>
+							<span className="text-gray-500">O</span>
+							<span className="text-gray-500">P</span>
+							<span className="text-gray-400">Q</span>
+							<span className="text-gray-400">R</span>
+							<span className="text-gray-400">S</span>
+							<span className="text-gray-300">T</span>
+							<span className="text-gray-300">U</span>
+							<span className="text-gray-200">V</span>
+							<span className="text-gray-200">W</span>
+							<span className="text-gray-200">X</span>
+							<span className="text-gray-100">Y</span>
+							<span className="text-gray-100">Z</span>
 						</div>
-					))}
+					</div>
+					<div className="justify-start space-y-2 font-bold text-gray-400 text-xl tracking-tight">
+						<p>0123456789</p>
+						<p>@#$%&*</p>
+					</div>
+					<p className="border-gray-200 border-l-4 pl-4 text-base text-gray-600 leading-relaxed">
+						{specimenCopy}
+					</p>
 				</div>
 			</div>
-			<div className="space-y-4 rounded-3xl border border-gray-100 bg-gray-50 p-6">
-				<div className="space-y-2">
-					<div className="h-3 w-24 rounded bg-gray-200" />
-					<div className="h-8 w-5/6 rounded bg-gray-200" />
-				</div>
-				<div className="space-y-2">
-					{SKELETON_WEIGHT_KEYS.map((key) => (
-						<div className="h-10 rounded-2xl bg-white" key={key} />
-					))}
-				</div>
-				<div className="space-y-2 rounded-2xl bg-white p-5">
-					{SKELETON_SET_KEYS.map((key) => (
-						<div className="h-3 w-full rounded bg-gray-200" key={key} />
-					))}
-				</div>
-			</div>
+		</section>
+	);
+}
+
+function TypographyGuidelines({
+	data,
+	companyName,
+}: {
+	data: BrandTypography;
+	companyName: string;
+}) {
+	return (
+		<section className="flex flex-col gap-2">
+			<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+				Guidelines
+			</p>
+			<ul className="wrap-break-word text-gray-400 text-xs tracking-tight">
+				{data.guidelines.map((item) => (
+					<li className="flex gap-2" key={item}>
+						<span>- {replaceCompanyName(item, companyName)}</span>
+					</li>
+				))}
+			</ul>
+		</section>
+	);
+}
+
+function TypographyFontToggle({
+	activeFont,
+	onChange,
+	primaryFontName,
+	headlineFontName,
+}: {
+	activeFont: "primary" | "headline";
+	onChange: (font: "primary" | "headline") => void;
+	primaryFontName: string;
+	headlineFontName: string;
+}) {
+	return (
+		<div
+			className={
+				"inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white p-1 shadow-sm"
+			}
+		>
+			<button
+				aria-pressed={activeFont === "primary"}
+				className={cn(
+					"rounded-full px-3 py-1 font-medium text-xs transition-colors focus-visible:outline-2 focus-visible:outline-gray-900 focus-visible:outline-offset-2",
+					activeFont === "primary"
+						? "bg-gray-900 text-white shadow-sm"
+						: "text-gray-500 hover:text-gray-900"
+				)}
+				onClick={() => onChange("primary")}
+				type="button"
+			>
+				{primaryFontName}
+			</button>
+			<button
+				aria-pressed={activeFont === "headline"}
+				className={cn(
+					"rounded-full px-3 py-1 font-medium text-xs transition-colors focus-visible:outline-2 focus-visible:outline-gray-900 focus-visible:outline-offset-2",
+					activeFont === "headline"
+						? "bg-gray-900 text-white shadow-sm"
+						: "text-gray-500 hover:text-gray-900"
+				)}
+				onClick={() => onChange("headline")}
+				type="button"
+			>
+				{headlineFontName}
+			</button>
 		</div>
 	);
 }
 
-function TypographyEmptyState() {
-	return (
-		<div className="flex min-h-72 flex-col items-center justify-center gap-3 rounded-3xl border border-gray-200 border-dashed bg-gray-50 px-6 py-12 text-center">
-			<p className="font-medium text-gray-600 text-sm">
-				Typography is on its way
-			</p>
-			<p className="text-gray-500 text-sm">
-				Regenerate this block once your brand context is ready to craft a
-				tailored type hierarchy.
-			</p>
-		</div>
-	);
+function buildFontStack(fontName: string): string {
+	const trimmed = fontName.trim();
+	if (!trimmed) {
+		return 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+	}
+	const normalized = WHITESPACE_PATTERN.test(trimmed)
+		? `"${trimmed}"`
+		: trimmed;
+	return `${normalized}, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+}
+
+function extractFontWeights(weights: BrandTypography["weights"]): number[] {
+	const unique = new Set<number>();
+	for (const weight of weights) {
+		if (
+			typeof weight.fontWeight === "number" &&
+			Number.isFinite(weight.fontWeight)
+		) {
+			unique.add(weight.fontWeight);
+		}
+	}
+	return Array.from(unique).sort((a, b) => a - b);
+}
+
+function loadGoogleFontFamily(fontName: string, weights: number[]) {
+	if (!fontName || typeof document === "undefined") {
+		return;
+	}
+	ensureGoogleFontsPreconnectLinks();
+	const fontUrl = buildGoogleFontUrl(fontName, weights);
+	if (!fontUrl || LOADED_GOOGLE_FONT_URLS.has(fontUrl)) {
+		return;
+	}
+	const link = document.createElement("link");
+	link.rel = "stylesheet";
+	link.href = fontUrl;
+	document.head.append(link);
+	LOADED_GOOGLE_FONT_URLS.add(fontUrl);
+}
+
+function buildGoogleFontUrl(
+	fontName: string,
+	weights: number[]
+): string | null {
+	const trimmed = fontName.trim();
+	if (!trimmed) {
+		return null;
+	}
+	const normalizedFamily = trimmed.replace(/\s+/g, "+");
+	const weightSegment =
+		weights.length > 0
+			? `:wght@${weights.map((weight) => Math.round(weight)).join(";")}`
+			: "";
+	return `https://fonts.googleapis.com/css2?family=${normalizedFamily}${weightSegment}&display=swap`;
+}
+
+function ensureGoogleFontsPreconnectLinks() {
+	if (typeof document === "undefined") {
+		return;
+	}
+	const targets: Array<{
+		href: string;
+		crossOrigin?: "" | "anonymous" | "use-credentials";
+	}> = [
+		{ href: "https://fonts.googleapis.com" },
+		{ href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+	];
+	for (const target of targets) {
+		const existingLink = document.head.querySelector<HTMLLinkElement>(
+			`link[rel="preconnect"][href="${target.href}"]`
+		);
+		if (existingLink) {
+			continue;
+		}
+		const link = document.createElement("link");
+		link.rel = "preconnect";
+		link.href = target.href;
+		if (target.crossOrigin) {
+			link.crossOrigin = target.crossOrigin;
+		}
+		document.head.append(link);
+	}
 }

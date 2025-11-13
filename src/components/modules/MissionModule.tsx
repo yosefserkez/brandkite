@@ -38,13 +38,13 @@ export default function MissionModule({
 		>
 			<Card className="">
 				<CardHeader>
-					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+					<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
 						Mission
 					</p>
 				</CardHeader>
 				<CardContent>
 					{data?.mission ? (
-						<p className="text-lg leading-relaxed">
+						<p className="wrap-break-word font-semibold text-gray-950 text-xl tracking-tight md:text-xl lg:text-2xl">
 							{replaceCompanyName(data.mission, companyName)}
 						</p>
 					) : (

@@ -39,13 +39,13 @@ export default function StoryModule({
 			{/* Logo container with profile photo styling */}
 			<Card className="h-full">
 				<CardHeader>
-					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+					<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
 						Story
 					</p>
 				</CardHeader>
 				<CardContent>
 					{data?.story ? (
-						<p className="text-lg">
+						<p className="wrap-break-word text-gray-950 text-xl tracking-tight">
 							{replaceCompanyName(data.story, companyName)}
 						</p>
 					) : (

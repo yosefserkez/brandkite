@@ -38,13 +38,13 @@ export default function TaglineModule({
 		>
 			<Card className="overflow-hidden">
 				<CardHeader>
-					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+					<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
 						Tagline
 					</p>
 				</CardHeader>
 				<CardContent className="">
 					{data?.tagline ? (
-						<p className="font-semibold text-3xl text-gray-900 leading-tight">
+						<p className="wrap-break-word text-gray-950 text-xl tracking-tight md:text-xl lg:text-2xl">
 							{replaceCompanyName(data.tagline, companyName)}
 						</p>
 					) : (

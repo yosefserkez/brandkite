@@ -71,11 +71,11 @@ function ToneContent({
 		<Card className="h-full">
 			<CardHeader className="space-y-4">
 				<div className="space-y-2">
-					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-						Tone of voice
+					<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
+						Tone of Voice
 					</p>
-					<p className="space-y-2 text-gray-700 text-sm">
-						{replaceCompanyName(tone.summary, companyName)}
+					<p className="wrap-break-word text-gray-950 text-sm tracking-tight">
+						<p>{replaceCompanyName(tone.summary, companyName)}</p>
 					</p>
 				</div>
 			</CardHeader>
@@ -107,15 +107,15 @@ function ToneExampleRow({
 		<div className="flex flex-col">
 			<div className="flex items-center gap-2 align-center">
 				<span className="font-medium text-gray-400 text-lg">{number}</span>
-				<p className="font-medium text-gray-400 text-sm">
+				<p className="text-gray-600 text-sm tracking-tight">
 					{replaceCompanyName(example.context, companyName)}
 				</p>
 			</div>
 			<div className="flex-1 space-y-2">
-				<CardTitle className="text-gray-700 text-lg">
+				<CardTitle className="wrap-break-word text-gray-950 text-sm tracking-tight">
 					{replaceCompanyName(example.title, companyName)}
 				</CardTitle>
-				<p className="text-gray-500 text-sm leading-relaxed">
+				<p className="wrap-break-word text-gray-950 text-sm tracking-tight">
 					{replaceCompanyName(example.description, companyName)}
 				</p>
 			</div>
