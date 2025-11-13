@@ -7,7 +7,10 @@ import {
 	useCompanyBrandLogoUrl,
 	useCompanyBrandName,
 } from "../../hooks/useCompanyBrand";
-import { BillboardPreviewWithOverlays } from "./BillboardPreviewWithOverlays";
+import {
+	BillboardPreviewWithOverlays,
+	BillboardSkeleton,
+} from "./BillboardPreviewWithOverlays";
 import { BlockWrapper } from "./BlockWrapper";
 import { ChangeNameDialog } from "./ChangeNameDialog";
 
@@ -50,6 +53,7 @@ export default function NamesModule({
 				ctx={ctx}
 				hideRegenerate
 				hideVersionSelector
+				loadingSkeleton={<BillboardSkeleton />}
 			>
 				<BillboardPreviewWithOverlays
 					className={className}

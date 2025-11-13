@@ -1,13 +1,11 @@
 import { Info } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Ripple } from "@/components/ui/ripple";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import type { NameWithDomains } from "../../../convex/modules/name";
-import { HeartPointer } from "../ui/heart-pointer";
-import { Skeleton } from "../ui/skeleton";
+import { SkeletonFlickeringGrid } from "../skeleton-flickering-grid";
+import { Card, CardContent, CardHeader } from "../ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { VideoText } from "../ui/video-text";
 import { BillboardPreview } from "./BillboardPreview";
 
 type BillboardPreviewWithOverlaysProps = {
@@ -42,14 +40,7 @@ export function BillboardPreviewWithOverlays({
 	}, [isMobile]);
 
 	if (isLoading) {
-		return (
-			<BillboardPreviewWithOverlaysSkeleton
-				className={className}
-				containerHeight={containerHeight}
-				showBottomRightContent={!!bottomRightContent}
-				showReasoningDetails={showReasoningDetails}
-			/>
-		);
+		return <BillboardSkeleton />;
 	}
 
 	return (
@@ -179,69 +170,17 @@ export function BillboardPreviewWithOverlays({
 	);
 }
 
-type BillboardPreviewWithOverlaysSkeletonProps = {
-	containerHeight?: string;
-	className?: string;
-	showReasoningDetails?: boolean;
-	showBottomRightContent?: boolean;
-};
-
-export function BillboardPreviewWithOverlaysSkeleton({
-	containerHeight = "400px",
-	className,
-	showReasoningDetails = true,
-	showBottomRightContent = false,
-}: BillboardPreviewWithOverlaysSkeletonProps) {
+export function BillboardSkeleton() {
 	return (
-		<div className="relative">
-			<HeartPointer />
-			{/* Billboard skeleton */}
-			<div
-				className={cn(
-					"mx-auto flex items-center justify-center bg-black/20",
-					className
-				)}
-				style={{ height: containerHeight, width: "100%" }}
-			>
-				<VideoText
-					className=""
-					src="https://cdn.magicui.design/ocean-small.webm"
-				>
-					loading...
-				</VideoText>
-
-				{/* <AnimatedShinyText className="inline-flex items-center justify-center transition ease-out hover:text-neutral-600 hover:duration-300 hover:dark:text-neutral-400">
-					<span>Crafting your brand...</span>
-				</AnimatedShinyText> */}
-			</div>
-			<Ripple style={{ height: containerHeight, width: "100%" }} />
-
-			{/* Name skeleton - top left */}
-			<div className="absolute top-4 left-4 z-10">
-				<Skeleton className="h-5 w-32" />
-			</div>
-
-			{/* Reasoning skeleton - top right */}
-			{showReasoningDetails && (
-				<div className="absolute top-4 right-4 z-10 max-w-md">
-					<Skeleton className="h-5 w-64" />
-				</div>
-			)}
-
-			{/* Domains skeleton - bottom left */}
-			<div className="absolute bottom-4 left-4 z-10">
-				<div className="flex items-center gap-1.5">
-					<Skeleton className="h-2 w-2 rounded-full" />
-					<Skeleton className="h-5 w-40" />
-				</div>
-			</div>
-
-			{/* Bottom right content skeleton */}
-			{showBottomRightContent && (
-				<div className="absolute right-4 bottom-4 z-10">
-					<Skeleton className="h-10 w-10 rounded-full" />
-				</div>
-			)}
-		</div>
+		<Card className="h-[400px] w-full rounded-t-lg border">
+			<CardHeader>
+				<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+					Company Name
+				</p>
+			</CardHeader>
+			<CardContent>
+				<SkeletonFlickeringGrid height={320} />
+			</CardContent>
+		</Card>
 	);
 }
