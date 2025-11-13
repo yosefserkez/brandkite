@@ -6,11 +6,11 @@ import { useBrandModule } from "../../hooks/useBrandModule";
 import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
 import {
 	BRAND_SHADE_BASE_STOP,
-	BRAND_SHADE_STOPS,
 	type BrandColorScaleEntry,
 	generateColorScale,
 } from "../../lib/color-scale";
 import { cn, replaceCompanyName } from "../../lib/utils";
+import { SkeletonFlickeringGrid } from "../skeleton-flickering-grid";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { BlockWrapper } from "./BlockWrapper";
@@ -20,9 +20,6 @@ type ColorsModuleProps = {
 	className?: string;
 };
 
-const SKELETON_COLOR_KEYS = ["anchor", "support", "accent"] as const;
-const SKELETON_ROW_ALTERNATION_MODULUS = 2;
-const SKELETON_ROW_EVEN_REMAINDER = 0;
 const HEX_CHANNEL_LENGTH = 2;
 const HEX_CHANNEL_GREEN_OFFSET = HEX_CHANNEL_LENGTH;
 const HEX_CHANNEL_BLUE_OFFSET = HEX_CHANNEL_LENGTH * 2;
@@ -77,7 +74,7 @@ export default function ColorsModule({
 			actionHandlers={{ onCopy }}
 			className={className}
 			ctx={ctx}
-			loadingSkeleton={<PaletteSkeleton />}
+			loadingSkeleton={<SkeletonFlickeringGrid />}
 		>
 			<Card>
 				<CardHeader>
@@ -98,7 +95,7 @@ export default function ColorsModule({
 							companyName={companyName ?? ""}
 						/>
 					) : (
-						<EmptyState />
+						<SkeletonFlickeringGrid />
 					)}
 				</CardContent>
 			</Card>
@@ -367,40 +364,6 @@ function getAccessibleTextColor(hex: string): string {
 			LUMINANCE_BLUE_WEIGHT * b) /
 		RGB_COMPONENT_MAX;
 	return luminance > LUMINANCE_THRESHOLD ? DARK_TEXT_HEX : LIGHT_TEXT_HEX;
-}
-
-function PaletteSkeleton() {
-	return (
-		<div className="flex h-full animate-pulse flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6">
-			<div className="space-y-3">
-				<div className="h-3 w-20 rounded bg-gray-200" />
-				<div className="h-6 w-40 rounded bg-gray-200" />
-				<div className="h-3 w-full rounded bg-gray-200" />
-				<div className="h-3 w-5/6 rounded bg-gray-200" />
-			</div>
-			<div className="grid flex-1 gap-4 lg:grid-cols-3">
-				{SKELETON_COLOR_KEYS.map((key) => (
-					<div
-						className="flex flex-col gap-2 rounded-xl bg-gray-50 p-3"
-						key={key}
-					>
-						{BRAND_SHADE_STOPS.map((stop, index) => (
-							<div
-								className={cn(
-									"h-8 rounded",
-									index % SKELETON_ROW_ALTERNATION_MODULUS ===
-										SKELETON_ROW_EVEN_REMAINDER
-										? "bg-gray-200"
-										: "bg-gray-100"
-								)}
-								key={`${key}-${stop}`}
-							/>
-						))}
-					</div>
-				))}
-			</div>
-		</div>
-	);
 }
 
 function EmptyState() {
