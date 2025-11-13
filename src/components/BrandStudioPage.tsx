@@ -33,7 +33,7 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 				<div className="grid grid-cols-1 gap-4 pb-8 md:grid-cols-3">
 					<div className="col-span-1 flex flex-col gap-4">
 						<LogoModule className="h-full w-full" companyId={companyId} />
-						<div className="h-full w-full bg-linear-to-b from-brand-accent-200 to-gray-50" />
+						<div className="h-full w-full rounded-t-lg bg-linear-to-b from-brand-accent-200 to-gray-50" />
 					</div>
 					<div className="col-span-2 flex flex-col gap-4">
 						<MissionModule companyId={companyId} />

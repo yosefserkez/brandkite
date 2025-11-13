@@ -81,7 +81,7 @@ export default function ColorsModule({
 					<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
 						Color system
 					</p>
-					<div className="mb-8 space-y-2 text-gray-700 text-sm">
+					<div className="space-y-2 text-gray-700 text-sm">
 						<p>{replaceCompanyName(palette?.overview ?? "", companyName)}</p>
 						<p className="text-gray-600">
 							{replaceCompanyName(palette?.howToUse ?? "", companyName)}
@@ -124,7 +124,7 @@ function PaletteView({
 	companyName: string;
 }) {
 	return (
-		<div className="grid gap-6 lg:grid-cols-3">
+		<div className="grid gap-6 pt-8 lg:grid-cols-3">
 			{colors.map((color) => {
 				const { topShades, mainShade, bottomShades } = partitionColorScale(
 					color.scale
@@ -203,7 +203,7 @@ function ShadeSwatch({ shade }: { shade: BrandColorScaleEntry }) {
 		<button
 			aria-label={`Copy ${shade.hex} for shade ${shade.stop}`}
 			className={cn(
-				"relative flex h-12 w-full cursor-pointer items-center justify-end px-5 text-right font-semibold text-xs uppercase tracking-wide transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+				"f relative flex h-12 w-full cursor-pointer items-center justify-end px-5 text-right font-semibold text-xs uppercase tracking-wide transition-transform focus-visible:outline-none"
 			)}
 			onBlur={handlePointerLeave}
 			onClick={handleCopy}
@@ -271,11 +271,10 @@ function MainShadeSwatch({ color, companyName, shade }: MainShadeSwatchProps) {
 				<button
 					aria-label={`Copy ${shade.hex} for ${name}`}
 					className={cn(
-						"relative flex min-h-[180px] w-full cursor-pointer flex-col items-center justify-center gap-3 px-6 py-12 text-center transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+						"f relative flex min-h-[180px] w-full cursor-pointer flex-col items-center justify-center gap-3 px-6 py-12 text-center transition-transform focus-visible:outline-none"
 					)}
-					onBlur={handlePointerLeave}
 					onClick={handleCopy}
-					onFocus={handlePointerEnter}
+					// onFocus={handlePointerEnter}
 					onMouseEnter={handlePointerEnter}
 					onMouseLeave={handlePointerLeave}
 					style={{
