@@ -1,14 +1,10 @@
+import { useAuthActions } from "@convex-dev/auth/react";
 import {
 	IconCreditCard,
 	IconDotsVertical,
 	IconLogout,
-	IconNotification,
-	IconUserCircle,
 } from "@tabler/icons-react";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -25,6 +21,7 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@/components/ui/sidebar";
+import { api } from "../../convex/_generated/api";
 
 export function NavUser() {
 	const { isMobile } = useSidebar();
@@ -51,17 +48,18 @@ export function NavUser() {
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<SidebarMenuButton
-							size="lg"
 							className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+							size="lg"
 						>
 							<Avatar className="h-8 w-8 rounded-lg grayscale">
+								<AvatarImage src="https://api.dicebear.com/9.x/glass/svg?seed=Leo" />
 								<AvatarFallback className="rounded-lg">
 									{userInitials}
 								</AvatarFallback>
 							</Avatar>
 							<div className="grid flex-1 text-left text-sm leading-tight">
-								<span className="truncate font-medium">{userName}</span>
-								<span className="text-muted-foreground truncate text-xs">
+								{/* <span className="truncate font-medium">{userName}</span> */}
+								<span className="truncate text-muted-foreground text-xs">
 									{userEmail}
 								</span>
 							</div>
@@ -69,21 +67,22 @@ export function NavUser() {
 						</SidebarMenuButton>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent
+						align="end"
 						className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
 						side={isMobile ? "bottom" : "right"}
-						align="end"
 						sideOffset={4}
 					>
 						<DropdownMenuLabel className="p-0 font-normal">
 							<div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
 								<Avatar className="h-8 w-8 rounded-lg">
+									<AvatarImage src="https://api.dicebear.com/9.x/glass/svg?seed=Leo" />
 									<AvatarFallback className="rounded-lg">
 										{userInitials}
 									</AvatarFallback>
 								</Avatar>
 								<div className="grid flex-1 text-left text-sm leading-tight">
-									<span className="truncate font-medium">{userName}</span>
-									<span className="text-muted-foreground truncate text-xs">
+									{/* <span className="truncate font-medium">{userName}</span> */}
+									<span className="truncate text-muted-foreground text-xs">
 										{userEmail}
 									</span>
 								</div>
@@ -91,21 +90,22 @@ export function NavUser() {
 						</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
-							<DropdownMenuItem>
+							{/* <DropdownMenuItem>
 								<IconUserCircle />
 								Account
-							</DropdownMenuItem>
+							</DropdownMenuItem> */}
 							<DropdownMenuItem>
 								<IconCreditCard />
 								Billing
 							</DropdownMenuItem>
-							<DropdownMenuItem>
-								<IconNotification />
-								Notifications
-							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem onClick={() => void signOut()}>
+						<DropdownMenuItem
+							onClick={async () => {
+								await signOut();
+								window.location.href = "/";
+							}}
+						>
 							<IconLogout />
 							Log out
 						</DropdownMenuItem>
