@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
+import { Authenticated } from "convex/react";
 import type { ReactNode } from "react";
 import type UseBrandModuleResult from "../../hooks/useBrandModule";
 import { cn } from "../../lib/utils";
@@ -69,37 +70,39 @@ export function BlockWrapper({
 	return (
 		<div className={cn("group relative", className)}>
 			{isLoading ? loadingSkeleton : children}
-			{!hideActions && (
-				<div
-					className={cn(
-						isMobile
-							? "opacity-50"
-							: "opacity-0 transition-opacity duration-200 group-hover:opacity-100",
-						actionsVariants({ position: effectiveActionsVariant })
-					)}
-				>
-					{actionsComponent ?? (
-						<ModuleActions
-							actions={actions}
-							ctx={ctx}
-							hideRegenerate={hideRegenerate}
-							hideVersionSelector={hideVersionSelector}
-							variant={effectiveActionsVariant ?? undefined}
-							{...actionHandlers}
-						/>
-					)}
-				</div>
-			)}
-			{effectiveActionsVariant === "compact" && !hideVersionSelector && (
-				<div
-					className={cn(
-						"absolute right-2 bottom-2 transition-opacity duration-200 group-hover:opacity-100",
-						isMobile ? "opacity-50" : "opacity-0"
-					)}
-				>
-					<VersionSelector ctx={ctx} />
-				</div>
-			)}
+			<Authenticated>
+				{!hideActions && (
+					<div
+						className={cn(
+							isMobile
+								? "opacity-50"
+								: "opacity-0 transition-opacity duration-200 group-hover:opacity-100",
+							actionsVariants({ position: effectiveActionsVariant })
+						)}
+					>
+						{actionsComponent ?? (
+							<ModuleActions
+								actions={actions}
+								ctx={ctx}
+								hideRegenerate={hideRegenerate}
+								hideVersionSelector={hideVersionSelector}
+								variant={effectiveActionsVariant ?? undefined}
+								{...actionHandlers}
+							/>
+						)}
+					</div>
+				)}
+				{effectiveActionsVariant === "compact" && !hideVersionSelector && (
+					<div
+						className={cn(
+							"absolute right-2 bottom-2 transition-opacity duration-200 group-hover:opacity-100",
+							isMobile ? "opacity-50" : "opacity-0"
+						)}
+					>
+						<VersionSelector ctx={ctx} />
+					</div>
+				)}
+			</Authenticated>
 		</div>
 	);
 }

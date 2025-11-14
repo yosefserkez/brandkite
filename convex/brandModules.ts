@@ -20,14 +20,21 @@ export const getModules = query({
 	args: { companyId: v.id("companies") },
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
-		if (!userId) {
-			return [];
-		}
 
 		// Check access
 		const company = await ctx.db.get(args.companyId);
 		if (!company) {
 			return [];
+		}
+
+		// If unauthenticated, only allow access to public companies
+		if (!userId) {
+			return company.isPublic
+				? await ctx.db
+						.query("brandModules")
+						.withIndex("by_company", (q) => q.eq("companyId", args.companyId))
+						.collect()
+				: [];
 		}
 
 		if (company.ownerId !== userId && !company.isPublic) {
@@ -55,13 +62,24 @@ export const listModuleTypes = query({
 	args: { companyId: v.id("companies") },
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
-		if (!userId) {
-			return [];
-		}
 
 		const company = await ctx.db.get(args.companyId);
 		if (!company) {
 			return [];
+		}
+
+		// If unauthenticated, only allow access to public companies
+		if (!userId) {
+			if (!company.isPublic) {
+				return [];
+			}
+			const modules = await ctx.db
+				.query("brandModules")
+				.withIndex("by_company", (q) => q.eq("companyId", args.companyId))
+				.collect();
+			const types = Array.from(new Set(modules.map((m) => m.type)));
+			types.sort();
+			return types;
 		}
 
 		if (company.ownerId !== userId && !company.isPublic) {
@@ -90,13 +108,24 @@ export const getModulesByType = query({
 	args: { companyId: v.id("companies"), type: brandModuleTypeValidator },
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
-		if (!userId) {
-			return [];
-		}
 
 		const company = await ctx.db.get(args.companyId);
 		if (!company) {
 			return [];
+		}
+
+		// If unauthenticated, only allow access to public companies
+		if (!userId) {
+			if (!company.isPublic) {
+				return [];
+			}
+			const modules = await ctx.db
+				.query("brandModules")
+				.withIndex("by_company_type", (q) =>
+					q.eq("companyId", args.companyId).eq("type", args.type)
+				)
+				.collect();
+			return modules.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
 		}
 
 		if (company.ownerId !== userId && !company.isPublic) {
@@ -439,3 +468,5 @@ async function unpublishOtherModules(
 		}
 	}
 }
+
+

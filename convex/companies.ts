@@ -151,14 +151,40 @@ export const listWithBrandData = query({
 	},
 });
 
+export const getFirstPublic = query({
+	args: {},
+	handler: async (ctx) => {
+		// Get the first public company
+		const publicCompany = await ctx.db
+			.query("companies")
+			.withIndex("by_public", (q) => q.eq("isPublic", true))
+			.order("desc")
+			.first();
+
+		if (!publicCompany) {
+			return null;
+		}
+
+		const logoModule = await ctx.db
+			.query("brandModules")
+			.withIndex("by_company_type", (q) =>
+				q.eq("companyId", publicCompany._id).eq("type", BrandModuleTypes.Logo)
+			)
+			.filter((q) => q.eq(q.field("published"), true))
+			.first();
+
+		const logoUrl = logoModule?.data?.storageKey
+			? await r2.getUrl(logoModule?.data?.storageKey)
+			: "";
+
+		return { ...publicCompany, logoUrl };
+	},
+});
+
 export const get = query({
 	args: { companyId: v.id("companies") },
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
-		if (!userId) {
-			return null;
-		}
-
 		const company = await ctx.db.get(args.companyId);
 		if (!company) {
 			return null;
@@ -177,6 +203,12 @@ export const get = query({
 			: "";
 
 		const result = { ...company, logoUrl };
+
+		// If unauthenticated, only allow access to public companies
+		if (!userId) {
+			return company.isPublic ? result : null;
+		}
+
 		// Check if user has access
 		if (company.ownerId === userId || company.isPublic) {
 			return result;

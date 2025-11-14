@@ -5,13 +5,20 @@ import {
 	IconPlus,
 	IconShare3,
 	IconTrash,
+	IconWriting,
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Authenticated, useMutation, useQuery } from "convex/react";
+import {
+	Authenticated,
+	Unauthenticated,
+	useMutation,
+	useQuery,
+} from "convex/react";
 import { PanelLeftIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { LoginPromptDialog } from "@/components/LoginPromptDialog";
 import { NavUser } from "@/components/nav-user";
 import {
 	AlertDialog,
@@ -24,6 +31,7 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -66,6 +74,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 	const { toggleSidebar, state, isMobile } = useSidebar();
 	const [isHovered, setIsHovered] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 	const [companyToDelete, setCompanyToDelete] = useState<{
 		id: Id<"companies">;
 		name: string;
@@ -137,38 +146,38 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 				</SidebarMenu>
 			</SidebarHeader>
 			<SidebarContent>
-				<SidebarGroup>
-					<SidebarGroupLabel>Companies</SidebarGroupLabel>
-					<SidebarGroupContent>
-						<SidebarMenu>
-							<SidebarMenuItem>
-								<SidebarMenuButton
-									asChild
-									className={cn(
-										"group my-2 rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800",
-										"group-data-[collapsible=icon]:gap-0",
-										"group-data-[collapsible=icon]:justify-center"
-									)}
-									tooltip={isCollapsed ? "New Company" : undefined}
-								>
-									{isCollapsed ? (
-										<Link
-											className="flex items-center justify-center"
-											to="/c/new"
-										>
-											<IconPlus className="size-5 text-neutral-800" />
-										</Link>
-									) : (
-										<Link to="/c/new">
-											<AnimatedShinyText className="inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-neutral-800 hover:duration-300 hover:dark:text-neutral-400">
-												<span>New Company</span>
-												<IconPlus className="mt-1 ml-1 size-4 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
-											</AnimatedShinyText>
-										</Link>
-									)}
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-							<Authenticated>
+				<Authenticated>
+					<SidebarGroup>
+						<SidebarGroupLabel>Companies</SidebarGroupLabel>
+						<SidebarGroupContent>
+							<SidebarMenu>
+								<SidebarMenuItem>
+									<SidebarMenuButton
+										asChild
+										className={cn(
+											"group my-2 rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800",
+											"group-data-[collapsible=icon]:gap-0",
+											"group-data-[collapsible=icon]:justify-center"
+										)}
+										tooltip={isCollapsed ? "New Company" : undefined}
+									>
+										{isCollapsed ? (
+											<Link
+												className="flex items-center justify-center"
+												to="/c/new"
+											>
+												<IconPlus className="size-5 text-neutral-800" />
+											</Link>
+										) : (
+											<Link to="/c/new">
+												<AnimatedShinyText className="inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-neutral-800 hover:duration-300 hover:dark:text-neutral-400">
+													<span>New Company</span>
+													<IconPlus className="mt-1 ml-1 size-4 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
+												</AnimatedShinyText>
+											</Link>
+										)}
+									</SidebarMenuButton>
+								</SidebarMenuItem>
 								{companies.map((company) => {
 									// Use company.name as the source of truth
 									const displayName = company.name || "Untitled";
@@ -245,10 +254,92 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 										</SidebarMenuItem>
 									);
 								})}
-							</Authenticated>
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+				</Authenticated>
+				<Unauthenticated>
+					<SidebarGroup>
+						<SidebarGroupContent>
+							<SidebarMenu>
+								<SidebarMenuItem>
+									<SidebarMenuButton
+										className={cn(
+											"group my-2 rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800",
+											"group-data-[collapsible=icon]:gap-0",
+											"group-data-[collapsible=icon]:justify-center"
+										)}
+										onClick={() => setLoginDialogOpen(true)}
+										tooltip={isCollapsed ? "New Company" : undefined}
+									>
+										{isCollapsed ? (
+											<div className="flex items-center justify-center">
+												<IconPlus className="size-5 text-neutral-800" />
+											</div>
+										) : (
+											<AnimatedShinyText className="inline-flex items-center justify-between gap-2 px-4 py-1 transition ease-out hover:text-neutral-800 hover:duration-300 hover:dark:text-neutral-400">
+												<span>Create Brand</span>
+												<IconWriting className="size-5" />
+											</AnimatedShinyText>
+										)}
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+					{!isCollapsed && (
+						<SidebarGroup className="mt-auto border-t pt-4">
+							<SidebarGroupContent>
+								<div className="space-y-3 px-2 text-sm">
+									<div>
+										<h3 className="mb-2 font-semibold text-sm">
+											About BrandKite
+										</h3>
+										<p className="text-muted-foreground text-xs leading-relaxed">
+											Create and manage your company's complete brand identity.
+											Generate professional logos, colors, typography, and brand
+											guidelines powered by AI.
+										</p>
+									</div>
+									<div>
+										<h4 className="mb-1.5 font-medium text-xs">Key Features</h4>
+										<ul className="space-y-1 text-muted-foreground text-xs">
+											<li className="flex items-start gap-1.5">
+												<span className="mt-0.5">•</span>
+												<span>AI-powered brand generation</span>
+											</li>
+											<li className="flex items-start gap-1.5">
+												<span className="mt-0.5">•</span>
+												<span>Complete brand identity system</span>
+											</li>
+											<li className="flex items-start gap-1.5">
+												<span className="mt-0.5">•</span>
+												<span>Logo, colors, and typography</span>
+											</li>
+											<li className="flex items-start gap-1.5">
+												<span className="mt-0.5">•</span>
+												<span>Brand guidelines and documentation</span>
+											</li>
+										</ul>
+									</div>
+									<div className="pt-2">
+										<p className="mb-3 text-muted-foreground text-xs">
+											Sign in to create your own brand identity or explore
+											public examples.
+										</p>
+										<Button
+											className="w-full"
+											onClick={() => setLoginDialogOpen(true)}
+											size="sm"
+										>
+											Sign In
+										</Button>
+									</div>
+								</div>
+							</SidebarGroupContent>
+						</SidebarGroup>
+					)}
+				</Unauthenticated>
 			</SidebarContent>
 			<SidebarFooter>
 				<NavUser />
@@ -273,6 +364,12 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+			<LoginPromptDialog
+				description="Please sign in to create a new company."
+				onOpenChange={setLoginDialogOpen}
+				open={loginDialogOpen}
+				title="Sign in to create a company"
+			/>
 		</Sidebar>
 	);
 }
