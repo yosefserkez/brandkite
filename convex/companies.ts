@@ -181,6 +181,53 @@ export const getFirstPublic = query({
 	},
 });
 
+export const listPublicWithBrandData = query({
+	args: {},
+	handler: async (ctx) => {
+		// Get all public companies
+		const publicCompanies = await ctx.db
+			.query("companies")
+			.withIndex("by_public", (q) => q.eq("isPublic", true))
+			.order("desc")
+			.collect();
+
+		// Fetch brand modules for each company
+		const companiesWithBrandData = await Promise.all(
+			publicCompanies.map(async (company) => {
+				// Get name module
+				const nameModule = await ctx.db
+					.query("brandModules")
+					.withIndex("by_company_type", (q) =>
+						q.eq("companyId", company._id).eq("type", BrandModuleTypes.Name)
+					)
+					.filter((q) => q.eq(q.field("published"), true))
+					.first();
+
+				// Get logo module
+				const logoModule = await ctx.db
+					.query("brandModules")
+					.withIndex("by_company_type", (q) =>
+						q.eq("companyId", company._id).eq("type", BrandModuleTypes.Logo)
+					)
+					.filter((q) => q.eq(q.field("published"), true))
+					.first();
+
+				const logoUrl = logoModule?.data?.storageKey
+					? await r2.getUrl(logoModule?.data?.storageKey)
+					: "";
+
+				return {
+					...company,
+					nameModule: nameModule?.data,
+					logoUrl,
+				};
+			})
+		);
+
+		return companiesWithBrandData;
+	},
+});
+
 export const get = query({
 	args: { companyId: v.id("companies") },
 	handler: async (ctx, args) => {

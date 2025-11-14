@@ -9,11 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PublicCIdRouteImport } from './routes/public/c/$id'
 import { Route as AuthenticatedCNewRouteImport } from './routes/_authenticated/c/new'
 import { Route as AuthenticatedCIdRouteImport } from './routes/_authenticated/c/$id'
 
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -21,6 +28,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicCIdRoute = PublicCIdRouteImport.update({
+  id: '/public/c/$id',
+  path: '/public/c/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedCNewRoute = AuthenticatedCNewRouteImport.update({
@@ -36,41 +48,58 @@ const AuthenticatedCIdRoute = AuthenticatedCIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/gallery': typeof GalleryRoute
   '/c/$id': typeof AuthenticatedCIdRoute
   '/c/new': typeof AuthenticatedCNewRoute
+  '/public/c/$id': typeof PublicCIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/gallery': typeof GalleryRoute
   '/c/$id': typeof AuthenticatedCIdRoute
   '/c/new': typeof AuthenticatedCNewRoute
+  '/public/c/$id': typeof PublicCIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/gallery': typeof GalleryRoute
   '/_authenticated/c/$id': typeof AuthenticatedCIdRoute
   '/_authenticated/c/new': typeof AuthenticatedCNewRoute
+  '/public/c/$id': typeof PublicCIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/c/$id' | '/c/new'
+  fullPaths: '/' | '/gallery' | '/c/$id' | '/c/new' | '/public/c/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/c/$id' | '/c/new'
+  to: '/' | '/gallery' | '/c/$id' | '/c/new' | '/public/c/$id'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/gallery'
     | '/_authenticated/c/$id'
     | '/_authenticated/c/new'
+    | '/public/c/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  GalleryRoute: typeof GalleryRoute
+  PublicCIdRoute: typeof PublicCIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -83,6 +112,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/public/c/$id': {
+      id: '/public/c/$id'
+      path: '/public/c/$id'
+      fullPath: '/public/c/$id'
+      preLoaderRoute: typeof PublicCIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/c/new': {
@@ -119,6 +155,8 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  GalleryRoute: GalleryRoute,
+  PublicCIdRoute: PublicCIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

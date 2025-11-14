@@ -112,7 +112,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 			<SidebarHeader>
 				<SidebarMenu>
 					<SidebarMenuItem>
-						<div className="flex w-full items-center gap-2 px-2 py-1.5">
+						<div className="flex w-full items-center gap-2 py-1.5">
 							<SidebarMenuButton
 								asChild={!isCollapsed}
 								className={cn(
@@ -287,6 +287,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 							</SidebarMenu>
 						</SidebarGroupContent>
 					</SidebarGroup>
+
 					{!isCollapsed && (
 						<SidebarGroup className="mt-auto border-t pt-4">
 							<SidebarGroupContent>
@@ -324,8 +325,20 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 									</div>
 									<div className="pt-2">
 										<p className="mb-3 text-muted-foreground text-xs">
-											Sign in to create your own brand identity or explore
-											public examples.
+											<button
+												className="cursor-pointer font-medium text-primary hover:text-primary-hover hover:underline"
+												onClick={() => setLoginDialogOpen(true)}
+												type="button"
+											>
+												Sign in{" "}
+											</button>{" "}
+											to create your own brand identity.
+											{/* <Link
+												className="cursor-pointer font-medium text-primary hover:text-primary-hover hover:underline"
+												to="/gallery"
+											>
+												explore public examples
+											</Link> */}
 										</p>
 										<Button
 											className="w-full"
