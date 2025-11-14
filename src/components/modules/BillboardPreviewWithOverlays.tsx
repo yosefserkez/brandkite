@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import type { NameWithDomains } from "../../../convex/modules/name";
-import { SkeletonFlickeringGrid } from "../skeleton-flickering-grid";
-import { Card, CardContent, CardHeader } from "../ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { BillboardPreview } from "./BillboardPreview";
 
@@ -15,7 +13,6 @@ type BillboardPreviewWithOverlaysProps = {
 	nameData?: NameWithDomains;
 	showReasoningDetails?: boolean;
 	bottomRightContent?: React.ReactNode;
-	isLoading?: boolean;
 };
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <explanation>
@@ -26,7 +23,6 @@ export function BillboardPreviewWithOverlays({
 	nameData,
 	showReasoningDetails = true,
 	bottomRightContent,
-	isLoading = false,
 }: BillboardPreviewWithOverlaysProps) {
 	const isMobile = useIsMobile();
 	const [isReasoningTooltipOpen, setIsReasoningTooltipOpen] = useState(false);
@@ -38,10 +34,6 @@ export function BillboardPreviewWithOverlays({
 			setIsDomainsTooltipOpen(false);
 		}
 	}, [isMobile]);
-
-	if (isLoading) {
-		return <BillboardSkeleton />;
-	}
 
 	return (
 		<div className="fade-in relative animate-in duration-500">
@@ -167,20 +159,5 @@ export function BillboardPreviewWithOverlays({
 				</div>
 			)}
 		</div>
-	);
-}
-
-export function BillboardSkeleton() {
-	return (
-		<Card className="h-[400px] w-full rounded-t-lg border">
-			<CardHeader>
-				<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-					Company Name
-				</p>
-			</CardHeader>
-			<CardContent>
-				<SkeletonFlickeringGrid height={320} />
-			</CardContent>
-		</Card>
 	);
 }

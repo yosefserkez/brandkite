@@ -54,10 +54,11 @@ export function BlockWrapper({
 	hideRegenerate = false,
 }: BlockWrapperProps) {
 	const isLoading =
-		showLoadingState &&
-		ctx?.selected &&
-		(ctx.selected.generationStatus === "queued" ||
-			ctx.selected.generationStatus === "in_progress");
+		(showLoadingState &&
+			ctx?.selected &&
+			(ctx.selected.generationStatus === "queued" ||
+				ctx.selected.generationStatus === "in_progress")) ||
+		!ctx.selected?.data;
 	// Always use compact actions variant on mobile (sm and down).
 	const isMobile =
 		typeof window !== "undefined"

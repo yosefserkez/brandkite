@@ -3,7 +3,6 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandStory } from "../../../convex/modules/story";
 import { useBrandModule } from "../../hooks/useBrandModule";
 import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
-import { SkeletonFlickeringGrid } from "../skeleton-flickering-grid";
 import { SuspenseCard } from "../suspense-card";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { BlockWrapper } from "./BlockWrapper";
@@ -44,13 +43,9 @@ export default function StoryModule({
 					</p>
 				</CardHeader>
 				<CardContent>
-					{data?.story ? (
-						<p className="wrap-break-word text-justify text-gray-950 text-xl tracking-tight">
-							{replaceCompanyName(data.story, companyName)}
-						</p>
-					) : (
-						<SkeletonFlickeringGrid />
-					)}
+					<p className="wrap-break-word text-justify text-gray-950 text-xl tracking-tight">
+						{replaceCompanyName(data?.story ?? "", companyName)}
+					</p>
 				</CardContent>
 			</Card>
 		</BlockWrapper>

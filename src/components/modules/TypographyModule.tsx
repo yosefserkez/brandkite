@@ -84,7 +84,7 @@ export default function TypographyModule({
 			ctx={ctx}
 			loadingSkeleton={<SuspenseCard headerText="Typography system" />}
 		>
-			{data ? (
+			{data && (
 				<Card>
 					<CardHeader>
 						<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
@@ -112,8 +112,6 @@ export default function TypographyModule({
 						/>
 					</CardContent>
 				</Card>
-			) : (
-				<SuspenseCard headerText="Typography system" />
 			)}
 		</BlockWrapper>
 	);

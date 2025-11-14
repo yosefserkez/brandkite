@@ -37,12 +37,6 @@ export default function ToneModule({ companyId, className }: ToneModuleProps) {
 		navigator.clipboard.writeText([summary, "", examples].join("\n"));
 	};
 
-	const content = tone ? (
-		<ToneContent companyName={companyName} tone={tone} />
-	) : (
-		<SuspenseCard headerText="Tone of voice" />
-	);
-
 	return (
 		<BlockWrapper
 			actionHandlers={{ onCopy }}
@@ -50,7 +44,7 @@ export default function ToneModule({ companyId, className }: ToneModuleProps) {
 			ctx={ctx}
 			loadingSkeleton={<SuspenseCard headerText="Tone of voice" />}
 		>
-			{content}
+			{tone && <ToneContent companyName={companyName} tone={tone} />}
 		</BlockWrapper>
 	);
 }
@@ -62,8 +56,9 @@ function ToneContent({
 	tone: BrandTone;
 	companyName?: string | null;
 }) {
+	const EXAMPLES_TO_SHOW = 3;
 	const normalizedExamples = useMemo(
-		() => (tone.examples ?? []).slice(0, 3),
+		() => (tone.examples ?? []).slice(0, EXAMPLES_TO_SHOW),
 		[tone.examples]
 	);
 

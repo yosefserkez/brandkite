@@ -7,10 +7,8 @@ import {
 	useCompanyBrandLogoUrl,
 	useCompanyBrandName,
 } from "../../hooks/useCompanyBrand";
-import {
-	BillboardPreviewWithOverlays,
-	BillboardSkeleton,
-} from "./BillboardPreviewWithOverlays";
+import { SuspenseCard } from "../suspense-card";
+import { BillboardPreviewWithOverlays } from "./BillboardPreviewWithOverlays";
 import { BlockWrapper } from "./BlockWrapper";
 import { ChangeNameDialog } from "./ChangeNameDialog";
 
@@ -53,13 +51,14 @@ export default function NamesModule({
 				ctx={ctx}
 				hideRegenerate
 				hideVersionSelector
-				loadingSkeleton={<BillboardSkeleton />}
+				loadingSkeleton={
+					<SuspenseCard contentHeight={320} headerText="Company Name" />
+				}
 			>
 				<BillboardPreviewWithOverlays
 					className={className}
 					company={{ name: displayName ?? "", logoUrl }}
 					containerHeight="320px"
-					isLoading={!displayName}
 					nameData={currentNameData}
 				/>
 			</BlockWrapper>

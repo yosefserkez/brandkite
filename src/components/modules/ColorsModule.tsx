@@ -10,7 +10,6 @@ import {
 	generateColorScale,
 } from "../../lib/color-scale";
 import { cn, replaceCompanyName } from "../../lib/utils";
-import { SkeletonFlickeringGrid } from "../skeleton-flickering-grid";
 import { SuspenseCard } from "../suspense-card";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -90,13 +89,11 @@ export default function ColorsModule({
 					</div>
 				</CardHeader>
 				<CardContent>
-					{hasPalette ? (
+					{hasPalette && (
 						<PaletteBody
 							colors={colorsWithScale}
 							companyName={companyName ?? ""}
 						/>
-					) : (
-						<SkeletonFlickeringGrid />
 					)}
 				</CardContent>
 			</Card>

@@ -3,7 +3,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandTagline } from "../../../convex/modules/tagline";
 import { useBrandModule } from "../../hooks/useBrandModule";
 import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
-import { SkeletonFlickeringGrid } from "../skeleton-flickering-grid";
+import { SuspenseCard } from "../suspense-card";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { BlockWrapper } from "./BlockWrapper";
 
@@ -34,7 +34,9 @@ export default function TaglineModule({
 			actionsVariant="compact"
 			className={className}
 			ctx={ctx}
-			loadingSkeleton={<SkeletonFlickeringGrid />}
+			loadingSkeleton={
+				<SuspenseCard contentHeight={100} headerText="Tagline" />
+			}
 		>
 			<Card className="overflow-hidden">
 				<CardHeader>
@@ -43,13 +45,9 @@ export default function TaglineModule({
 					</p>
 				</CardHeader>
 				<CardContent className="">
-					{data?.tagline ? (
-						<p className="wrap-break-word text-gray-950 text-xl tracking-tight md:text-xl lg:text-2xl">
-							{replaceCompanyName(data.tagline, companyName)}
-						</p>
-					) : (
-						<SkeletonFlickeringGrid />
-					)}
+					<p className="wrap-break-word text-gray-950 text-xl tracking-tight md:text-xl lg:text-2xl">
+						{replaceCompanyName(data?.tagline ?? "", companyName)}
+					</p>
 				</CardContent>
 			</Card>
 		</BlockWrapper>

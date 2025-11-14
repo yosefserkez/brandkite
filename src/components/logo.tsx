@@ -1,16 +1,36 @@
 import { useEffect, useState } from "react";
 
-export default function Logo({ url }: { url: string }) {
-	return <InlineSVG url={url} />;
+type LogoProps = { svg: string; url?: never } | { svg?: never; url: string };
+
+export default function Logo(props: LogoProps) {
+	if (props.svg) {
+		return <InlineSVG svg={props.svg} />;
+	}
+	if (props.url) {
+		return <InlineSVG url={props.url} />;
+	}
+	return null;
 }
 
-function InlineSVG({ url }: { url: string }) {
-	const [svg, setSvg] = useState("");
+type InlineSVGProps =
+	| { svg: string; url?: never }
+	| { svg?: never; url: string };
+
+function InlineSVG(props: InlineSVGProps) {
+	const [svg, setSvg] = useState(props.svg ?? "");
 
 	useEffect(() => {
-		fetch(url)
+		if (props.svg) {
+			setSvg(props.svg);
+			return;
+		}
+		if (!props.url) {
+			return;
+		}
+		const HTTP_OK_STATUS = 200;
+		fetch(props.url)
 			.then((res) => {
-				if (res.status !== 200) {
+				if (res.status !== HTTP_OK_STATUS) {
 					return;
 				}
 				return res.text();
@@ -23,7 +43,7 @@ function InlineSVG({ url }: { url: string }) {
 			.catch((error) => {
 				throw error;
 			});
-	}, [url]);
+	}, [props.svg, props.url]);
 
 	return (
 		<>

@@ -3,7 +3,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandMission } from "../../../convex/modules/mission";
 import { useBrandModule } from "../../hooks/useBrandModule";
 import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
-import { SkeletonFlickeringGrid } from "../skeleton-flickering-grid";
+import { SuspenseCard } from "../suspense-card";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { BlockWrapper } from "./BlockWrapper";
 
@@ -34,7 +34,9 @@ export default function MissionModule({
 			actionsVariant="compact"
 			className={className}
 			ctx={ctx}
-			loadingSkeleton={<SkeletonFlickeringGrid />}
+			loadingSkeleton={
+				<SuspenseCard contentHeight={100} headerText="Mission" />
+			}
 		>
 			<Card className="">
 				<CardHeader>
@@ -43,13 +45,9 @@ export default function MissionModule({
 					</p>
 				</CardHeader>
 				<CardContent>
-					{data?.mission ? (
-						<p className="wrap-break-word font-semibold text-gray-950 text-xl tracking-tight md:text-xl lg:text-2xl">
-							{replaceCompanyName(data.mission, companyName)}
-						</p>
-					) : (
-						<SkeletonFlickeringGrid />
-					)}
+					<p className="wrap-break-word font-semibold text-gray-950 text-xl tracking-tight md:text-xl lg:text-2xl">
+						{replaceCompanyName(data?.mission ?? "", companyName)}
+					</p>
 				</CardContent>
 			</Card>
 		</BlockWrapper>

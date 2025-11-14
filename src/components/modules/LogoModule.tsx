@@ -4,7 +4,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import type { LogoModuleData } from "../../../convex/modules/logo";
 import { useBrandModule } from "../../hooks/useBrandModule";
 import Logo from "../logo";
-import { SkeletonFlickeringGrid } from "../skeleton-flickering-grid";
+import { SuspenseCard } from "../suspense-card";
 import { Card, CardContent } from "../ui/card";
 import { BlockWrapper } from "./BlockWrapper";
 
@@ -44,15 +44,11 @@ export default function LogoModule({ companyId, className }: LogoModuleProps) {
 			actionsVariant="compact"
 			className={className}
 			ctx={ctx}
-			loadingSkeleton={<SkeletonFlickeringGrid height={200} />}
+			loadingSkeleton={<SuspenseCard contentHeight={100} headerText="Logo" />}
 		>
-			<Card>
-				<CardContent>
-					{logoUrl ? (
-						<Logo url={logoUrl} />
-					) : (
-						<SkeletonFlickeringGrid height={400} />
-					)}
+			<Card className="h-full w-full">
+				<CardContent className="h-full w-full">
+					{logoUrl && <Logo url={logoUrl} />}
 				</CardContent>
 			</Card>
 		</BlockWrapper>
