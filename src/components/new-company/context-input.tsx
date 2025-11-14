@@ -170,6 +170,7 @@ export function NewCompany({ onSubmit, onFocusChange }: NewCompanyProps) {
 			});
 		} catch (_error) {
 			toast.error("Failed to process files");
+		} finally {
 			setIsLoading(false);
 		}
 	};

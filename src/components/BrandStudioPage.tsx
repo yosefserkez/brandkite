@@ -8,6 +8,7 @@ import StoryModule from "./modules/StoryModule";
 import TaglineModule from "./modules/TaglineModule";
 import ToneModule from "./modules/ToneModule";
 import TypographyModule from "./modules/TypographyModule";
+import { FlickeringGrid } from "./ui/flickering-grid";
 
 type BrandStudioPageProps = {
 	companyId: Id<"companies">;
@@ -19,7 +20,9 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 	if (loading || !company) {
 		return (
 			<div className="flex h-full items-center justify-center">
-				<div className="h-8 w-8 animate-spin rounded-full border-blue-600 border-b-2" />
+				<div className="h-full w-full">
+					<FlickeringGrid />
+				</div>
 			</div>
 		);
 	}

@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as autumn from "../autumn.js";
 import type * as brandModules from "../brandModules.js";
 import type * as companies from "../companies.js";
 import type * as http from "../http.js";
@@ -28,6 +29,7 @@ import type * as modules_tone from "../modules/tone.js";
 import type * as modules_typography from "../modules/typography.js";
 import type * as presence from "../presence.js";
 import type * as r2 from "../r2.js";
+import type * as track from "../track.js";
 import type * as users from "../users.js";
 import type * as workflows_index from "../workflows/index.js";
 
@@ -47,6 +49,7 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  autumn: typeof autumn;
   brandModules: typeof brandModules;
   companies: typeof companies;
   http: typeof http;
@@ -66,6 +69,7 @@ declare const fullApi: ApiFromModules<{
   "modules/typography": typeof modules_typography;
   presence: typeof presence;
   r2: typeof r2;
+  track: typeof track;
   users: typeof users;
   "workflows/index": typeof workflows_index;
 }>;
@@ -596,4 +600,5 @@ export declare const components: {
       >;
     };
   };
+  autumn: {};
 };

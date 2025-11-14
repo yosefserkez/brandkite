@@ -1,6 +1,7 @@
 import type { BrandModuleType } from "@convex/workflows";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 
@@ -45,7 +46,7 @@ export function useBrandModule(
 		type: moduleType,
 	}) as BrandModuleVersionDoc[] | undefined;
 	const updateModule = useMutation(api.brandModules.updateModule);
-	const regenerateModule = useMutation(api.brandModules.regenerateModule);
+	const regenerateModule = useAction(api.brandModules.regenerateModule);
 
 	const [selectedId, setSelectedId] = useState<Id<"brandModules"> | null>(null);
 	const [isPublishing, setIsPublishing] = useState(false);
@@ -154,6 +155,9 @@ export function useBrandModule(
 					companyId,
 					type: moduleType,
 					publish: publish ?? false,
+				}).catch((error) => {
+					toast.error(error.data);
+					return;
 				});
 			} finally {
 				setIsRegenerating(false);

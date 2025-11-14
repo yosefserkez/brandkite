@@ -10,7 +10,7 @@ export const SkeletonFlickeringGrid = ({
 	height?: number;
 	width?: number;
 }) => (
-	<div className="h-full w-full items-center justify-center">
+	<div className="m-auto h-full w-full items-center justify-center">
 		<FlickeringGrid
 			className={cn(
 				"color-brand-primary mask-[radial-gradient(450px_circle_at_center,white,transparent)] relative inset-0 z-0",

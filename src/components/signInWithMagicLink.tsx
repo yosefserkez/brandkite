@@ -12,13 +12,13 @@ export function SignInFormEmailLink() {
 			{step === "signIn" ? (
 				<SignInWithMagicLink handleLinkSent={() => setStep("linkSent")} />
 			) : (
-				<div className="flex flex-col gap-1 rounded-md bg-black p-3 text-white">
+				<div className="flex flex-col gap-1 rounded-md border border-gray-200 bg-white/80 p-3 text-black">
 					<h2 className="font-semibold text-2xl tracking-tight">
 						Check your email
 					</h2>
 					<p>A sign-in link has been sent to your email address.</p>
 					<Button
-						className="self-start p-0 text-white"
+						className="self-start p-0"
 						onClick={() => setStep("signIn")}
 						variant="link"
 					>

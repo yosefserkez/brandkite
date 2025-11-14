@@ -4,15 +4,15 @@ import { workflow } from ".";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import {
-	internalAction,
+	action,
 	internalMutation,
 	internalQuery,
 	type MutationCtx,
 	mutation,
+	type QueryCtx,
 	query,
 } from "./_generated/server";
 import { validateBrandModuleData } from "./lib/validationHelpers";
-import { logger } from "./logger";
 import { GENERATION_STATUS_VALIDATOR } from "./schema";
 import { type BrandModuleType, brandModuleTypeValidator } from "./workflows";
 
@@ -189,18 +189,54 @@ export const updateModule = mutation({
  * Maps module types to their corresponding workflow definitions.
  */
 const MODULE_WORKFLOWS = {
-	name: internal.modules.name.nameWorkflow,
-	brandContext: internal.modules.brandContext.brandContextWorkflow,
-	logo: internal.modules.logo.logoWorkflow,
-	colors: internal.modules.colors.colorsWorkflow,
-	tagline: internal.modules.tagline.taglineWorkflow,
-	mission: internal.modules.mission.missionWorkflow,
-	story: internal.modules.story.storyWorkflow,
-	tone: internal.modules.tone.toneWorkflow,
-	typography: internal.modules.typography.typographyWorkflow,
+	name: {
+		workflow: internal.modules.name.nameWorkflow,
+		credits: 1,
+	},
+	brandContext: {
+		workflow: internal.modules.brandContext.brandContextWorkflow,
+		credits: 1,
+	},
+	logo: {
+		workflow: internal.modules.logo.logoWorkflow,
+		credits: 3,
+	},
+	colors: {
+		workflow: internal.modules.colors.colorsWorkflow,
+		credits: 1,
+	},
+	tagline: {
+		workflow: internal.modules.tagline.taglineWorkflow,
+		credits: 1,
+	},
+	mission: {
+		workflow: internal.modules.mission.missionWorkflow,
+		credits: 1,
+	},
+	story: {
+		workflow: internal.modules.story.storyWorkflow,
+		credits: 1,
+	},
+	tone: {
+		workflow: internal.modules.tone.toneWorkflow,
+		credits: 1,
+	},
+	typography: {
+		workflow: internal.modules.typography.typographyWorkflow,
+		credits: 1,
+	},
 } as const;
 
-export const regenerateModule = mutation({
+export const checkWriteAccessInternal = internalQuery({
+	args: {
+		companyId: v.id("companies"),
+		userId: v.id("users"),
+	},
+	handler: async (ctx, args) =>
+		await checkWriteAccess(ctx, args.companyId, args.userId),
+});
+
+export const regenerateModule = action({
 	args: {
 		companyId: v.id("companies"),
 		type: brandModuleTypeValidator,
@@ -209,58 +245,52 @@ export const regenerateModule = mutation({
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
 
-		const hasWriteAccess = await checkWriteAccess(ctx, args.companyId, userId);
-		logger.info("Has write access", { hasWriteAccess });
+		if (!userId) {
+			throw new Error("Not authenticated");
+		}
+
+		const hasWriteAccess = await ctx.runQuery(
+			internal.brandModules.checkWriteAccessInternal,
+			{
+				companyId: args.companyId,
+				userId: userId ?? "",
+			}
+		);
+
 		if (!hasWriteAccess) {
 			throw new Error("Not authorized");
 		}
 
 		// Get the workflow for the module type
 		const workflowRef =
-			MODULE_WORKFLOWS[args.type as keyof typeof MODULE_WORKFLOWS];
+			MODULE_WORKFLOWS[args.type as keyof typeof MODULE_WORKFLOWS].workflow;
 
 		if (!workflowRef) {
 			throw new Error(`No workflow registered for module type: ${args.type}`);
 		}
 
-		await workflow.start(ctx, workflowRef, {
+		await ctx.runAction(internal.track.checkTrackCredits, {
+			companyId: args.companyId,
+			credits:
+				MODULE_WORKFLOWS[args.type as keyof typeof MODULE_WORKFLOWS].credits,
+			throw: true,
+		});
+
+		const result: unknown = await workflow.start(ctx, workflowRef, {
 			companyId: args.companyId,
 			publish: args.publish,
 		});
 
-		logger.info("Started workflow", {
-			workflow: args.type,
-			companyId: args.companyId,
-		});
-	},
-});
-
-export const regenerateModuleAction = internalAction({
-	args: {
-		companyId: v.id("companies"),
-		type: brandModuleTypeValidator,
-		moduleId: v.id("brandModules"),
-		publish: v.optional(v.boolean()),
-		inputContent: v.optional(v.string()),
-	},
-	handler: async (ctx, args) => {
-		const log = logger.withContext({
-			companyId: args.companyId,
-			moduleType: args.type,
-			moduleId: args.moduleId,
-			step: "regenerateModuleAction",
-		});
-
-		const company = await ctx.runQuery(internal.companies.getForGeneration, {
-			companyId: args.companyId,
-		});
-
-		if (!company) {
-			log.error("Company not found");
-			throw new Error("Company not found");
+		if (result) {
+			await ctx.runAction(internal.track.checkTrackCredits, {
+				companyId: args.companyId,
+				credits:
+					MODULE_WORKFLOWS[args.type as keyof typeof MODULE_WORKFLOWS].credits,
+				deduct: true,
+			});
 		}
 
-		// todo: run workflow for module type. it will create the module set it as in progress and update the generation status to succeeded or failed.
+		return result;
 	},
 });
 
@@ -420,7 +450,7 @@ export const deleteModuleInternal = internalMutation({
 });
 
 async function checkWriteAccess(
-	ctx: MutationCtx,
+	ctx: QueryCtx | MutationCtx,
 	companyId: Id<"companies">,
 	userId: Id<"users"> | null
 ): Promise<boolean> {
@@ -468,5 +498,3 @@ async function unpublishOtherModules(
 		}
 	}
 }
-
-

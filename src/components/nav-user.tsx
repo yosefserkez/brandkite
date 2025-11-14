@@ -5,6 +5,7 @@ import {
 	IconLogout,
 } from "@tabler/icons-react";
 import { useQuery } from "convex/react";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -22,11 +23,13 @@ import {
 	useSidebar,
 } from "@/components/ui/sidebar";
 import { api } from "../../convex/_generated/api";
+import { Billing } from "./billing";
 
 export function NavUser() {
 	const { isMobile } = useSidebar();
 	const { signOut } = useAuthActions();
 	const viewer = useQuery(api.users.viewer);
+	const [billingOpen, setBillingOpen] = useState(false);
 
 	// If no user is logged in, return null
 	if (!viewer) {
@@ -94,7 +97,7 @@ export function NavUser() {
 								<IconUserCircle />
 								Account
 							</DropdownMenuItem> */}
-							<DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setBillingOpen(true)}>
 								<IconCreditCard />
 								Billing
 							</DropdownMenuItem>
@@ -111,6 +114,7 @@ export function NavUser() {
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
+				<Billing open={billingOpen} setOpen={setBillingOpen} />
 			</SidebarMenuItem>
 		</SidebarMenu>
 	);

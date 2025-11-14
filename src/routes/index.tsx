@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Authenticated, Unauthenticated, useQuery } from "convex/react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BrandStudioPage } from "@/components/BrandStudioPage";
+import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import {
 	SidebarInset,
 	SidebarProvider,
@@ -67,7 +68,9 @@ function PublicCompanyView() {
 	if (publicCompany === undefined) {
 		return (
 			<div className="flex h-full items-center justify-center">
-				<div className="h-8 w-8 animate-spin rounded-full border-blue-600 border-b-2" />
+				<div className="h-full w-full">
+					<FlickeringGrid />
+				</div>
 			</div>
 		);
 	}

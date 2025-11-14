@@ -1,9 +1,11 @@
 import { api } from "@convex/_generated/api";
 import type { BrandContext } from "@convex/modules/brandContext";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useAction, useMutation } from "convex/react";
+import { useCustomer } from "autumn-js/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Billing } from "@/components/billing";
 import { ContextForm } from "@/components/new-company/context-form";
 import { NewCompany } from "@/components/new-company/context-input";
 import { ContextInputProcessing } from "@/components/new-company/context-input-processing";
@@ -17,6 +19,8 @@ type Step = "input" | "processing" | "form";
 
 function NewCompanyRoute() {
 	const navigate = useNavigate();
+	const { check } = useCustomer();
+	const companies = useQuery(api.companies.listWithBrandData) || [];
 	const [step, setStep] = useState<Step>("input");
 	const [brandContext, setBrandContext] = useState<BrandContext | null>(null);
 	const [isProcessing, setIsProcessing] = useState(false);
@@ -30,6 +34,19 @@ function NewCompanyRoute() {
 		rawText: string;
 		files: { name: string; text: string }[] | undefined;
 	}) => {
+		if (companies.length >= 1) {
+			// If user already has companies, check if they have the multiple_companies feature
+			const { data: multipleCompaniesData } = check({
+				featureId: "multiple_companies",
+				dialog: Billing,
+			});
+
+			if (!multipleCompaniesData?.allowed) {
+				toast.error("Please upgrade your plan to create multiple companies.");
+				return;
+			}
+		}
+
 		setStep("processing");
 		setIsProcessing(true);
 

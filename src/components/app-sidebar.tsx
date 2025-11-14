@@ -8,6 +8,7 @@ import {
 	IconWriting,
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { useCustomer } from "autumn-js/react";
 import {
 	Authenticated,
 	Unauthenticated,
@@ -18,6 +19,7 @@ import { PanelLeftIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Billing } from "@/components/billing";
 import { LoginPromptDialog } from "@/components/LoginPromptDialog";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -72,6 +74,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 	const deleteCompany = useMutation(api.companies.deleteCompany);
 	const navigate = useNavigate();
 	const { toggleSidebar, state, isMobile } = useSidebar();
+	const { check } = useCustomer();
 	const [isHovered, setIsHovered] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [loginDialogOpen, setLoginDialogOpen] = useState(false);
@@ -80,6 +83,23 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 		name: string;
 	} | null>(null);
 	const isCollapsed = state === "collapsed";
+
+	const handleNewCompanyClick = () => {
+		// If user already has companies, check if they have the multiple_companies feature
+		if (companies.length > 0) {
+			const { data } = check({
+				featureId: "multiple_companies",
+				dialog: Billing,
+			});
+
+			if (!data?.allowed) {
+				toast.error("Please upgrade your plan to create multiple companies.");
+				return;
+			}
+		}
+
+		navigate({ to: "/c/new" });
+	};
 
 	const handleDeleteClick = (
 		companyId: Id<"companies">,
@@ -153,28 +173,23 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 							<SidebarMenu>
 								<SidebarMenuItem>
 									<SidebarMenuButton
-										asChild
 										className={cn(
 											"group my-2 rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800",
 											"group-data-[collapsible=icon]:gap-0",
 											"group-data-[collapsible=icon]:justify-center"
 										)}
+										onClick={handleNewCompanyClick}
 										tooltip={isCollapsed ? "New Company" : undefined}
 									>
 										{isCollapsed ? (
-											<Link
-												className="flex items-center justify-center"
-												to="/c/new"
-											>
+											<div className="flex items-center justify-center">
 												<IconPlus className="size-5 text-neutral-800" />
-											</Link>
+											</div>
 										) : (
-											<Link to="/c/new">
-												<AnimatedShinyText className="inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-neutral-800 hover:duration-300 hover:dark:text-neutral-400">
-													<span>New Company</span>
-													<IconPlus className="mt-1 ml-1 size-4 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
-												</AnimatedShinyText>
-											</Link>
+											<AnimatedShinyText className="inline-flex items-center justify-center gap-2 px-4 py-1 transition ease-out hover:text-neutral-800 hover:duration-300 hover:dark:text-neutral-400">
+												<span>New Company</span>
+												<IconWriting className="size-5" />
+											</AnimatedShinyText>
 										)}
 									</SidebarMenuButton>
 								</SidebarMenuItem>

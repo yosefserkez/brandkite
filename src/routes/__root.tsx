@@ -3,18 +3,15 @@ import {
 	ErrorBoundary,
 	wrapCreateRootRouteWithSentry,
 } from "@sentry/tanstackstart-react";
-import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import {
 	createRootRouteWithContext,
 	HeadContent,
 	Scripts,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { ConvexReactClient } from "convex/react";
 import { Toaster } from "sonner";
-import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
-import StoreDevtools from "../lib/demo-store-devtools";
+import { AutumnWrapper } from "../components/autumn-wrapper";
 import appCss from "../styles.css?url";
 
 type MyRouterContext = {
@@ -70,20 +67,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			</head>
 			<body>
 				<ConvexAuthProvider client={convex}>
-					<ErrorBoundary fallback={ErrorFallback}>{children}</ErrorBoundary>
-					<TanStackDevtools
-						config={{
-							position: "bottom-right",
-						}}
-						plugins={[
-							{
-								name: "Tanstack Router",
-								render: <TanStackRouterDevtoolsPanel />,
-							},
-							StoreDevtools,
-							TanStackQueryDevtools,
-						]}
-					/>
+					<ErrorBoundary>
+						<AutumnWrapper>{children}</AutumnWrapper>
+					</ErrorBoundary>
 				</ConvexAuthProvider>
 				<Toaster />
 				<Scripts />

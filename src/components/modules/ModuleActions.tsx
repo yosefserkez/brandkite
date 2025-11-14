@@ -1,6 +1,9 @@
+import { useCustomer } from "autumn-js/react";
 import { Copy, Download, MoreVertical, RefreshCw } from "lucide-react";
 import type { ReactNode } from "react";
+import { toast } from "sonner";
 import type UseBrandModuleResult from "../../hooks/useBrandModule";
+import { Billing } from "../billing";
 import { Button } from "../ui/button";
 import {
 	DropdownMenu,
@@ -66,11 +69,29 @@ function buildModuleActions({
 			onClick: handlers.onCopy,
 		});
 	}
+	const { check } = useCustomer();
 
 	// Regenerate action (if not hidden)
 	if (!hideRegenerate) {
-		const regenerateHandler =
-			handlers.onRegenerate ?? (() => ctx.regenerate(false));
+		const regenerateHandler = () => {
+			const { data } = check({
+				featureId: "credits",
+				requiredBalance: 1,
+				dialog: Billing,
+			});
+
+			if (!data?.allowed) {
+				toast.error(
+					"You're out of usage. Please upgrade your plan to continue."
+				);
+				return;
+			}
+			if (handlers.onRegenerate) {
+				handlers.onRegenerate();
+			} else {
+				ctx.regenerate(false);
+			}
+		};
 		actions.push({
 			icon: (
 				<RefreshCw
