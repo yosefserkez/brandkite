@@ -1,5 +1,5 @@
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useId, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,28 +8,23 @@ export function SignInFormEmailLink() {
 	const [step, setStep] = useState<"signIn" | "linkSent">("signIn");
 
 	return (
-		<div className="mx-auto flex max-w-[384px] flex-col gap-4">
+		<div className="mx-auto flex w-full flex-col gap-4">
 			{step === "signIn" ? (
-				<>
-					<h2 className="font-semibold text-2xl tracking-tight">
-						Sign in or create an account
-					</h2>
-					<SignInWithMagicLink handleLinkSent={() => setStep("linkSent")} />
-				</>
+				<SignInWithMagicLink handleLinkSent={() => setStep("linkSent")} />
 			) : (
-				<>
+				<div className="flex flex-col gap-1 rounded-md bg-black p-3 text-white">
 					<h2 className="font-semibold text-2xl tracking-tight">
 						Check your email
 					</h2>
 					<p>A sign-in link has been sent to your email address.</p>
 					<Button
-						className="self-start p-0"
+						className="self-start p-0 text-white"
 						onClick={() => setStep("signIn")}
 						variant="link"
 					>
-						Cancel
+						Change email
 					</Button>
-				</>
+				</div>
 			)}
 		</div>
 	);
@@ -57,8 +52,16 @@ function SignInWithMagicLink({
 					});
 			}}
 		>
-			<label htmlFor="email">Email</label>
-			<Input autoComplete="email" className="mb-4" id={useId()} name="email" />
+			<label className="sr-only" htmlFor="email">
+				Email
+			</label>
+			<Input
+				autoComplete="email"
+				className="mb-4 border-black bg-gray-50"
+				id="email"
+				name="email"
+				placeholder="Email"
+			/>
 			<Button disabled={submitting} type="submit">
 				Send sign-in link
 			</Button>
