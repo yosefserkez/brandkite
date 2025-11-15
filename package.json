@@ -91,6 +91,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.2",
+    "@netlify/vite-plugin-tanstack-start": "^1.1.12",
     "@tanstack/devtools-event-client": "^0.3.2",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
