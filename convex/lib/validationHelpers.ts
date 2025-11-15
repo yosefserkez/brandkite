@@ -1,12 +1,12 @@
-import type { z } from "zod";
+import { z } from "zod";
 import { brandContextSchema } from "../modules/brandContext";
 import { colorsSchema } from "../modules/colors";
 import { logoSchema } from "../modules/logo";
-import { nameSchema } from "../modules/name";
 import { missionSchema } from "../modules/mission";
+import { nameSchema } from "../modules/name";
 import { storySchema } from "../modules/story";
-import { toneSchema } from "../modules/tone";
 import { taglineSchema } from "../modules/tagline";
+import { toneSchema } from "../modules/tone";
 import { typographySchema } from "../modules/typography";
 import type { BrandModuleType } from "../workflows";
 
@@ -19,11 +19,18 @@ import type { BrandModuleType } from "../workflows";
  * To add a new module type:
  * 1. Create `modules/{moduleType}.ts` with a `{moduleType}Schema` export
  * 2. Import and add it to this registry
+ *
+ * Note: name module stores an array of names, so we use z.array(nameSchema)
  */
 const BRAND_MODULE_SCHEMAS: Partial<Record<BrandModuleType, z.ZodType>> = {
 	brandContext: brandContextSchema,
 	colors: colorsSchema,
-	name: nameSchema,
+	name: z.array(
+		z.object({
+			name: nameSchema,
+			domains: z.array(z.string()),
+		})
+	),
 	logo: logoSchema,
 	mission: missionSchema,
 	tagline: taglineSchema,

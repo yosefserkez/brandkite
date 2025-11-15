@@ -57,35 +57,6 @@ export const typographySchema = z.object({
 			.string()
 			.describe("How to mix the headline font with the primary font."),
 	}),
-	weights: z
-		.array(
-			z.object({
-				label: z
-					.string()
-					.describe("Readable label such as Thin, Regular, Bold, etc."),
-				fontWeight: z
-					.number()
-					.int()
-					.min(100)
-					.max(900)
-					.describe(
-						"Numeric CSS font-weight value. Use standard 100–900 scale."
-					),
-				description: z
-					.string()
-					.describe(
-						"How this weight should be used in the system. Mention the literal token {company_name} instead of the actual brand name."
-					),
-			})
-		)
-		.min(5)
-		.max(9),
-	characterSet: z.object({
-		uppercase: z.string().describe("Uppercase specimen string (A–Z)."),
-		lowercase: z.string().describe("Lowercase specimen string (a–z)."),
-		numerals: z.string().describe("Numeric specimen string (0–9)."),
-		punctuation: z.string().describe("Representative punctuation and symbols."),
-	}),
 	specimenCopy: z
 		.string()
 		.describe(
@@ -110,19 +81,6 @@ export const typographyValidator = v.object({
 		usage: v.string(),
 		pairing: v.string(),
 	}),
-	weights: v.array(
-		v.object({
-			label: v.string(),
-			fontWeight: v.number(),
-			description: v.string(),
-		})
-	),
-	characterSet: v.object({
-		uppercase: v.string(),
-		lowercase: v.string(),
-		numerals: v.string(),
-		punctuation: v.string(),
-	}),
 	specimenCopy: v.string(),
 });
 
@@ -145,17 +103,6 @@ const replaceBrandNameToken = (
 	return trimmed.replace(pattern, "{company_name}");
 };
 
-const normalizeFontWeight = (weight: number): number => {
-	const rounded = Math.round(weight / 100) * 100;
-	if (rounded < 100) {
-		return 100;
-	}
-	if (rounded > 900) {
-		return 900;
-	}
-	return rounded;
-};
-
 const normalizeTypography = (
 	data: BrandTypography,
 	companyName?: string | null
@@ -175,17 +122,6 @@ const normalizeTypography = (
 		summary: replaceBrandNameToken(data.headlineFont.summary, companyName),
 		usage: replaceBrandNameToken(data.headlineFont.usage, companyName),
 		pairing: replaceBrandNameToken(data.headlineFont.pairing, companyName),
-	},
-	weights: data.weights?.map((weight) => ({
-		label: weight.label.trim(),
-		fontWeight: normalizeFontWeight(weight.fontWeight),
-		description: replaceBrandNameToken(weight.description, companyName),
-	})),
-	characterSet: {
-		uppercase: data.characterSet.uppercase.trim(),
-		lowercase: data.characterSet.lowercase.trim(),
-		numerals: data.characterSet.numerals.trim(),
-		punctuation: data.characterSet.punctuation.trim(),
 	},
 	specimenCopy: replaceBrandNameToken(data.specimenCopy, companyName),
 });
@@ -233,8 +169,6 @@ const buildTypographyPrompt = (params: {
 		"Follow these constraints:",
 		"- Primary font should be a widely available, web-safe or Google Fonts family that supports long-form reading.",
 		"- Headline font can be more expressive but must remain legible in web interfaces.",
-		"- Provide between five and nine weights covering the full 100–900 range where possible. Use canonical names like Thin, Extra Light, Light, Regular, Medium, Semibold, Bold, Extra Bold, Black.",
-		"- Character set strings should be concise specimens such as 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.",
 		"- Guidelines should cover implementation, accessibility, and pairing advice.",
 		"- Specimen copy should be one sentence under 15 words and include the {company_name} token exactly once.",
 		"",

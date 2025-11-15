@@ -1,5 +1,4 @@
 import {
-	IconBuilding,
 	IconDots,
 	IconFolder,
 	IconPlus,
@@ -47,7 +46,6 @@ import {
 	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
-	SidebarGroupLabel,
 	SidebarHeader,
 	SidebarMenu,
 	SidebarMenuAction,
@@ -59,6 +57,7 @@ import {
 import { cn } from "@/lib/utils";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
+import { BrandKiteLogo } from "./brandkiteLogo";
 import { AnimatedShinyText } from "./ui/animated-shiny-text";
 
 function getCompanyInitials(name: string): string {
@@ -143,20 +142,42 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 								onMouseEnter={() => setIsHovered(true)}
 								onMouseLeave={() => setIsHovered(false)}
 								size="lg"
-								tooltip={isCollapsed ? "BrandKite" : undefined}
+								tooltip={isCollapsed ? "Brandkite" : undefined}
 							>
 								{isCollapsed ? (
 									<div className="flex items-center justify-center">
-										{isHovered ? (
-											<PanelLeftIcon className="size-5 text-gray-400" />
-										) : (
-											<IconBuilding className="size-5" />
-										)}
+										<span className="relative inline-block h-8 w-8">
+											<span
+												aria-hidden={!isHovered}
+												className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${
+													isHovered
+														? "opacity-100"
+														: "pointer-events-none opacity-0"
+												}`}
+											>
+												<PanelLeftIcon className="size-5 text-gray-400" />
+											</span>
+											<span
+												aria-hidden={isHovered}
+												className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${
+													isHovered
+														? "pointer-events-none opacity-0"
+														: "opacity-100"
+												}`}
+											>
+												<BrandKiteLogo className="size-7! shrink-0" />
+											</span>
+										</span>
 									</div>
 								) : (
 									<Link className="flex items-center gap-2" to="/">
-										<IconBuilding className="size-5! shrink-0" />
-										<span className="font-semibold text-base">BrandKite</span>
+										<BrandKiteLogo className="size-7! shrink-0" />
+										<span
+											className="pr-1 text-3xl"
+											style={{ fontFamily: "Caveat" }}
+										>
+											Brandkite
+										</span>
 									</Link>
 								)}
 							</SidebarMenuButton>
@@ -168,7 +189,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 			<SidebarContent>
 				<Authenticated>
 					<SidebarGroup>
-						<SidebarGroupLabel>Companies</SidebarGroupLabel>
+						{/* <SidebarGroupLabel>Companies</SidebarGroupLabel> */}
 						<SidebarGroupContent>
 							<SidebarMenu>
 								<SidebarMenuItem>

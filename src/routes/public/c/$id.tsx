@@ -2,11 +2,8 @@ import type { Id } from "@convex/_generated/dataModel";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BrandStudioPage } from "@/components/BrandStudioPage";
-import {
-	SidebarInset,
-	SidebarProvider,
-	SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { MobileHeader } from "@/components/mobile-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 export const Route = createFileRoute("/public/c/$id")({
 	component: PublicCompanyRoute,
@@ -27,9 +24,7 @@ function PublicCompanyRoute() {
 				<AppSidebar variant="inset" />
 				<SidebarInset>
 					<div className="flex flex-1 flex-col">
-						<header className="flex items-center gap-2 border-b bg-background p-4 md:hidden">
-							<SidebarTrigger className="-ml-1" />
-						</header>
+						<MobileHeader />
 						<main className="flex-1 overflow-hidden">
 							<BrandStudioPage companyId={id as Id<"companies">} />
 						</main>

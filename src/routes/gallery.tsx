@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { AppSidebar } from "@/components/app-sidebar";
+import { MobileHeader } from "@/components/mobile-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	SidebarInset,
 	SidebarProvider,
-	SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { api } from "../../convex/_generated/api";
 
@@ -37,9 +37,7 @@ function GalleryRoute() {
 				<AppSidebar variant="inset" />
 				<SidebarInset>
 					<div className="flex flex-1 flex-col">
-						<header className="flex items-center gap-2 border-b bg-background p-4 md:hidden">
-							<SidebarTrigger className="-ml-1" />
-						</header>
+						<MobileHeader />
 						<main className="flex-1 overflow-y-auto">
 							<div className="mx-auto max-w-7xl px-4 py-8">
 								<div className="mb-8">

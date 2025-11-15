@@ -9,7 +9,8 @@
     "test": "vitest run",
     "format": "biome format",
     "lint": "biome lint",
-    "check": "biome check"
+    "check": "biome check",
+    "seed": "convex dev --run seed --until-success"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.1",

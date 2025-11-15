@@ -29,6 +29,7 @@ import type * as modules_tone from "../modules/tone.js";
 import type * as modules_typography from "../modules/typography.js";
 import type * as presence from "../presence.js";
 import type * as r2 from "../r2.js";
+import type * as seed from "../seed.js";
 import type * as track from "../track.js";
 import type * as users from "../users.js";
 import type * as workflows_index from "../workflows/index.js";
@@ -69,6 +70,7 @@ declare const fullApi: ApiFromModules<{
   "modules/typography": typeof modules_typography;
   presence: typeof presence;
   r2: typeof r2;
+  seed: typeof seed;
   track: typeof track;
   users: typeof users;
   "workflows/index": typeof workflows_index;

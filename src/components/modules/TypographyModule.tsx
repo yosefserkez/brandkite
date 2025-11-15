@@ -4,15 +4,71 @@ import type { BrandTypography } from "../../../convex/modules/typography";
 import { useBrandModule } from "../../hooks/useBrandModule";
 import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
 import { cn, replaceCompanyName } from "../../lib/utils";
-
-const WHITESPACE_PATTERN = /\s/;
-const LOADED_GOOGLE_FONT_URLS = new Set<string>();
-
 import { SuspenseCard } from "../suspense-card";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { BlockWrapper } from "./BlockWrapper";
+
+const WHITESPACE_PATTERN = /\s/;
+const LOADED_GOOGLE_FONT_URLS = new Set<string>();
+
+const STANDARD_FONT_WEIGHTS = [
+	{
+		label: "Thin",
+		fontWeight: 100,
+		description:
+			"Use for large display text, hero sections, or when creating a delicate, elegant aesthetic. Best for decorative purposes and sparingly in UI.",
+	},
+	{
+		label: "Extralight",
+		fontWeight: 200,
+		description:
+			"Use for large headings, captions, or subtle UI elements. Good for creating hierarchy without heavy emphasis. Works well in minimalist designs.",
+	},
+	{
+		label: "Light",
+		fontWeight: 300,
+		description:
+			"Use for subheadings, captions, or body text in elegant designs. Ideal for creating visual hierarchy while maintaining readability. Common in editorial layouts.",
+	},
+	{
+		label: "Normal",
+		fontWeight: 400,
+		description:
+			"Use for all body text, paragraphs, and general content. This is the default weight for most text. Essential for long-form reading and accessibility.",
+	},
+	{
+		label: "Medium",
+		fontWeight: 500,
+		description:
+			"Use for emphasized text, buttons, navigation items, or subheadings that need subtle distinction. Good for interactive elements and call-to-action text.",
+	},
+	{
+		label: "Semibold",
+		fontWeight: 600,
+		description:
+			"Use for section headings, important labels, or UI elements that need clear emphasis. Ideal for creating strong hierarchy without being overwhelming.",
+	},
+	{
+		label: "Bold",
+		fontWeight: 700,
+		description:
+			"Use for primary headings, page titles, or critical information that must stand out. Standard for creating the strongest text hierarchy in most designs.",
+	},
+	{
+		label: "Extrabold",
+		fontWeight: 800,
+		description:
+			"Use for hero text, large display headings, or when maximum emphasis is needed. Best for impactful statements and attention-grabbing headlines.",
+	},
+	{
+		label: "Black",
+		fontWeight: 900,
+		description:
+			"Use sparingly for maximum impact in hero sections, large display typography, or when creating dramatic contrast. Reserve for the most important messages.",
+	},
+] as const;
 
 type TypographyModuleProps = {
 	companyId: Id<"companies">;
@@ -27,17 +83,14 @@ export default function TypographyModule({
 	const companyName = useCompanyBrandName(companyId);
 	const data = ctx.selected?.data as BrandTypography | undefined;
 
-	const sortedWeights = useMemo(() => {
-		if (!data) {
-			return [] as BrandTypography["weights"];
-		}
-		return [...(data?.weights ?? [])].sort(
-			(a, b) => a.fontWeight - b.fontWeight
-		);
-	}, [data]);
-
 	const onCopy = () => {
-		if (!data || data?.weights || data?.primaryFont || data?.headlineFont) {
+		if (!data) {
+			return;
+		}
+		if (!data.primaryFont) {
+			return;
+		}
+		if (!data.headlineFont) {
 			return;
 		}
 		const safeCompanyName = companyName ?? "";
@@ -61,16 +114,10 @@ export default function TypographyModule({
 			replaceCompanyName(data.headlineFont.pairing, safeCompanyName),
 			"",
 			"Weight usage:",
-			...sortedWeights.map(
+			...STANDARD_FONT_WEIGHTS.map(
 				(weight) =>
 					`${weight.label} (${weight.fontWeight}): ${replaceCompanyName(weight.description, safeCompanyName)}`
 			),
-			"",
-			"Character set:",
-			`Uppercase: ${data.characterSet.uppercase}`,
-			`Lowercase: ${data.characterSet.lowercase}`,
-			`Numerals: ${data.characterSet.numerals}`,
-			`Punctuation: ${data.characterSet.punctuation}`,
 			"",
 			replaceCompanyName(data.specimenCopy, safeCompanyName),
 		];
@@ -105,11 +152,13 @@ export default function TypographyModule({
 						</div>
 					</CardHeader>
 					<CardContent>
-						<TypographyContent
-							companyName={companyName ?? ""}
-							data={data}
-							sortedWeights={sortedWeights}
-						/>
+						<div className="space-y-8">
+							<TypographyShowcase companyName={companyName ?? ""} data={data} />
+							<TypographyGuidelines
+								companyName={companyName ?? ""}
+								data={data}
+							/>
+						</div>
 					</CardContent>
 				</Card>
 			)}
@@ -117,39 +166,16 @@ export default function TypographyModule({
 	);
 }
 
-function TypographyContent({
-	data,
-	companyName,
-	sortedWeights,
-}: {
-	data: BrandTypography;
-	companyName: string;
-	sortedWeights: BrandTypography["weights"];
-}) {
-	return (
-		<div className="space-y-8">
-			<TypographyShowcase
-				companyName={companyName}
-				data={data}
-				sortedWeights={sortedWeights}
-			/>
-			<TypographyGuidelines companyName={companyName} data={data} />
-		</div>
-	);
-}
-
 function TypographyShowcase({
 	data,
 	companyName,
-	sortedWeights,
 }: {
 	data: BrandTypography;
 	companyName: string;
-	sortedWeights: BrandTypography["weights"];
 }) {
 	const fontWeights = useMemo(
-		() => extractFontWeights(sortedWeights),
-		[sortedWeights]
+		() => STANDARD_FONT_WEIGHTS.map((w) => w.fontWeight),
+		[]
 	);
 	useEffect(() => {
 		loadGoogleFontFamily(data.primaryFont?.name, fontWeights);
@@ -159,26 +185,11 @@ function TypographyShowcase({
 	const [activeFont, setActiveFont] = useState<"primary" | "headline">(
 		"primary"
 	);
-	const specimenCopy = replaceCompanyName(data.specimenCopy, companyName);
 	const activeFontData =
-		activeFont === "primary"
-			? (data.primaryFont ?? null)
-			: (data.headlineFont ?? null);
-	const fontFamilyStack = useMemo(
-		() => buildFontStack(activeFontData?.name ?? ""),
-		[activeFontData.name]
-	);
+		activeFont === "primary" ? data.primaryFont : data.headlineFont;
+	const fontFamilyStack = buildFontStack(activeFontData.name);
 	const fontDescriptor =
 		activeFont === "primary" ? "Primary font" : "Headline font";
-	const activeFontSummary = replaceCompanyName(
-		activeFontData?.summary ?? "",
-		companyName
-	);
-	const activeFontUsage = replaceCompanyName(activeFontData.usage, companyName);
-	const activeFontPairing = replaceCompanyName(
-		activeFontData?.pairing ?? "",
-		companyName
-	);
 
 	return (
 		<section>
@@ -207,19 +218,25 @@ function TypographyShowcase({
 								<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
 									Summary
 								</p>
-								<p className="text-gray-700">{activeFontSummary}</p>
+								<p className="text-gray-700">
+									{replaceCompanyName(activeFontData.summary, companyName)}
+								</p>
 							</div>
 							<div className="space-y-1">
 								<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
 									Usage
 								</p>
-								<p className="text-gray-700">{activeFontUsage}</p>
+								<p className="text-gray-700">
+									{replaceCompanyName(activeFontData.usage, companyName)}
+								</p>
 							</div>
 							<div className="space-y-1">
 								<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
 									Pairing
 								</p>
-								<p className="text-gray-700">{activeFontPairing}</p>
+								<p className="text-gray-700">
+									{replaceCompanyName(activeFontData.pairing, companyName)}
+								</p>
 							</div>
 						</PopoverContent>
 					</Popover>
@@ -233,7 +250,7 @@ function TypographyShowcase({
 			</div>
 			<div className="grid gap-8 md:grid-cols-2 md:gap-0">
 				<ul className="space-y-3 text-gray-950 text-lg">
-					{sortedWeights.map((weight) => (
+					{STANDARD_FONT_WEIGHTS.map((weight) => (
 						<li
 							className="group m-0"
 							key={`${weight.label}-${weight.fontWeight}`}
@@ -272,32 +289,43 @@ function TypographyShowcase({
 				>
 					<div className="space-y-3">
 						<div className="flex flex-wrap text-2xl tracking-tight">
-							<span className="text-gray-950">A</span>
-							<span className="text-gray-950">B</span>
-							<span className="text-gray-900">C</span>
-							<span className="text-gray-900">D</span>
-							<span className="text-gray-900">E</span>
-							<span className="text-gray-900">F</span>
-							<span className="text-gray-800">G</span>
-							<span className="text-gray-800">H</span>
-							<span className="text-gray-700">I</span>
-							<span className="text-gray-700">J</span>
-							<span className="text-gray-700">K</span>
-							<span className="text-gray-600">L</span>
-							<span className="text-gray-600">M</span>
-							<span className="text-gray-500">N</span>
-							<span className="text-gray-500">O</span>
-							<span className="text-gray-500">P</span>
-							<span className="text-gray-400">Q</span>
-							<span className="text-gray-400">R</span>
-							<span className="text-gray-400">S</span>
-							<span className="text-gray-300">T</span>
-							<span className="text-gray-300">U</span>
-							<span className="text-gray-200">V</span>
-							<span className="text-gray-200">W</span>
-							<span className="text-gray-200">X</span>
-							<span className="text-gray-100">Y</span>
-							<span className="text-gray-100">Z</span>
+							{Array.from({ length: 26 }, (_, i) => {
+								const ASCII_UPPERCASE_A = 65;
+								const letter = String.fromCharCode(ASCII_UPPERCASE_A + i);
+								const shades = [
+									"text-gray-950",
+									"text-gray-950",
+									"text-gray-900",
+									"text-gray-900",
+									"text-gray-900",
+									"text-gray-900",
+									"text-gray-800",
+									"text-gray-800",
+									"text-gray-700",
+									"text-gray-700",
+									"text-gray-700",
+									"text-gray-600",
+									"text-gray-600",
+									"text-gray-500",
+									"text-gray-500",
+									"text-gray-500",
+									"text-gray-400",
+									"text-gray-400",
+									"text-gray-400",
+									"text-gray-300",
+									"text-gray-300",
+									"text-gray-200",
+									"text-gray-200",
+									"text-gray-200",
+									"text-gray-100",
+									"text-gray-100",
+								];
+								return (
+									<span className={shades[i]} key={letter}>
+										{letter}
+									</span>
+								);
+							})}
 						</div>
 					</div>
 					<div className="justify-start space-y-2 font-bold text-gray-400 text-xl tracking-tight">
@@ -305,7 +333,7 @@ function TypographyShowcase({
 						<p>@#$%&*</p>
 					</div>
 					<p className="border-gray-200 border-l-4 pl-4 text-base text-gray-600 leading-relaxed">
-						{specimenCopy}
+						{replaceCompanyName(data.specimenCopy, companyName)}
 					</p>
 				</div>
 			</div>
@@ -392,19 +420,6 @@ function buildFontStack(fontName: string): string {
 		? `"${trimmed}"`
 		: trimmed;
 	return `${normalized}, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-}
-
-function extractFontWeights(weights: BrandTypography["weights"]): number[] {
-	const unique = new Set<number>();
-	for (const weight of weights) {
-		if (
-			typeof weight.fontWeight === "number" &&
-			Number.isFinite(weight.fontWeight)
-		) {
-			unique.add(weight.fontWeight);
-		}
-	}
-	return Array.from(unique).sort((a, b) => a - b);
 }
 
 function loadGoogleFontFamily(fontName: string, weights: number[]) {

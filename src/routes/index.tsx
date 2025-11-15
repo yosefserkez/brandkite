@@ -2,12 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Authenticated, Unauthenticated, useQuery } from "convex/react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BrandStudioPage } from "@/components/BrandStudioPage";
+import { MobileHeader } from "@/components/mobile-header";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
-import {
-	SidebarInset,
-	SidebarProvider,
-	SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 
@@ -29,9 +26,7 @@ function IndexRoute() {
 				<AppSidebar variant="inset" />
 				<SidebarInset>
 					<div className="flex flex-1 flex-col">
-						<header className="flex items-center gap-2 border-b bg-background p-4 md:hidden">
-							<SidebarTrigger className="-ml-1" />
-						</header>
+						<MobileHeader />
 						<main className="flex-1 overflow-hidden">
 							<Authenticated>
 								<div className="flex h-full items-center justify-center">
