@@ -59,6 +59,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { BrandKiteLogo } from "./brandkiteLogo";
 import { AnimatedShinyText } from "./ui/animated-shiny-text";
+import { EditBrandContextDialog } from "./modules/EditBrandContextDialog";
 
 function getCompanyInitials(name: string): string {
 	const words = name.split(" ").filter((w) => w.length > 0);
@@ -77,6 +78,8 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 	const [isHovered, setIsHovered] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+	const [editContextCompanyId, setEditContextCompanyId] =
+		useState<Id<"companies"> | null>(null);
 	const [companyToDelete, setCompanyToDelete] = useState<{
 		id: Id<"companies">;
 		name: string;
@@ -268,6 +271,12 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 														</Link>
 													</DropdownMenuItem>
 													<DropdownMenuItem
+														onClick={() => setEditContextCompanyId(company._id)}
+													>
+														<IconWriting />
+														<span>Edit Context</span>
+													</DropdownMenuItem>
+													<DropdownMenuItem
 														onClick={() => {
 															toast.info("Share functionality coming soon!");
 														}}
@@ -419,6 +428,17 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 				open={loginDialogOpen}
 				title="Sign in to create a company"
 			/>
+			{editContextCompanyId && (
+				<EditBrandContextDialog
+					companyId={editContextCompanyId}
+					onOpenChange={(open) => {
+						if (!open) {
+							setEditContextCompanyId(null);
+						}
+					}}
+					open={Boolean(editContextCompanyId)}
+				/>
+			)}
 		</Sidebar>
 	);
 }

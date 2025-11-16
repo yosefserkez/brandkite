@@ -19,6 +19,8 @@ type ContextFormProps = {
 	onBrandContextChange: (context: BrandContext) => void;
 	onSubmit: () => void;
 	isSubmitting: boolean;
+	submitVariant?: "fancy" | "simple";
+	submitLabel?: string;
 };
 
 type FormField = {
@@ -143,6 +145,8 @@ export function ContextForm({
 	onBrandContextChange,
 	onSubmit,
 	isSubmitting,
+	submitVariant = "fancy",
+	submitLabel,
 }: ContextFormProps) {
 	const updateField = (path: string[], value: string) => {
 		const newContext = { ...brandContext };
@@ -253,9 +257,7 @@ export function ContextForm({
 		<div className="mx-auto w-full max-w-4xl p-2 text-sm">
 			<div className="mb-8 px-2 lg:px-0">
 				<h1 className="mb-2 font-bold text-3xl">Brand Context</h1>
-				<p className="text-gray-600">
-					Review and edit your brand information before creating the company.
-				</p>
+				<p className="text-gray-600">Review and edit your brand information.</p>
 			</div>
 
 			<div className="space-y-8">
@@ -446,7 +448,7 @@ export function ContextForm({
 			</div>
 
 			{/* Submit Button */}
-			<div className="sticky bottom-0 mt-8 flex justify-end gap-3 py-4 backdrop-blur-sm">
+			<div className="sticky bottom-0 mt-8 flex justify-end gap-3 bg-white py-4">
 				<div className="flex w-full items-center justify-between">
 					<div>
 						<p className="text-gray-500 text-xs">
@@ -459,18 +461,29 @@ export function ContextForm({
 							Start again
 						</a>
 					</div>
-					<Button
-						className="group relative rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800"
-						disabled={isSubmitting}
-						onClick={onSubmit}
-						size="lg"
-					>
-						<AnimatedShinyText className="inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-neutral-800 hover:duration-300 hover:dark:text-neutral-400">
-							<span>✨ Create Company</span>
-							<ArrowRightIcon className="mt-1 ml-1 size-3 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
-						</AnimatedShinyText>
-						<ShineBorder shineColor="black" />
-					</Button>
+					{submitVariant === "simple" ? (
+						<Button
+							disabled={isSubmitting}
+							onClick={onSubmit}
+							size="lg"
+							type="button"
+						>
+							{submitLabel ?? "Save"}
+						</Button>
+					) : (
+						<Button
+							className="group relative rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+							disabled={isSubmitting}
+							onClick={onSubmit}
+							size="lg"
+						>
+							<AnimatedShinyText className="inline-flex items-center justify-center px-4 py-1 transition ease-out hover:text-neutral-800 hover:duration-300 hover:dark:text-neutral-400">
+								<span>{submitLabel ?? "✨ Create Company"}</span>
+								<ArrowRightIcon className="mt-1 ml-1 size-3 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
+							</AnimatedShinyText>
+							<ShineBorder shineColor="black" />
+						</Button>
+					)}
 				</div>
 			</div>
 		</div>

@@ -17,17 +17,17 @@ type WorkflowArgs = WorkflowHandlerParams[1];
 
 // Reusable Convex validators
 const entityValidator = v.object({
-	name: v.string(),
-	summary: v.string(),
+	name: v.optional(v.string()),
+	summary: v.optional(v.string()),
 	url: v.string(),
-	imageUrl: v.string(),
+	imageUrl: v.optional(v.string()),
 });
 
 const teamMemberValidator = v.object({
-	name: v.string(),
+	name: v.optional(v.string()),
 	summary: v.string(),
 	url: v.string(),
-	imageUrl: v.string(),
+	imageUrl: v.optional(v.string()),
 	role: v.optional(v.string()),
 });
 
