@@ -337,7 +337,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 					{!isCollapsed && (
 						<SidebarGroup className="mt-auto border-t pt-4">
 							<SidebarGroupContent>
-								<div className="space-y-3 px-2 text-sm">
+								<div className="space-y-3 text-sm">
 									<div>
 										<h3 className="mb-2 font-semibold text-sm">
 											About BrandKite
