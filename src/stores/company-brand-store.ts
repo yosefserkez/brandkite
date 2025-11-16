@@ -88,7 +88,7 @@ export function setCompanyPalette(palette: BrandPalette | null): void {
 	const colorScales: Partial<Record<BrandColorRole, ColorScale>> = {};
 
 	if (palette) {
-		for (const [index, color] of palette.colors.entries()) {
+		for (const [index, color] of palette.colors?.entries() ?? []) {
 			const role = COLOR_ROLES[index];
 			if (!role) {
 				continue;

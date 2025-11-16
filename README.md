@@ -46,6 +46,7 @@ pnpm check
 
 - Set the `VITE_CONVEX_URL` and `CONVEX_DEPLOYMENT` environment variables in your `.env.local`. (Or run `npx convex dev --once --configure=new` to set them automatically.)
 - Run `npx convex dev` to start the Convex server.
+- Run `npx @convex-dev/auth` to initialize convex auth (`npx @convex-dev/auth --prod` for production)
 
 
 ## Shadcn
@@ -53,7 +54,7 @@ pnpm check
 Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
 
 ```bash
-pnpx shadcn@latest add button
+pnpm dlx shadcn@latest add add button
 ```
 
 
@@ -70,11 +71,6 @@ import { env } from "@/env";
 
 console.log(env.VITE_APP_TITLE);
 ```
-
-
-
-
-
 
 ## Routing
 This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
@@ -324,11 +320,3 @@ We use the `Derived` class to create a new store that is derived from another st
 Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
 
 You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).

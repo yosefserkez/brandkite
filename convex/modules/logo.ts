@@ -8,7 +8,6 @@ import { logger } from "../logger";
 import { r2 } from "../r2";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
-import type { NameModuleData } from "./name";
 
 const LOGO_MODEL_IDENTIFIER = "recraft-ai/recraft-20b-svg";
 const SVG_MIME_TYPE = "image/svg+xml";
@@ -34,22 +33,49 @@ const getReplicateClient = (): Replicate => {
 	return replicateClient;
 };
 
-const isNonEmpty = (value: string | null | undefined): value is string =>
-	typeof value === "string" && value.trim().length > 0;
-
-const generateLogoPrompt = (params: {
-	brandName: string;
-	brandContext: BrandContext;
-}): string => {
+const generateLogoPrompt = (params: { brandContext: BrandContext }): string => {
 	const prompt = `
 Minimal rounded geometric emblem for a ${params.brandContext.industry} company. 
 Concept: button, circular form. 
-Solid black on transparent. 
+Solid black on transparent background. 
 Smooth balance, soft curves, open negative space, circular symmetry, gentle flow, organic continuity. 
 Keywords: button, round, soft, minimal, geometric, elegant.	
-Only create the SVG emblem, do not include any wordmarks or text.`;
+Only create the SVG emblem, do not include any wordmarks or text. Simple balanced design. Not complex or detailed. Inspired by tech company logo designs.`;
 
 	return prompt;
+};
+
+const PATH_TAG_REGEX = /<path\b[^>]*>/i;
+const WHITE_FILL_REGEXES = [
+	/\bfill\s*=\s*"(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))"/i,
+	/\bfill\s*=\s*'(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))'/i,
+	/\bstyle\s*=\s*"[^"]*\bfill\s*:\s*(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))\b[^"]*"/i,
+	/\bstyle\s*=\s*'[^']*\bfill\s*:\s*(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))\b[^']*'/i,
+];
+
+const stripWhiteBackgroundFromSvg = (
+	svgString: string
+): { svg: string; removed: boolean } => {
+	// Find the first <path ...> tag
+	const match = PATH_TAG_REGEX.exec(svgString);
+	if (!match) {
+		return { svg: svgString, removed: false };
+	}
+
+	const pathTag = match[0];
+	const pathStartIdx = match.index;
+	const pathEndIdx = pathStartIdx + pathTag.length;
+
+	// Identify white fills in either fill attribute or inline style
+	const hasWhiteFill = WHITE_FILL_REGEXES.some((re) => re.test(pathTag));
+	if (!hasWhiteFill) {
+		return { svg: svgString, removed: false };
+	}
+
+	// Remove the first <path ...> tag only (paths are empty elements in SVG)
+	const updatedSvg =
+		svgString.slice(0, pathStartIdx) + svgString.slice(pathEndIdx);
+	return { svg: updatedSvg, removed: true };
 };
 
 const downloadAsset = async (url: string): Promise<Uint8Array> => {
@@ -93,26 +119,15 @@ const generateLogoAsset = async (
 	}
 
 	const file = await downloadAsset(assetUrl);
-	return await r2.store(ctx, file, { type: SVG_MIME_TYPE });
-};
+	const svgText = new TextDecoder().decode(file);
+	const { svg: cleanedSvg, removed } = stripWhiteBackgroundFromSvg(svgText);
 
-const resolveBrandName = (params: {
-	companyName: string | null | undefined;
-	nameModule: NameModuleData | undefined;
-}): string => {
-	if (isNonEmpty(params.companyName)) {
-		return params.companyName.trim();
+	if (removed) {
+		logger.info("Removed white background path from SVG");
 	}
 
-	if (params.nameModule) {
-		for (const entry of params.nameModule) {
-			if (isNonEmpty(entry.name.name)) {
-				return entry.name.name.trim();
-			}
-		}
-	}
-
-	return "Brand";
+	const cleanedBytes = new TextEncoder().encode(cleanedSvg);
+	return await r2.store(ctx, cleanedBytes, { type: SVG_MIME_TYPE });
 };
 
 export const logoSchema = z.object({
@@ -139,13 +154,11 @@ export type LogoModuleData = z.infer<typeof logoSchema>;
 
 export const generateLogoInternal = internalAction({
 	args: {
-		brandName: v.string(),
 		brandContext: brandContextValidator,
 	},
 	handler: async (ctx, args): Promise<LogoModuleData> => {
 		const brandContext = args.brandContext as BrandContext;
 		const prompt = generateLogoPrompt({
-			brandName: args.brandName,
 			brandContext,
 		});
 
@@ -158,7 +171,6 @@ export const generateLogoInternal = internalAction({
 		};
 
 		logger.info("Generated logo", {
-			brandName: args.brandName,
 			storageKey,
 		});
 
@@ -182,27 +194,6 @@ export const generateLogo = action({
 			throw new Error("Brand context data is invalid");
 		}
 
-		const company = await ctx.runQuery(internal.companies.getForGeneration, {
-			companyId: args.companyId,
-		});
-
-		const nameModuleDoc = await ctx.runQuery(
-			internal.brandModules.getCurrentModule,
-			{
-				companyId: args.companyId,
-				type: BrandModuleTypes.Name,
-			}
-		);
-
-		const nameModuleData = nameModuleDoc
-			? ((nameModuleDoc.data as NameModuleData | undefined) ?? undefined)
-			: undefined;
-
-		const brandName = resolveBrandName({
-			companyName: company?.name,
-			nameModule: nameModuleData,
-		});
-
 		const logoAction =
 			(
 				(internal.modules as Record<string, unknown>).logo as
@@ -214,7 +205,6 @@ export const generateLogo = action({
 			(generateLogoInternal as unknown as Parameters<typeof ctx.runAction>[0]);
 
 		return await ctx.runAction(logoAction, {
-			brandName,
 			brandContext: brandContextDoc,
 		});
 	},
@@ -240,10 +230,6 @@ export const logoWorkflow = workflow.define({
 			throw new Error("Brand context data is invalid");
 		}
 
-		const company = await ctx.runQuery(internal.companies.getForGeneration, {
-			companyId: args.companyId,
-		});
-
 		const moduleId = await ctx.runMutation(
 			internal.brandModules.createModuleInternal,
 			{
@@ -254,27 +240,9 @@ export const logoWorkflow = workflow.define({
 			}
 		);
 
-		const nameModuleDoc = await ctx.runQuery(
-			internal.brandModules.getCurrentModule,
-			{
-				companyId: args.companyId,
-				type: BrandModuleTypes.Name,
-			}
-		);
-
-		const nameModuleData = nameModuleDoc
-			? ((nameModuleDoc.data as NameModuleData | undefined) ?? undefined)
-			: undefined;
-
-		const brandName = resolveBrandName({
-			companyName: company?.name,
-			nameModule: nameModuleData,
-		});
-
 		const logoData = await ctx.runAction(
 			internal.modules.logo.generateLogoInternal,
 			{
-				brandName,
 				brandContext: brandContextDoc,
 			}
 		);

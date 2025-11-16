@@ -307,14 +307,24 @@ export const create = mutation({
 			});
 		}
 
-		workflow.start(ctx, internal.modules.name.nameWorkflow, {
-			companyId,
-			publish: true,
-		});
-		workflow.start(ctx, internal.modules.logo.logoWorkflow, {
-			companyId,
-			publish: true,
-		});
+		// Temporary: run all workflows. I want to do this in a better way with dependecies.
+		const workflows = [
+			internal.modules.name.nameWorkflow,
+			internal.modules.logo.logoWorkflow,
+			internal.modules.mission.missionWorkflow,
+			internal.modules.tagline.taglineWorkflow,
+			internal.modules.story.storyWorkflow,
+			internal.modules.colors.colorsWorkflow,
+			internal.modules.tone.toneWorkflow,
+			internal.modules.typography.typographyWorkflow,
+		];
+
+		for (const wf of workflows) {
+			workflow.start(ctx, wf, {
+				companyId,
+				publish: true,
+			});
+		}
 
 		return companyId;
 	},

@@ -58,7 +58,7 @@ export default function ColorsModule({
 	};
 
 	const colorsWithScale = useMemo(() => {
-		if (!palette) {
+		if (!palette?.colors) {
 			return [];
 		}
 		return palette.colors.map((color) => ({

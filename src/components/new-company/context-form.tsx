@@ -7,6 +7,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { ShineBorder } from "@/components/ui/shine-border";
 import { Source, SourceContent, SourceTrigger } from "@/components/ui/source";
 import type { BrandContext } from "../../../convex/modules/brandContext";
 
@@ -445,21 +446,21 @@ export function ContextForm({
 			</div>
 
 			{/* Submit Button */}
-			<div className="sticky bottom-0 mt-8 flex justify-end gap-3 bg-gray-50 py-4 backdrop-blur-sm">
+			<div className="sticky bottom-0 mt-8 flex justify-end gap-3 py-4 backdrop-blur-sm">
 				<div className="flex w-full items-center justify-between">
 					<div>
 						<p className="text-gray-500 text-xs">
 							You can edit this information later in the company settings.
 						</p>
 						<a
-							className="font-thin text-gray-400 text-xs underline-offset-2 hover:text-primary/80 hover:underline"
+							className="text-gray-400 text-xs underline-offset-2 hover:text-primary/80 hover:underline"
 							href="/c/new"
 						>
 							Start again
 						</a>
 					</div>
 					<Button
-						className="group rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+						className="group relative rounded-full border border-black/5 bg-neutral-100 text-base text-white transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800"
 						disabled={isSubmitting}
 						onClick={onSubmit}
 						size="lg"
@@ -468,6 +469,7 @@ export function ContextForm({
 							<span>✨ Create Company</span>
 							<ArrowRightIcon className="mt-1 ml-1 size-3 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
 						</AnimatedShinyText>
+						<ShineBorder shineColor="black" />
 					</Button>
 				</div>
 			</div>

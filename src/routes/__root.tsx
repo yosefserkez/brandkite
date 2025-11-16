@@ -74,7 +74,7 @@ const ErrorFallback = () => (
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en">
+		<html lang="en" style={{ colorScheme: "light" }}>
 			<head>
 				<HeadContent />
 			</head>
