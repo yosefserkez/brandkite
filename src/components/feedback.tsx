@@ -52,7 +52,6 @@ export function Feedback({ onSubmit, className }: FeedbackProps) {
 	return (
 		<form
 			accept-charset="UTF-8"
-			action="/"
 			className={className}
 			data-netlify="true"
 			data-netlify-honeypot="bot-field"
