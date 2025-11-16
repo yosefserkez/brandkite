@@ -23,6 +23,7 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 	const updatePresence = useMutation(api.presence.updatePresence);
 
 	useEffect(() => {
+		// biome-ignore lint/complexity/noVoid: deliberate fire-and-forget presence update
 		void updatePresence({ companyId });
 	}, [companyId, updatePresence]);
 

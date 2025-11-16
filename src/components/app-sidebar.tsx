@@ -58,8 +58,9 @@ import { cn } from "@/lib/utils";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { BrandKiteLogo } from "./brandkiteLogo";
-import { AnimatedShinyText } from "./ui/animated-shiny-text";
 import { EditBrandContextDialog } from "./modules/EditBrandContextDialog";
+import { PoweredBy } from "./PoweredBy";
+import { AnimatedShinyText } from "./ui/animated-shiny-text";
 
 function getCompanyInitials(name: string): string {
 	const words = name.split(" ").filter((w) => w.length > 0);
@@ -394,6 +395,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 										</Button>
 									</div>
 								</div>
+								<PoweredBy />
 							</SidebarGroupContent>
 						</SidebarGroup>
 					)}
