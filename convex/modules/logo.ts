@@ -40,7 +40,7 @@ Concept: button, circular form.
 Solid black on transparent background. 
 Smooth balance, soft curves, open negative space, circular symmetry, gentle flow, organic continuity. 
 Keywords: button, round, soft, minimal, geometric, elegant.	
-Only create the SVG emblem, do not include any wordmarks or text. Simple balanced design. Not complex or detailed. Inspired by tech company logo designs.`;
+Only create the SVG emblem, do not include any wordmarks or text. NO BACKGROUND. NO WORDS OR TEXT. TRANSPARENT`;
 
 	return prompt;
 };
