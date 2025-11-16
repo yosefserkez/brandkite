@@ -94,17 +94,24 @@ export const listWithBrandData = query({
 			),
 		];
 
-		// Remove duplicates and sort by updatedAt
-		const uniqueCompanies = allCompanies
-			.filter(
-				(company, index, self) =>
-					self.findIndex((c) => c._id === company._id) === index
-			)
-			.sort((a, b) => b.updatedAt - a.updatedAt);
+		// Remove duplicates
+		const uniqueCompanies = allCompanies.filter(
+			(company, index, self) =>
+				self.findIndex((c) => c._id === company._id) === index
+		);
 
-		// Fetch brand modules for each company
+		// Fetch brand modules and presence (last viewed) for each company
 		const companiesWithBrandData = await Promise.all(
 			uniqueCompanies.map(async (company) => {
+				// Determine last viewed (per-user) using presence record
+				const presence = await ctx.db
+					.query("presence")
+					.withIndex("by_company_user", (q) =>
+						q.eq("companyId", company._id).eq("userId", userId)
+					)
+					.first();
+				const lastViewedAt = presence?.lastSeen ?? 0;
+
 				// Get name module
 				const nameModule = await ctx.db
 					.query("brandModules")
@@ -140,12 +147,21 @@ export const listWithBrandData = query({
 
 				return {
 					...company,
+					lastViewedAt,
 					nameModule: nameModule?.data,
 					logoUrl,
 					brandContextModule: brandContextModule?.data,
 				};
 			})
 		);
+
+		// Sort by last viewed desc; fallback to updatedAt desc
+		companiesWithBrandData.sort((a, b) => {
+			const aKey = a.lastViewedAt || 0;
+			const bKey = b.lastViewedAt || 0;
+			if (bKey !== aKey) return bKey - aKey;
+			return b.updatedAt - a.updatedAt;
+		});
 
 		return companiesWithBrandData;
 	},

@@ -1,3 +1,6 @@
+import { useMutation } from "convex/react";
+import { useEffect } from "react";
+import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useCompanyBrand } from "../hooks/useCompanyBrand";
 import ColorsModule from "./modules/ColorsModule";
@@ -16,6 +19,11 @@ type BrandStudioPageProps = {
 
 export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 	const { company, loading } = useCompanyBrand(companyId);
+	const updatePresence = useMutation(api.presence.updatePresence);
+
+	useEffect(() => {
+		void updatePresence({ companyId });
+	}, [companyId, updatePresence]);
 
 	if (loading || !company) {
 		return (

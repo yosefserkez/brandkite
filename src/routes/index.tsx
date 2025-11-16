@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Authenticated, Unauthenticated, useQuery } from "convex/react";
+import { useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BrandStudioPage } from "@/components/BrandStudioPage";
 import { MobileHeader } from "@/components/mobile-header";
@@ -29,22 +30,7 @@ function IndexRoute() {
 						<MobileHeader />
 						<main className="flex-1 overflow-hidden">
 							<Authenticated>
-								<div className="flex h-full items-center justify-center">
-									<div className="text-center">
-										<h2 className="mb-2 font-semibold text-2xl text-gray-900">
-											Select a company to get started
-										</h2>
-										<p className="text-gray-600">
-											Choose a company from the sidebar or{" "}
-											<Link
-												className="text-primary underline-offset-2 hover:text-primary/80"
-												to="/c/new"
-											>
-												Create a New Company
-											</Link>
-										</p>
-									</div>
-								</div>
+								<AuthLandingRedirect />
 							</Authenticated>
 							<Unauthenticated>
 								<PublicCompanyView />
@@ -53,6 +39,34 @@ function IndexRoute() {
 					</div>
 				</SidebarInset>
 			</SidebarProvider>
+		</div>
+	);
+}
+
+function AuthLandingRedirect() {
+	const companies = useQuery(api.companies.listWithBrandData);
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		if (companies === undefined) {
+			return;
+		}
+		if (companies.length > 0) {
+			const first = companies[0];
+			navigate({ to: "/c/$id", params: { id: first._id } });
+		} else {
+			navigate({ to: "/c/new" });
+		}
+		// Only run once when companies resolve
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [companies, navigate]);
+
+	// Render a lightweight placeholder while redirecting
+	return (
+		<div className="flex h-full items-center justify-center">
+			<div className="h-full w-full">
+				<FlickeringGrid />
+			</div>
 		</div>
 	);
 }
