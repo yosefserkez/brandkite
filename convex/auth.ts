@@ -4,7 +4,7 @@ import { convexAuth } from "@convex-dev/auth/server";
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 	providers: [
 		Resend({
-			from: "mail@brandkite.co",
+			from: "Brandkite <auth@mail.brandkite.co>",
 		}),
 	],
 });

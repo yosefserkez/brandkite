@@ -38,7 +38,7 @@ export function LoginPromptDialog({
 						<DialogTitle>{title}</DialogTitle>
 						<DialogDescription>{description}</DialogDescription>
 					</DialogHeader>
-					<WarpBackground>
+					<WarpBackground className="px-10">
 						<SignInFormEmailLink />
 					</WarpBackground>
 				</DialogContent>
