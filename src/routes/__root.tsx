@@ -77,6 +77,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 		<html lang="en" style={{ colorScheme: "light" }}>
 			<head>
 				<HeadContent />
+				<script
+					data-website-id="3ada9b6d-43ca-45a1-ac9c-e4c4b40f5857"
+					defer
+					src="https://cloud.umami.is/script.js"
+				/>
 			</head>
 			<body>
 				<ConvexAuthProvider client={convex}>
