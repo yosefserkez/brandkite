@@ -1,6 +1,8 @@
+import { useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { api } from "../../convex/_generated/api";
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 import { ShineBorder } from "./ui/shine-border";
 
@@ -16,8 +18,9 @@ type FeedbackProps = {
 
 export function Feedback({ onSubmit, className }: FeedbackProps) {
 	const [message, setMessage] = useState("");
-	const [email, setEmail] = useState("");
 	const [submitting, setSubmitting] = useState(false);
+	const viewer = useQuery(api.users.viewer);
+	const viewerEmail = viewer?.email ?? "";
 
 	const handleClick: React.MouseEventHandler<HTMLButtonElement> = () => {
 		if (!message.trim()) {
@@ -28,11 +31,13 @@ export function Feedback({ onSubmit, className }: FeedbackProps) {
 		try {
 			onSubmit?.({
 				message: message.trim(),
-				email: email.trim() || undefined,
+				email: viewerEmail || undefined,
 			});
-			setMessage("");
-			setEmail("");
 			toast.success("Thanks for your feedback!");
+			// Defer clearing so the native submit still posts the current values
+			setTimeout(() => {
+				setMessage("");
+			}, 0);
 		} catch {
 			// If onSubmit throws synchronously
 			toast.error("Something went wrong. Please try again.");
@@ -41,8 +46,23 @@ export function Feedback({ onSubmit, className }: FeedbackProps) {
 		}
 	};
 
+	if (!viewerEmail) {
+		return null;
+	}
 	return (
-		<form className={className} data-netlify="true">
+		<form
+			accept-charset="UTF-8"
+			action="/"
+			className={className}
+			data-netlify="true"
+			data-netlify-honeypot="bot-field"
+			method="POST"
+			name="feedback-form"
+		>
+			{/* Netlify form requirements */}
+			<input name="form-name" type="hidden" value="feedback-form" />
+			<input name="bot-field" type="hidden" />
+			<input name="email" type="hidden" value={viewerEmail} />
 			<Card className="relative space-y-3 rounded-lg border bg-gray-50">
 				<CardHeader>
 					<h2 className="font-semibold text-base">
@@ -57,25 +77,12 @@ export function Feedback({ onSubmit, className }: FeedbackProps) {
 						<textarea
 							className="field-sizing-content w-full resize-none rounded-md px-3 py-2 hover:bg-accent"
 							id="feedback-message"
+							name="message"
 							onChange={(e) => setMessage(e.target.value)}
 							placeholder="Share ideas, pain points, or modules you want..."
 							required={true}
 							rows={4}
 							value={message}
-						/>
-					</div>
-					<div className="space-y-1">
-						<label className="text-gray-600 text-xs" htmlFor="feedback-email">
-							Email (optional, if you want a reply)
-						</label>
-						<input
-							autoComplete="email"
-							className="w-full rounded-md px-3 py-2 hover:bg-accent"
-							id="feedback-email"
-							onChange={(e) => setEmail(e.target.value)}
-							placeholder="you@company.com"
-							type="email"
-							value={email}
 						/>
 					</div>
 				</CardContent>

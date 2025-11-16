@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Netlify Forms</title>
+		<meta content="width=device-width, initial-scale=1" name="viewport" />
+	</head>
+	<body>
+		<!-- Hidden static form so Netlify can detect fields in a React app -->
+		<form name="feedback-form" netlify netlify-honeypot="bot-field" hidden>
+			<input name="form-name" type="hidden" value="feedback-form" />
+			<input name="bot-field" type="text" />
+			<input name="email" type="email" />
+			<textarea name="message"></textarea>
+		</form>
+	</body>
+	</html>
+
+
