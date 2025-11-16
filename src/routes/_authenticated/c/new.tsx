@@ -59,7 +59,6 @@ function NewCompanyRoute() {
 			const result = await processBrandInput(input);
 			setBrandContext(result);
 			setStep("form");
-			toast.success("Brand context generated successfully!");
 		} catch (_error) {
 			toast.error("Failed to process input");
 			setStep("input");

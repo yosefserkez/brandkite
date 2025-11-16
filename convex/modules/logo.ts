@@ -45,7 +45,7 @@ Only create the SVG emblem, do not include any wordmarks or text. NO BACKGROUND.
 	return prompt;
 };
 
-const PATH_TAG_REGEX = /<path\b[^>]*>/i;
+const PATH_TAG_GLOBAL_REGEX = /<path\b[^>]*>/gi;
 const WHITE_FILL_REGEXES = [
 	/\bfill\s*=\s*"(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))"/i,
 	/\bfill\s*=\s*'(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))'/i,
@@ -53,29 +53,40 @@ const WHITE_FILL_REGEXES = [
 	/\bstyle\s*=\s*'[^']*\bfill\s*:\s*(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))\b[^']*'/i,
 ];
 
-const stripWhiteBackgroundFromSvg = (
+// Replacement regexes to set white fills to transparent
+const FILL_ATTR_DOUBLE_WHITE =
+	/\bfill\s*=\s*"(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))"/gi;
+const FILL_ATTR_SINGLE_WHITE =
+	/\bfill\s*=\s*'(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))'/gi;
+const STYLE_DOUBLE_WHITE_FILL =
+	/\bstyle\s*=\s*"([^"]*?)\bfill\s*:\s*(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))([^"]*)"/gi;
+const STYLE_SINGLE_WHITE_FILL =
+	/\bstyle\s*=\s*'([^']*?)\bfill\s*:\s*(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))([^']*)'/gi;
+
+const makeWhiteBackgroundTransparentInSvg = (
 	svgString: string
 ): { svg: string; removed: boolean } => {
-	// Find the first <path ...> tag
-	const match = PATH_TAG_REGEX.exec(svgString);
-	if (!match) {
-		return { svg: svgString, removed: false };
-	}
-
-	const pathTag = match[0];
-	const pathStartIdx = match.index;
-	const pathEndIdx = pathStartIdx + pathTag.length;
-
-	// Identify white fills in either fill attribute or inline style
-	const hasWhiteFill = WHITE_FILL_REGEXES.some((re) => re.test(pathTag));
-	if (!hasWhiteFill) {
-		return { svg: svgString, removed: false };
-	}
-
-	// Remove the first <path ...> tag only (paths are empty elements in SVG)
-	const updatedSvg =
-		svgString.slice(0, pathStartIdx) + svgString.slice(pathEndIdx);
-	return { svg: updatedSvg, removed: true };
+	let modifiedAny = false;
+	const updatedSvg = svgString.replace(PATH_TAG_GLOBAL_REGEX, (tag) => {
+		const isWhite = WHITE_FILL_REGEXES.some((re) => re.test(tag));
+		if (isWhite) {
+			modifiedAny = true;
+			let newTag = tag;
+			newTag = newTag.replace(FILL_ATTR_DOUBLE_WHITE, 'fill="none"');
+			newTag = newTag.replace(FILL_ATTR_SINGLE_WHITE, 'fill="none"');
+			newTag = newTag.replace(
+				STYLE_DOUBLE_WHITE_FILL,
+				'style="$1fill: none$2"'
+			);
+			newTag = newTag.replace(
+				STYLE_SINGLE_WHITE_FILL,
+				"style='$1fill: none$2'"
+			);
+			return newTag;
+		}
+		return tag;
+	});
+	return { svg: updatedSvg, removed: modifiedAny };
 };
 
 const downloadAsset = async (url: string): Promise<Uint8Array> => {
@@ -120,10 +131,11 @@ const generateLogoAsset = async (
 
 	const file = await downloadAsset(assetUrl);
 	const svgText = new TextDecoder().decode(file);
-	const { svg: cleanedSvg, removed } = stripWhiteBackgroundFromSvg(svgText);
+	const { svg: cleanedSvg, removed } =
+		makeWhiteBackgroundTransparentInSvg(svgText);
 
 	if (removed) {
-		logger.info("Removed white background path from SVG");
+		logger.info("Converted white background paths to transparent in SVG");
 	}
 
 	const cleanedBytes = new TextEncoder().encode(cleanedSvg);
