@@ -15,8 +15,8 @@ export const autumn = new Autumn(components.autumn, {
 		return {
 			customerId: userId,
 			customerData: {
-				name: user.name as string,
-				email: user.email as string,
+				name: user.name as string, // TODO: Get this during signup?
+				email: user.email as string, // TODO: Figure out how to get this from getUserIdentity
 			},
 		};
 	},
