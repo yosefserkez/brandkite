@@ -12,3 +12,5 @@ count.txt
 .vinxi
 todos.json
 *.ignore*
+# Local Netlify folder
+.netlify
