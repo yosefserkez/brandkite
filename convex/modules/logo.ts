@@ -35,58 +35,14 @@ const getReplicateClient = (): Replicate => {
 
 const generateLogoPrompt = (params: { brandContext: BrandContext }): string => {
 	const prompt = `
-Minimal rounded geometric emblem for a ${params.brandContext.industry} company. 
-Concept: button, circular form. 
-Solid black on transparent background. 
-Smooth balance, soft curves, open negative space, circular symmetry, gentle flow, organic continuity. 
-Keywords: button, round, soft, minimal, geometric, elegant.	
-Only create the SVG emblem, do not include any wordmarks or text. NO BACKGROUND. NO WORDS OR TEXT. TRANSPARENT`;
-
+Generate a minimal abstract logo.
+Rules:
+- Simpler is better.
+- Stroke: uniform black, no fills, no colors, no gradients. 
+- Background: transparent. 
+- Composition: symmetrical or near-symmetrical with mathematically exact relationships. 
+- Avoid: decorative elements, text, numbers, organic shapes, and any representational or literal imagery.`;
 	return prompt;
-};
-
-const PATH_TAG_GLOBAL_REGEX = /<path\b[^>]*>/gi;
-const WHITE_FILL_REGEXES = [
-	/\bfill\s*=\s*"(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))"/i,
-	/\bfill\s*=\s*'(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))'/i,
-	/\bstyle\s*=\s*"[^"]*\bfill\s*:\s*(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))\b[^"]*"/i,
-	/\bstyle\s*=\s*'[^']*\bfill\s*:\s*(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))\b[^']*'/i,
-];
-
-// Replacement regexes to set white fills to transparent
-const FILL_ATTR_DOUBLE_WHITE =
-	/\bfill\s*=\s*"(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))"/gi;
-const FILL_ATTR_SINGLE_WHITE =
-	/\bfill\s*=\s*'(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))'/gi;
-const STYLE_DOUBLE_WHITE_FILL =
-	/\bstyle\s*=\s*"([^"]*?)\bfill\s*:\s*(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))([^"]*)"/gi;
-const STYLE_SINGLE_WHITE_FILL =
-	/\bstyle\s*=\s*'([^']*?)\bfill\s*:\s*(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))([^']*)'/gi;
-
-const makeWhiteBackgroundTransparentInSvg = (
-	svgString: string
-): { svg: string; removed: boolean } => {
-	let modifiedAny = false;
-	const updatedSvg = svgString.replace(PATH_TAG_GLOBAL_REGEX, (tag) => {
-		const isWhite = WHITE_FILL_REGEXES.some((re) => re.test(tag));
-		if (isWhite) {
-			modifiedAny = true;
-			let newTag = tag;
-			newTag = newTag.replace(FILL_ATTR_DOUBLE_WHITE, 'fill="none"');
-			newTag = newTag.replace(FILL_ATTR_SINGLE_WHITE, 'fill="none"');
-			newTag = newTag.replace(
-				STYLE_DOUBLE_WHITE_FILL,
-				'style="$1fill: none$2"'
-			);
-			newTag = newTag.replace(
-				STYLE_SINGLE_WHITE_FILL,
-				"style='$1fill: none$2'"
-			);
-			return newTag;
-		}
-		return tag;
-	});
-	return { svg: updatedSvg, removed: modifiedAny };
 };
 
 const downloadAsset = async (url: string): Promise<Uint8Array> => {
@@ -99,7 +55,7 @@ const downloadAsset = async (url: string): Promise<Uint8Array> => {
 			statusText: response.statusText,
 		});
 		throw new Error(
-			`Failed to download asset from replicate (${response.status})`
+			`;Failed to download asset from replicate (${response.status})`
 		);
 	}
 
@@ -115,7 +71,7 @@ const generateLogoAsset = async (
 	const client = getReplicateClient();
 	logger.info("Generating logo asset", { prompt });
 	const replicateResult = await client.run(LOGO_MODEL_IDENTIFIER, {
-		input: { prompt },
+		input: { prompt, aspect_ratio: "1:1", style: "icon" },
 	});
 
 	logger.info("Replicate result", { replicateResult });
@@ -131,14 +87,8 @@ const generateLogoAsset = async (
 
 	const file = await downloadAsset(assetUrl);
 	const svgText = new TextDecoder().decode(file);
-	const { svg: cleanedSvg, removed } =
-		makeWhiteBackgroundTransparentInSvg(svgText);
 
-	if (removed) {
-		logger.info("Converted white background paths to transparent in SVG");
-	}
-
-	const cleanedBytes = new TextEncoder().encode(cleanedSvg);
+	const cleanedBytes = new TextEncoder().encode(svgText);
 	return await r2.store(ctx, cleanedBytes, { type: SVG_MIME_TYPE });
 };
 
