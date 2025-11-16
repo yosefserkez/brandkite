@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useCompanyBrand } from "../hooks/useCompanyBrand";
+import { Feedback } from "./feedback";
 import ColorsModule from "./modules/ColorsModule";
 import LogoModule from "./modules/LogoModule";
 import MissionModule from "./modules/MissionModule";
@@ -55,6 +56,7 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 				<ColorsModule companyId={companyId} />
 				<ToneModule companyId={companyId} />
 				<TypographyModule companyId={companyId} />
+				<Feedback />
 			</div>
 		</div>
 	);
