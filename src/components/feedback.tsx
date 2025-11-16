@@ -66,7 +66,8 @@ export function Feedback({ onSubmit, className }: FeedbackProps) {
 			<Card className="relative space-y-3 rounded-lg border bg-gray-50">
 				<CardHeader>
 					<h2 className="font-semibold text-base">
-						What features/modules would you like to see next?
+						Were just getting started! What features/modules would you like to
+						see next?
 					</h2>
 				</CardHeader>
 				<CardContent>
@@ -75,7 +76,7 @@ export function Feedback({ onSubmit, className }: FeedbackProps) {
 							Your feedback
 						</label>
 						<textarea
-							className="field-sizing-content w-full resize-none rounded-md px-3 py-2 hover:bg-accent"
+							className="field-sizing-content w-full resize-none rounded-md bg-accent px-3 py-2"
 							id="feedback-message"
 							name="message"
 							onChange={(e) => setMessage(e.target.value)}
