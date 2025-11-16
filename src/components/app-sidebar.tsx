@@ -173,7 +173,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 									<Link className="flex items-center gap-2" to="/">
 										<BrandKiteLogo className="size-7! shrink-0" />
 										<span
-											className="pr-1 text-3xl"
+											className="-mt-2 pr-1 text-3xl" // -mt-2 is a bad hack to center the text visually
 											style={{ fontFamily: "Caveat" }}
 										>
 											Brandkite
