@@ -53,13 +53,33 @@ const ModuleCard = ({ name, image }: ModuleCardProps) => {
 		</figure>
 	);
 };
-
+const features = [
+	"Company name",
+	"Domain suggestions",
+	"Logo generation",
+	"Brand colors",
+	"Tagline & mission",
+	"Brand story",
+	"Typography & tone",
+	"And more",
+];
 export function ModulesMarquee() {
 	return (
 		<div className="relative flex w-full max-w-4xl flex-col items-center justify-center overflow-hidden">
-			<Marquee className="[--duration:20s]" pauseOnHover>
+			<Marquee className="[--duration:40s]" pauseOnHover>
 				{modules.map((module) => (
 					<ModuleCard key={module.name} {...module} />
+				))}
+			</Marquee>
+
+			<Marquee className="text-xs [--duration:40s]" reverse>
+				{features.map((feature) => (
+					<>
+						<span className="text-gray-700" key={feature}>
+							{feature}
+						</span>
+						<span className="text-gray-400">•</span>
+					</>
 				))}
 			</Marquee>
 

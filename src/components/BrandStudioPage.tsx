@@ -4,6 +4,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useCompanyBrand } from "../hooks/useCompanyBrand";
 import { Feedback } from "./feedback";
+import { GetStartedCard } from "./get-started-card";
 import ColorsModule from "./modules/ColorsModule";
 import LogoModule from "./modules/LogoModule";
 import MissionModule from "./modules/MissionModule";
@@ -38,7 +39,7 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 	}
 
 	return (
-		<div className="h-full overflow-y-auto bg-white">
+		<div className="mb-4 h-full overflow-y-auto bg-white">
 			{/* Module blocks */}
 			<div className="mx-auto max-w-5xl space-y-10 overflow-hidden px-4 py-4">
 				{/* Names & Logo block - combined as header image with logo overlay */}
@@ -58,6 +59,7 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 				<ToneModule companyId={companyId} />
 				<TypographyModule companyId={companyId} />
 				<Feedback />
+				<GetStartedCard />
 			</div>
 		</div>
 	);
