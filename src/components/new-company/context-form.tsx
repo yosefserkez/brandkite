@@ -9,10 +9,14 @@ import {
 } from "@/components/ui/popover";
 import { ShineBorder } from "@/components/ui/shine-border";
 import { Source, SourceContent, SourceTrigger } from "@/components/ui/source";
-import type { BrandContext } from "../../../convex/modules/brandContext";
+import type {
+	BrandContext,
+	BrandDocument,
+} from "../../../convex/modules/brandContext";
 
 const DOCUMENT_SUMMARY_MAX_LENGTH = 150;
 const DOCUMENT_KEY_MAX_LENGTH = 50;
+const RANDOM_KEY_RADIX = 36;
 
 type ContextFormProps = {
 	brandContext: BrandContext;
@@ -133,12 +137,23 @@ function AddItemPopover({
 }
 
 type ItemWithSource = {
-	name: string;
-	summary: string;
+	name?: string;
+	summary?: string;
 	url?: string;
 	imageUrl?: string;
 	role?: string;
+	__key?: string;
 };
+
+const generateItemKey = () =>
+	typeof crypto !== "undefined" && "randomUUID" in crypto
+		? crypto.randomUUID()
+		: Math.random().toString(RANDOM_KEY_RADIX).slice(2);
+
+const withGeneratedKey = <T extends Record<string, unknown>>(item: T) => ({
+	...item,
+	__key: generateItemKey(),
+});
 
 export function ContextForm({
 	brandContext,
@@ -174,7 +189,7 @@ export function ContextForm({
 		(data: Record<string, string>) => {
 			const newContext = { ...brandContext };
 			const items = (getNestedValue(newContext, path) as unknown[]) || [];
-			items.push(transform(data));
+			items.push(withGeneratedKey(transform(data) as Record<string, unknown>));
 
 			let current: Record<string, unknown> = newContext;
 			for (let i = 0; i < path.length - 1; i += 1) {
@@ -204,20 +219,24 @@ export function ContextForm({
 	};
 
 	const renderItemList = (
-		items: ItemWithSource[] | undefined,
+		items: (ItemWithSource & { __key?: string })[] | undefined,
 		onRemove: (index: number) => void,
 		getLabel: (item: ItemWithSource) => string,
 		getKey: (item: ItemWithSource, index: number) => string
 	) =>
 		items?.map((item, index) => {
 			const label = getLabel(item);
-			const key = getKey(item, index);
+			const fallbackKey = getKey(item, index);
+			const key = item.__key ?? `${fallbackKey}-${index}`;
 
 			return (
 				<div className="group relative flex items-center" key={key}>
 					<Source faviconUrl={item.imageUrl} href={item.url}>
 						<SourceTrigger label={label} showIcon={true} />
-						<SourceContent description={item.summary} title={item.name} />
+						<SourceContent
+							description={item.summary ?? ""}
+							title={item.name ?? label}
+						/>
 					</Source>
 					<button
 						className="rounded-full p-1 hover:bg-secondary"
@@ -390,21 +409,23 @@ export function ContextForm({
 					<div className="space-y-2">
 						<div className="flex flex-wrap items-center gap-2 px-2">
 							{brandContext.documents.map((doc, index) => {
+								const document = doc as BrandDocument & { __key?: string };
 								const docKey =
-									doc.url ||
-									doc.name ||
-									doc.summary.slice(0, DOCUMENT_KEY_MAX_LENGTH);
-								const label = doc.name || "Document";
+									document.__key ||
+									document.url ||
+									document.name ||
+									document.summary.slice(0, DOCUMENT_KEY_MAX_LENGTH);
+								const label = document.name || "Document";
 
 								return (
 									<div
 										className="group relative flex items-center"
 										key={docKey}
 									>
-										<Source href={doc.url}>
+										<Source href={document.url}>
 											<SourceTrigger label={label} showIcon={true} />
 											<SourceContent
-												description={doc.summary.slice(
+												description={document.summary.slice(
 													0,
 													DOCUMENT_SUMMARY_MAX_LENGTH
 												)}

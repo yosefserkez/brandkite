@@ -25,7 +25,7 @@ const entityValidator = v.object({
 
 const teamMemberValidator = v.object({
 	name: v.optional(v.string()),
-	summary: v.string(),
+	summary: v.optional(v.string()),
 	url: v.string(),
 	imageUrl: v.optional(v.string()),
 	role: v.optional(v.string()),
@@ -70,11 +70,13 @@ export const brandContextValidator = v.object({
 const entitySchema = z.object({
 	name: z
 		.string()
+		.optional()
 		.describe("Name of the entity if provided, otherwise leave blank"),
-	summary: z.string().describe("Summary of the entity"),
+	summary: z.string().optional().describe("Summary of the entity"),
 	url: z.string().describe("URL of the related entity."),
 	imageUrl: z
 		.string()
+		.optional()
 		.describe(
 			'URL of the entity\'s image, logo, or icon. This could be from the document, their website, or wikimedia. Use empty string "" if not available.'
 		),
@@ -82,6 +84,7 @@ const entitySchema = z.object({
 
 const teamMemberSchema = entitySchema.extend({
 	role: z.string().optional().describe("Role of the team member"),
+	summary: z.string().optional().describe("Summary of the team member"),
 });
 
 export const brandContextSchema = z
