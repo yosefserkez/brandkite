@@ -392,9 +392,7 @@ export function ContextForm({
 								(inspiration) =>
 									inspiration.name ?? inspiration.url ?? "Inspiration",
 								(inspiration, index) =>
-									inspiration.name ??
-									inspiration.url ??
-									`inspiration-${index}`
+									inspiration.name ?? inspiration.url ?? `inspiration-${index}`
 							)}
 							<AddItemPopover
 								buttonClassName="text-xs"
