@@ -290,7 +290,7 @@ export function ContextForm({
 									},
 									{ name: "imageUrl", placeholder: "Image URL", type: "url" },
 								]}
-								onAdd={handleAddItem(["team"], (data) => ({
+								onAdd={handleAddItem(["team", "members"], (data) => ({
 									name: data.name,
 									url: data.url || "",
 									imageUrl: data.imageUrl || "",
