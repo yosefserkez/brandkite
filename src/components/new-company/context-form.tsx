@@ -292,8 +292,11 @@ export function ContextForm({
 								brandContext.team?.members,
 								handleRemoveItem(["team", "members"]),
 								(member) =>
-									`${member.name}${member.role ? ` ${member.role}` : ""}`,
-								(member) => member.name
+									`${member.name ?? "Team member"}${
+										member.role ? ` ${member.role}` : ""
+									}`,
+								(member, index) =>
+									member.name ?? member.url ?? `team-member-${index}`
 							)}
 							<AddItemPopover
 								buttonClassName="text-xs"
@@ -348,8 +351,10 @@ export function ContextForm({
 							{renderItemList(
 								brandContext.market.competitors,
 								handleRemoveItem(["market", "competitors"]),
-								(competitor) => competitor.name,
-								(competitor) => competitor.name
+								(competitor) =>
+									competitor.name ?? competitor.url ?? "Competitor",
+								(competitor, index) =>
+									competitor.name ?? competitor.url ?? `competitor-${index}`
 							)}
 							<AddItemPopover
 								buttonClassName="text-xs"
@@ -384,8 +389,12 @@ export function ContextForm({
 							{renderItemList(
 								brandContext.brand.inspirations,
 								handleRemoveItem(["brand", "inspirations"]),
-								(inspiration) => inspiration.name,
-								(inspiration) => inspiration.name
+								(inspiration) =>
+									inspiration.name ?? inspiration.url ?? "Inspiration",
+								(inspiration, index) =>
+									inspiration.name ??
+									inspiration.url ??
+									`inspiration-${index}`
 							)}
 							<AddItemPopover
 								buttonClassName="text-xs"
