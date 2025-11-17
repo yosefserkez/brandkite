@@ -1,85 +1,70 @@
 import { Marquee } from "@/components/ui/marquee";
 import { cn } from "@/lib/utils";
 
-const mockupModules = [
+const modules = [
 	{
-		name: "Name",
-		description: "A name for your company.",
+		name: "Name/Domain",
+		image: "/name-preview.png",
 	},
 	{
 		name: "Logo",
-		description: "A logo for your company.",
+		image: "/logo-preview.png",
 	},
 	{
 		name: "Mission",
-		description: "A mission for your company.",
-	},
-	{
-		name: "Tagline",
-		description: "A tagline for your company.",
+		image: "/mission-preview.png",
 	},
 	{
 		name: "Story",
-		description: "A story for your company.",
+		image: "/story-preview.png",
 	},
 	{
-		name: "Colors",
-		description: "A color palette for your company.",
-	},
-	{
-		name: "Tone",
-		description: "A tone for your company.",
-	},
-	{
-		name: "Typography",
-		description: "Typography choices for your company.",
+		name: "Design",
+		image: "/design-preview.png",
 	},
 ];
 
-const firstRow = mockupModules.slice(0, mockupModules.length / 2);
-
 type ModuleCardProps = {
 	name: string;
-	description: string;
 	image: string;
 };
 
-const ModuleCard = ({ name, description, image }: ModuleCardProps) => {
+const ModuleCard = ({ name, image }: ModuleCardProps) => {
 	return (
 		<figure
 			className={cn(
-				"relative h-full w-64 cursor-pointer overflow-hidden rounded-xl border p-4",
+				"relative h-full w-48 cursor-pointer overflow-hidden rounded-xl border",
 				// light styles
 				"border-gray-950/10 bg-gray-950/1 hover:bg-gray-950/5",
 				// dark styles
 				"dark:border-gray-50/10 dark:bg-gray-50/10 dark:hover:bg-gray-50/15"
 			)}
 		>
-			<div className="flex flex-row items-center gap-2">
-				<div className="flex flex-col">
-					<figcaption className="font-medium text-sm dark:text-white">
-						{name}
-					</figcaption>
-					<p className="font-medium text-xs dark:text-white/40">
-						{description}
-					</p>
-				</div>
-			</div>
+			<img
+				alt={`${name} preview`}
+				className="h-full w-full object-cover"
+				height={216}
+				src={image}
+				width={384}
+			/>
+			<figcaption className="absolute top-2 left-2 rounded-sm bg-white/80 px-2 font-medium text-gray-700 text-xs dark:bg-gray-900/70 dark:text-white">
+				{name}
+			</figcaption>
 		</figure>
 	);
 };
 
 export function ModulesMarquee() {
 	return (
-		<div className="relative flex w-full flex-col items-center justify-center overflow-hidden">
+		<div className="relative flex w-full max-w-4xl flex-col items-center justify-center overflow-hidden">
 			<Marquee className="[--duration:20s]" pauseOnHover>
-				{firstRow.map((module) => (
+				{modules.map((module) => (
 					<ModuleCard key={module.name} {...module} />
 				))}
 			</Marquee>
 
-			<div className="pointer-events-none absolute inset-y-0 left-0 w-1/8 bg-gradient-to-r from-white" />
-			<div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l to-white" />
+			<div className="pointer-events-none absolute inset-y-0 left-0 w-[80px] bg-gradient-to-r from-white" />
+			<div className="pointer-events-none absolute inset-y-0 right-0 w-[80px] bg-gradient-to-l from-white" />
 		</div>
 	);
 }
