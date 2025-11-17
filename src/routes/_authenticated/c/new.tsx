@@ -9,7 +9,9 @@ import { Billing } from "@/components/billing";
 import { ContextForm } from "@/components/new-company/context-form";
 import { NewCompany } from "@/components/new-company/context-input";
 import { ContextInputProcessing } from "@/components/new-company/context-input-processing";
+import { ModulesMarquee } from "@/components/new-company/modules-marquee";
 import { Meteors } from "@/components/ui/meteors";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/c/new")({
 	component: NewCompanyRoute,
@@ -108,7 +110,7 @@ function NewCompanyRoute() {
 							onFocusChange={setIsInputFocused}
 							onSubmit={handleInputSubmit}
 						/>
-						{/* <div
+						<div
 							className={cn(
 								"m-auto py-8 transition-opacity duration-500 ease-in-out",
 								isInputFocused
@@ -117,7 +119,7 @@ function NewCompanyRoute() {
 							)}
 						>
 							<ModulesMarquee />
-						</div> */}
+						</div>
 					</>
 				)}
 				{step === "processing" && <ContextInputProcessing />}

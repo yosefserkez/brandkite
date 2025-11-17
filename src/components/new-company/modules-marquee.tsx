@@ -3,34 +3,36 @@ import { cn } from "@/lib/utils";
 
 const mockupModules = [
 	{
-		name: "Team",
-		description: "A team of people who work together to achieve a common goal.",
-		image: "https://avatar.vercel.sh/team",
+		name: "Name",
+		description: "A name for your company.",
 	},
 	{
-		name: "Customer",
-		description: "A customer who buys a product or service.",
-		image: "https://avatar.vercel.sh/customer",
+		name: "Logo",
+		description: "A logo for your company.",
 	},
 	{
-		name: "Product",
-		description: "A product that is sold to a customer.",
-		image: "https://avatar.vercel.sh/product",
+		name: "Mission",
+		description: "A mission for your company.",
 	},
 	{
-		name: "Market",
-		description: "A market that is served by a product or service.",
-		image: "https://avatar.vercel.sh/market",
+		name: "Tagline",
+		description: "A tagline for your company.",
 	},
 	{
-		name: "Business",
-		description: "A business that is in the market.",
-		image: "https://avatar.vercel.sh/business",
+		name: "Story",
+		description: "A story for your company.",
 	},
 	{
-		name: "Brand",
-		description: "A brand that is in the market.",
-		image: "https://avatar.vercel.sh/brand",
+		name: "Colors",
+		description: "A color palette for your company.",
+	},
+	{
+		name: "Tone",
+		description: "A tone for your company.",
+	},
+	{
+		name: "Typography",
+		description: "Typography choices for your company.",
 	},
 ];
 
@@ -54,13 +56,6 @@ const ModuleCard = ({ name, description, image }: ModuleCardProps) => {
 			)}
 		>
 			<div className="flex flex-row items-center gap-2">
-				<img
-					alt=""
-					className="rounded-full"
-					height="32"
-					src={image}
-					width="32"
-				/>
 				<div className="flex flex-col">
 					<figcaption className="font-medium text-sm dark:text-white">
 						{name}
@@ -83,8 +78,8 @@ export function ModulesMarquee() {
 				))}
 			</Marquee>
 
-			<div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-gray-50" />
-			<div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-gray-50" />
+			<div className="pointer-events-none absolute inset-y-0 left-0 w-1/8 bg-gradient-to-r from-white" />
+			<div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l to-white" />
 		</div>
 	);
 }
