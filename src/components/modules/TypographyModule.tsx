@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandTypography } from "../../../convex/modules/typography";
+import { BrandText, useBrandText } from "../../contexts/BrandTextContext";
 import { useBrandModule } from "../../hooks/useBrandModule";
-import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
-import { cn, replaceCompanyName } from "../../lib/utils";
+import { cn } from "../../lib/utils";
 import { SuspenseCard } from "../suspense-card";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -80,7 +80,7 @@ export default function TypographyModule({
 	className,
 }: TypographyModuleProps) {
 	const ctx = useBrandModule(companyId, "typography");
-	const companyName = useCompanyBrandName(companyId);
+	const { replace } = useBrandText();
 	const data = ctx.selected?.data as BrandTypography | undefined;
 
 	const onCopy = () => {
@@ -93,33 +93,29 @@ export default function TypographyModule({
 		if (!data.headlineFont) {
 			return;
 		}
-		const safeCompanyName = companyName ?? "";
 		const lines = [
 			"Typography system",
-			replaceCompanyName(data.overview, safeCompanyName),
+			replace(data.overview),
 			"",
 			"Guidelines:",
-			...data.guidelines.map(
-				(line) => `- ${replaceCompanyName(line, safeCompanyName)}`
-			),
+			...data.guidelines.map((line) => `- ${replace(line)}`),
 			"",
 			`Primary font: ${data.primaryFont.name}`,
-			replaceCompanyName(data.primaryFont.summary, safeCompanyName),
-			replaceCompanyName(data.primaryFont.usage, safeCompanyName),
-			replaceCompanyName(data.primaryFont.pairing, safeCompanyName),
+			replace(data.primaryFont.summary),
+			replace(data.primaryFont.usage),
+			replace(data.primaryFont.pairing),
 			"",
 			`Headline font: ${data.headlineFont.name}`,
-			replaceCompanyName(data.headlineFont.summary, safeCompanyName),
-			replaceCompanyName(data.headlineFont.usage, safeCompanyName),
-			replaceCompanyName(data.headlineFont.pairing, safeCompanyName),
+			replace(data.headlineFont.summary),
+			replace(data.headlineFont.usage),
+			replace(data.headlineFont.pairing),
 			"",
 			"Weight usage:",
 			...STANDARD_FONT_WEIGHTS.map(
-				(weight) =>
-					`${weight.label} (${weight.fontWeight}): ${replaceCompanyName(weight.description, safeCompanyName)}`
+				(weight) => `${weight.label} (${weight.fontWeight}): ${replace(weight.description)}`
 			),
 			"",
-			replaceCompanyName(data.specimenCopy, safeCompanyName),
+			replace(data.specimenCopy),
 		];
 		navigator.clipboard.writeText(lines.join("\n"));
 	};
@@ -138,26 +134,18 @@ export default function TypographyModule({
 							Typography system
 						</p>
 						<div className="wrap-break-word text-gray-950 text-sm tracking-tight">
-							<p>
-								{replaceCompanyName(data?.overview ?? "", companyName ?? "")}
-							</p>
+							<BrandText as="p">{data?.overview ?? ""}</BrandText>
 							{data ? (
-								<p className="pb-4 text-gray-600">
-									{replaceCompanyName(
-										data?.primaryFont?.summary ?? "",
-										companyName ?? ""
-									)}
-								</p>
+								<BrandText as="p" className="pb-4 text-gray-600">
+									{data?.primaryFont?.summary ?? ""}
+								</BrandText>
 							) : null}
 						</div>
 					</CardHeader>
 					<CardContent>
 						<div className="space-y-8">
-							<TypographyShowcase companyName={companyName ?? ""} data={data} />
-							<TypographyGuidelines
-								companyName={companyName ?? ""}
-								data={data}
-							/>
+							<TypographyShowcase data={data} />
+							<TypographyGuidelines data={data} />
 						</div>
 					</CardContent>
 				</Card>
@@ -166,13 +154,8 @@ export default function TypographyModule({
 	);
 }
 
-function TypographyShowcase({
-	data,
-	companyName,
-}: {
-	data: BrandTypography;
-	companyName: string;
-}) {
+function TypographyShowcase({ data }: { data: BrandTypography }) {
+	const { replace } = useBrandText();
 	const fontWeights = useMemo(
 		() => STANDARD_FONT_WEIGHTS.map((w) => w.fontWeight),
 		[]
@@ -218,25 +201,25 @@ function TypographyShowcase({
 								<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
 									Summary
 								</p>
-								<p className="text-gray-700">
-									{replaceCompanyName(activeFontData.summary, companyName)}
-								</p>
+								<BrandText as="p" className="text-gray-700">
+									{activeFontData.summary}
+								</BrandText>
 							</div>
 							<div className="space-y-1">
 								<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
 									Usage
 								</p>
-								<p className="text-gray-700">
-									{replaceCompanyName(activeFontData.usage, companyName)}
-								</p>
+								<BrandText as="p" className="text-gray-700">
+									{activeFontData.usage}
+								</BrandText>
 							</div>
 							<div className="space-y-1">
 								<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
 									Pairing
 								</p>
-								<p className="text-gray-700">
-									{replaceCompanyName(activeFontData.pairing, companyName)}
-								</p>
+								<BrandText as="p" className="text-gray-700">
+									{activeFontData.pairing}
+								</BrandText>
 							</div>
 						</PopoverContent>
 					</Popover>
@@ -276,7 +259,7 @@ function TypographyShowcase({
 										<span className="font-medium text-xs tracking-wide">
 											{weight.label}:
 										</span>{" "}
-										{replaceCompanyName(weight.description, companyName)}
+										<BrandText>{weight.description}</BrandText>
 									</p>
 								</TooltipContent>
 							</Tooltip>
@@ -332,22 +315,16 @@ function TypographyShowcase({
 						<p>0123456789</p>
 						<p>@#$%&*</p>
 					</div>
-					<p className="border-gray-200 border-l-4 pl-4 text-base text-gray-600 leading-relaxed">
-						{replaceCompanyName(data.specimenCopy, companyName)}
-					</p>
+					<BrandText as="p" className="border-gray-200 border-l-4 pl-4 text-base text-gray-600 leading-relaxed">
+						{data.specimenCopy}
+					</BrandText>
 				</div>
 			</div>
 		</section>
 	);
 }
 
-function TypographyGuidelines({
-	data,
-	companyName,
-}: {
-	data: BrandTypography;
-	companyName: string;
-}) {
+function TypographyGuidelines({ data }: { data: BrandTypography }) {
 	return (
 		<section className="flex flex-col gap-2">
 			<p className="font-medium text-gray-500 text-xs uppercase tracking-wide">
@@ -356,7 +333,7 @@ function TypographyGuidelines({
 			<ul className="wrap-break-word flex flex-col gap-2 text-gray-400 text-xs tracking-tight">
 				{data.guidelines.map((item) => (
 					<li className="" key={item}>
-						<span>{replaceCompanyName(item, companyName)}</span>
+						<BrandText as="span">{item}</BrandText>
 					</li>
 				))}
 			</ul>

@@ -2,15 +2,14 @@ import { useMutation } from "convex/react";
 import { useEffect } from "react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
-import { useCompanyBrand } from "../hooks/useCompanyBrand";
+import { BrandTextProvider } from "../contexts/BrandTextContext";
+import { useCompanyBrand, useCompanyBrandName } from "../hooks/useCompanyBrand";
 import { Feedback } from "./feedback";
 import { GetStartedCard } from "./get-started-card";
 import ColorsModule from "./modules/ColorsModule";
 import LogoModule from "./modules/LogoModule";
-import MissionModule from "./modules/MissionModule";
 import NamesModule from "./modules/NamesModule";
-import StoryModule from "./modules/StoryModule";
-import TaglineModule from "./modules/TaglineModule";
+import TextModule from "./modules/TextModule";
 import ToneModule from "./modules/ToneModule";
 import TypographyModule from "./modules/TypographyModule";
 import { FlickeringGrid } from "./ui/flickering-grid";
@@ -21,6 +20,7 @@ type BrandStudioPageProps = {
 
 export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 	const { company, loading } = useCompanyBrand(companyId);
+	const companyName = useCompanyBrandName(companyId);
 	const updatePresence = useMutation(api.presence.updatePresence);
 
 	useEffect(() => {
@@ -39,28 +39,49 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 	}
 
 	return (
-		<div className="mb-4 h-full overflow-y-auto bg-white">
-			{/* Module blocks */}
-			<div className="mx-auto max-w-5xl space-y-10 overflow-hidden px-4 py-4">
-				{/* Names & Logo block - combined as header image with logo overlay */}
-				<NamesModule companyId={companyId} />
-				<div className="flex flex-col gap-10 md:grid md:grid-cols-4 md:grid-rows-1 md:gap-4 md:pb-6">
-					<div className="col-span-1 flex flex-col gap-10 md:gap-4">
-						<LogoModule className="h-full w-full" companyId={companyId} />
-						<div className="hidden h-full w-full rounded-t-lg bg-linear-to-b from-brand-primary-50 to-gray-50 md:block" />
+		<BrandTextProvider companyName={companyName}>
+			<div className="mb-4 h-full overflow-y-auto bg-white">
+				{/* Module blocks */}
+				<div className="mx-auto max-w-5xl space-y-10 overflow-hidden px-4 py-4">
+					{/* Names & Logo block - combined as header image with logo overlay */}
+					<NamesModule companyId={companyId} />
+					<div className="flex flex-col gap-10 md:grid md:grid-cols-4 md:grid-rows-1 md:gap-4 md:pb-6">
+						<div className="col-span-1 flex flex-col gap-10 md:gap-4">
+							<LogoModule className="h-full w-full" companyId={companyId} />
+							<div className="hidden h-full w-full rounded-t-lg bg-linear-to-b from-brand-primary-50 to-gray-50 md:block" />
+						</div>
+						<div className="col-span-3 flex flex-col gap-10 md:gap-4">
+							<TextModule
+								companyId={companyId}
+								config={{
+									textClassName: "font-semibold md:text-xl lg:text-2xl",
+								}}
+								module="mission"
+							/>
+							<TextModule
+								companyId={companyId}
+								config={{
+									textClassName: "md:text-xl lg:text-2xl",
+								}}
+								module="tagline"
+							/>
+						</div>
 					</div>
-					<div className="col-span-3 flex flex-col gap-10 md:gap-4">
-						<MissionModule companyId={companyId} />
-						<TaglineModule companyId={companyId} />
-					</div>
+					<TextModule
+						companyId={companyId}
+						config={{
+							textClassName: "text-justify",
+							actionsVariant: "full",
+						}}
+						module="story"
+					/>
+					<ColorsModule companyId={companyId} />
+					<ToneModule companyId={companyId} />
+					<TypographyModule companyId={companyId} />
+					<Feedback />
+					<GetStartedCard />
 				</div>
-				<StoryModule companyId={companyId} />
-				<ColorsModule companyId={companyId} />
-				<ToneModule companyId={companyId} />
-				<TypographyModule companyId={companyId} />
-				<Feedback />
-				<GetStartedCard />
 			</div>
-		</div>
+		</BrandTextProvider>
 	);
 }

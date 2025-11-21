@@ -2,14 +2,14 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandPalette } from "../../../convex/modules/colors";
+import { BrandText, useBrandText } from "../../contexts/BrandTextContext";
 import { useBrandModule } from "../../hooks/useBrandModule";
-import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
 import {
 	BRAND_SHADE_BASE_STOP,
 	type BrandColorScaleEntry,
 	generateColorScale,
 } from "../../lib/color-scale";
-import { cn, replaceCompanyName } from "../../lib/utils";
+import { cn } from "../../lib/utils";
 import { SuspenseCard } from "../suspense-card";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -37,7 +37,7 @@ export default function ColorsModule({
 	className,
 }: ColorsModuleProps) {
 	const ctx = useBrandModule(companyId, "colors");
-	const companyName = useCompanyBrandName(companyId);
+	const { replace } = useBrandText();
 	const palette = ctx.selected?.data as BrandPalette | undefined;
 
 	const onCopy = () => {
@@ -45,16 +45,16 @@ export default function ColorsModule({
 			return;
 		}
 		const text = [
-			replaceCompanyName(palette.overview, companyName),
+			palette.overview,
 			"",
-			replaceCompanyName(palette.howToUse, companyName),
+			palette.howToUse,
 			"",
 			...palette.colors.map(
 				(color) =>
 					`${color.name} (${color.hex}): ${color.summary} Use: ${color.usage}`
 			),
 		].join("\n");
-		navigator.clipboard.writeText(text);
+		navigator.clipboard.writeText(replace(text));
 	};
 
 	const colorsWithScale = useMemo(() => {
@@ -82,19 +82,14 @@ export default function ColorsModule({
 						Color System
 					</p>
 					<div className="wrap-break-word text-gray-950 text-sm tracking-tight">
-						<p>{replaceCompanyName(palette?.overview ?? "", companyName)}</p>
-						<p className="pt-2 text-gray-600">
-							{replaceCompanyName(palette?.howToUse ?? "", companyName)}
-						</p>
+						<BrandText as="p">{palette?.overview ?? ""}</BrandText>
+						<BrandText as="p" className="pt-2 text-gray-600">
+							{palette?.howToUse ?? ""}
+						</BrandText>
 					</div>
 				</CardHeader>
 				<CardContent>
-					{hasPalette && (
-						<PaletteBody
-							colors={colorsWithScale}
-							companyName={companyName ?? ""}
-						/>
-					)}
+					{hasPalette && <PaletteBody colors={colorsWithScale} />}
 				</CardContent>
 			</Card>
 		</BlockWrapper>
@@ -105,22 +100,13 @@ type PaletteColorWithScale = BrandPalette["colors"][number] & {
 	scale: BrandColorScaleEntry[];
 };
 
-function PaletteBody(props: {
-	companyName: string;
-	colors: PaletteColorWithScale[];
-}) {
-	const { colors, companyName } = props;
+function PaletteBody(props: { colors: PaletteColorWithScale[] }) {
+	const { colors } = props;
 
-	return <PaletteView colors={colors} companyName={companyName} />;
+	return <PaletteView colors={colors} />;
 }
 
-function PaletteView({
-	colors,
-	companyName,
-}: {
-	colors: PaletteColorWithScale[];
-	companyName: string;
-}) {
+function PaletteView({ colors }: { colors: PaletteColorWithScale[] }) {
 	return (
 		<div className="grid gap-6 pt-8 lg:grid-cols-3">
 			{colors.map((color) => {
@@ -142,11 +128,7 @@ function PaletteView({
 								<ShadeSwatch key={shade.stop} shade={shade} />
 							))}
 						</div>
-						<MainShadeSwatch
-							color={color}
-							companyName={companyName}
-							shade={mainShade}
-						/>
+						<MainShadeSwatch color={color} shade={mainShade} />
 						<div className="flex flex-col">
 							{bottomShades.map((shade) => (
 								<ShadeSwatch key={shade.stop} shade={shade} />
@@ -236,20 +218,20 @@ function ShadeSwatch({ shade }: { shade: BrandColorScaleEntry }) {
 
 type MainShadeSwatchProps = {
 	color: PaletteColorWithScale;
-	companyName: string;
 	shade: BrandColorScaleEntry;
 };
 
-function MainShadeSwatch({ color, companyName, shade }: MainShadeSwatchProps) {
+function MainShadeSwatch({ color, shade }: MainShadeSwatchProps) {
+	const { replace } = useBrandText();
 	const [open, setOpen] = useState(false);
 	const textColor = useMemo(
 		() => getAccessibleTextColor(shade.hex),
 		[shade.hex]
 	);
-	const role = replaceCompanyName(color.role, companyName);
-	const name = replaceCompanyName(color.name, companyName);
-	const summary = replaceCompanyName(color.summary, companyName);
-	const usage = replaceCompanyName(color.usage, companyName);
+	const role = replace(color.role);
+	const name = replace(color.name);
+	const summary = replace(color.summary);
+	const usage = replace(color.usage);
 
 	const handleCopy = useCallback(() => {
 		copyHexToClipboard(shade.hex);

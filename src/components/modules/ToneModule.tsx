@@ -1,9 +1,8 @@
 import { useMemo } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandTone } from "../../../convex/modules/tone";
+import { BrandText, useBrandText } from "../../contexts/BrandTextContext";
 import { useBrandModule } from "../../hooks/useBrandModule";
-import { useCompanyBrandName } from "../../hooks/useCompanyBrand";
-import { replaceCompanyName } from "../../lib/utils";
 import { SuspenseCard } from "../suspense-card";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { BlockWrapper } from "./BlockWrapper";
@@ -15,21 +14,21 @@ type ToneModuleProps = {
 
 export default function ToneModule({ companyId, className }: ToneModuleProps) {
 	const ctx = useBrandModule(companyId, "tone");
-	const companyName = useCompanyBrandName(companyId);
+	const { replace } = useBrandText();
 	const tone = ctx.selected?.data as BrandTone | undefined;
 
 	const onCopy = () => {
 		if (!tone) {
 			return;
 		}
-		const summary = replaceCompanyName(tone.summary, companyName);
+		const summary = replace(tone.summary);
 		const examples = tone.examples
 			.map((example, index) => {
 				const number = String(index + 1).padStart(2, "0");
 				return [
-					`${number} — ${replaceCompanyName(example.title, companyName)}`,
-					`Scenario: ${replaceCompanyName(example.context, companyName)}`,
-					replaceCompanyName(example.description, companyName),
+					`${number} — ${replace(example.title)}`,
+					`Scenario: ${replace(example.context)}`,
+					replace(example.description),
 				].join("\n");
 			})
 			.join("\n\n");
@@ -44,18 +43,12 @@ export default function ToneModule({ companyId, className }: ToneModuleProps) {
 			ctx={ctx}
 			loadingSkeleton={<SuspenseCard headerText="Tone of voice" />}
 		>
-			{tone && <ToneContent companyName={companyName} tone={tone} />}
+			{tone && <ToneContent tone={tone} />}
 		</BlockWrapper>
 	);
 }
 
-function ToneContent({
-	tone,
-	companyName,
-}: {
-	tone: BrandTone;
-	companyName?: string | null;
-}) {
+function ToneContent({ tone }: { tone: BrandTone }) {
 	const EXAMPLES_TO_SHOW = 3;
 	const normalizedExamples = useMemo(
 		() => (tone.examples ?? []).slice(0, EXAMPLES_TO_SHOW),
@@ -69,15 +62,14 @@ function ToneContent({
 					<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
 						Tone of Voice
 					</p>
-					<p className="wrap-break-word text-gray-950 text-sm tracking-tight">
-						<p>{replaceCompanyName(tone.summary, companyName)}</p>
-					</p>
+					<BrandText as="p" className="wrap-break-word text-gray-950 text-sm tracking-tight">
+						{tone.summary}
+					</BrandText>
 				</div>
 			</CardHeader>
 			<CardContent className="mt-2 space-y-4">
 				{normalizedExamples.map((example, index) => (
 					<ToneExampleRow
-						companyName={companyName}
 						example={example}
 						index={index}
 						key={`${example.title}-${index}`}
@@ -91,28 +83,26 @@ function ToneContent({
 function ToneExampleRow({
 	example,
 	index,
-	companyName,
 }: {
 	example: BrandTone["examples"][number];
 	index: number;
-	companyName?: string | null;
 }) {
 	const number = String(index + 1).padStart(2, "0");
 	return (
 		<div className="flex flex-col">
 			<div className="flex items-center gap-2 align-center">
 				<span className="font-medium text-gray-400 text-lg">{number}</span>
-				<p className="text-gray-600 text-sm tracking-tight">
-					{replaceCompanyName(example.context, companyName)}
-				</p>
+				<BrandText as="p" className="text-gray-600 text-sm tracking-tight">
+					{example.context}
+				</BrandText>
 			</div>
 			<div className="flex-1 space-y-2">
-				<CardTitle className="wrap-break-word text-gray-950 text-sm tracking-tight">
-					{replaceCompanyName(example.title, companyName)}
-				</CardTitle>
-				<p className="wrap-break-word text-gray-950 text-sm tracking-tight">
-					{replaceCompanyName(example.description, companyName)}
-				</p>
+				<BrandText as={CardTitle} className="wrap-break-word text-gray-950 text-sm tracking-tight">
+					{example.title}
+				</BrandText>
+				<BrandText as="p" className="wrap-break-word text-gray-950 text-sm tracking-tight">
+					{example.description}
+				</BrandText>
 			</div>
 		</div>
 	);

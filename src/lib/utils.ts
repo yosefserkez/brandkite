@@ -5,12 +5,12 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-export function replaceCompanyName(
-	text: string | undefined | null,
-	companyName: string | undefined | null
-) {
-	if (!(text && companyName)) {
-		return text ?? "";
-	}
-	return text.replace(/{company_name}/g, companyName);
+const UPPER_CASE_REGEX = /([A-Z])/g;
+const FIRST_CHAR_REGEX = /^./;
+
+export function toTitleFormat(str: string) {
+	return str
+		.replace(UPPER_CASE_REGEX, " $1")
+		.replace(FIRST_CHAR_REGEX, (char) => char.toUpperCase())
+		.trim();
 }
