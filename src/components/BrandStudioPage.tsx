@@ -4,7 +4,6 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { BrandTextProvider } from "../contexts/BrandTextContext";
 import { useCompanyBrand, useCompanyBrandName } from "../hooks/useCompanyBrand";
-import { Feedback } from "./feedback";
 import { GetStartedCard } from "./get-started-card";
 import ColorsModule from "./modules/ColorsModule";
 import LogoModule from "./modules/LogoModule";
@@ -78,7 +77,17 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 					<ColorsModule companyId={companyId} />
 					<ToneModule companyId={companyId} />
 					<TypographyModule companyId={companyId} />
-					<Feedback />
+					<div className="mt-12 flex flex-col items-center gap-2 rounded-lg bg-gray-50 p-4 text-center">
+						<p className="text-sm text-gray-500">
+							Questions, suggestions, or feedback?&nbsp;
+							<a
+								href="mailto:yosef@brandkite.co"
+								className="underline text-brand-primary-700 hover:text-brand-primary-900 focus:outline-none focus:ring-1 focus:ring-brand-primary-300 transition-colors"
+							>
+								Contact us
+							</a>
+						</p>
+					</div>
 					<GetStartedCard />
 				</div>
 			</div>
