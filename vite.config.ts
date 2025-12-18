@@ -1,4 +1,4 @@
-import nitro from '@analogjs/vite-plugin-nitro';
+import { nitro } from "nitro/vite";
 import { wrapVinxiConfigWithSentry } from "@sentry/tanstackstart-react";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
