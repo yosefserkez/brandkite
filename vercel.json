@@ -1,5 +1,4 @@
 {
-  "buildCommand": "npx convex deploy --cmd-url-env-var-name VITE_CONVEX_URL --cmd 'pnpm run build'",
-  "outputDirectory": "dist/client"
+  "buildCommand": "npx convex deploy --cmd-url-env-var-name VITE_CONVEX_URL --cmd 'pnpm run build'"
 }
 
