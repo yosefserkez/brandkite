@@ -59,7 +59,6 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { BrandKiteLogo } from "./brandkiteLogo";
 import { EditBrandContextDialog } from "./modules/EditBrandContextDialog";
-import { PoweredBy } from "./PoweredBy";
 import { AnimatedShinyText } from "./ui/animated-shiny-text";
 
 function getCompanyInitials(name: string): string {
@@ -395,7 +394,6 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 										</Button>
 									</div>
 								</div>
-								<PoweredBy />
 							</SidebarGroupContent>
 						</SidebarGroup>
 					)}
