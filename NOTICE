@@ -1,0 +1,54 @@
+Brandkite
+Copyright (c) 2025 Yosef Serkez and contributors
+
+This product is licensed under the GNU Affero General Public License v3.0
+(AGPL-3.0). See the LICENSE file for the full license text.
+
+================================================================================
+Trademarks
+================================================================================
+
+"Brandkite" and the Brandkite logo (including the SVG marks in
+`public/logo.svg`, `public/logo.png`, the favicons, and the icon found in
+`src/components/brandkiteLogo.tsx`) are trademarks of the original author.
+
+The AGPL-3.0 license covers the source code only. It does NOT grant any
+right to use the "Brandkite" name, the Brandkite logo, or any other
+Brandkite branding to identify a forked, modified, or derivative product.
+
+If you fork this project, please:
+
+  1. Rename your fork so users cannot confuse it with the upstream
+     Brandkite project. Pick a new product name, replace the wordmark in
+     `src/components/brandkiteLogo.tsx`, the assets in `public/` (logo
+     files, favicons, preview images), the `<title>` set in
+     `src/routes/__root.tsx`, and any user-visible "Brandkite" strings.
+  2. Update the Resend sender address in `convex/auth.ts` to a domain
+     you control.
+  3. Update or remove the seed data in `convex/seed.ts` (the
+     `ADMIN_EMAIL`, `ADMIN_NAME`, and seeded "Brandkite" public company),
+     and the contact email in `src/components/BrandStudioPage.tsx`.
+
+You may, of course, keep an attribution like "Based on Brandkite
+(https://github.com/yosefserkez/brandkite)" — that is encouraged.
+
+================================================================================
+Third-party services
+================================================================================
+
+Running Brandkite end-to-end relies on third-party services that each have
+their own terms of service. Bringing your own API keys is required:
+
+  - Convex                (backend, database, auth, workflows, vector search)
+  - Resend                (transactional email for magic-link auth)
+  - OpenRouter            (text generation for brand modules)
+  - OpenAI                (text embeddings for logo vector search)
+  - Replicate             (image generation + CLIP image embeddings)
+  - Firecrawl             (URL scraping for brand context)
+  - Cloudflare R2         (asset storage, via @convex-dev/r2)
+  - Autumn                (billing / usage metering, optional)
+  - Sentry                (error monitoring, optional)
+  - Umami                 (analytics, optional — remove the script tag in
+                           `src/routes/__root.tsx` if you don't want it)
+
+You are responsible for complying with each provider's terms.
