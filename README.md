@@ -1,322 +1,339 @@
-Welcome to your new TanStack app! 
+# Brandkite
 
-# Getting Started
+> AI brand studio — generate a complete, editable brand kit (name, logo,
+> tagline, mission, vision, values, story, tone, colors, typography, …) from a
+> short description or a single URL.
 
-To run this application:
+Brandkite is an open-source web app that bootstraps a brand from raw context.
+Drop in a company description or scrape an existing site, and it produces a
+multi-module brand kit you can iterate on — every module is regenerable,
+versioned, and shareable.
+
+![Brandkite preview](./public/billboard.png)
+
+- **Live site:** https://brandkite.co
+- **License:** [AGPL-3.0](./LICENSE)
+- **Status:** Hackathon-grown, actively developed. Expect rough edges.
+
+---
+
+## Table of contents
+
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Quick start](#quick-start)
+- [Environment variables](#environment-variables)
+- [Project structure](#project-structure)
+- [Brand modules — how they work](#brand-modules--how-they-work)
+- [Common tasks](#common-tasks)
+- [Deployment](#deployment)
+- [Trademark notice](#trademark-notice)
+- [License](#license)
+
+---
+
+## Features
+
+- **Context-first generation.** Paste a description, drop a URL (scraped via
+  Firecrawl), or upload PDFs / DOCX files. Brandkite extracts a structured
+  brand context (industry, product, market, customer, competitors,
+  inspirations, business model, team).
+- **Multi-module brand kit.** From the same context, generate `name`,
+  `tagline`, `mission`, `vision`, `values`, `story`, `tone`, `colors`,
+  `typography`, and an SVG `logo`. Each is its own module with its own data
+  shape and prompt.
+- **Versioning.** Every module keeps every generation in `brandModules` with a
+  `published` flag and a status (`idle`, `queued`, `in_progress`, `succeeded`,
+  `failed`). Users can flip between versions and publish the one they like.
+- **Workflows.** Long-running generations run on `@convex-dev/workflow` so
+  they survive page reloads and you can watch a module flip from `queued` to
+  `succeeded` in real time.
+- **Logo vector search.** Logos are described by GPT, embedded with OpenAI
+  text embeddings + CLIP image embeddings, and stored in a Convex vector
+  index for hybrid (text + image) similarity search.
+- **Realtime collaboration.** Public companies can be viewed by anyone;
+  members see each other via a lightweight `presence` table.
+- **Magic-link auth.** Passwordless sign-in via `@convex-dev/auth` + Resend.
+- **Optional billing.** Hooks for [Autumn](https://useautumn.com) usage
+  metering ship with the app; remove or replace if you don't need it.
+
+## Architecture
+
+```
+                 ┌─────────────────────────────────────────────────┐
+   Browser ◀──▶  │  TanStack Start (Vite + React 19, file routing) │
+                 │  - /              public landing / studio       │
+                 │  - /c/$id         authenticated company studio  │
+                 │  - /public/c/$id  read-only public brand kit    │
+                 │  - /gallery       sample / showcase             │
+                 └──────────────────────────┬──────────────────────┘
+                                            │  reactive queries
+                                            │  + mutations
+                                            ▼
+                 ┌─────────────────────────────────────────────────┐
+                 │              Convex backend (convex/)           │
+                 │                                                 │
+                 │  schema.ts     companies, members, brandModules │
+                 │                brandAssets, presence,           │
+                 │                logoEmbeddings (vector index)    │
+                 │                                                 │
+                 │  modules/      one file per brand module type:  │
+                 │                name, tagline, mission, vision,  │
+                 │                story, tone, colors, typography, │
+                 │                logo, brandContext               │
+                 │                                                 │
+                 │  workflows/    long-running generation pipelines│
+                 │  auth.ts       Resend magic-link provider       │
+                 │  r2.ts         Cloudflare R2 file storage       │
+                 │  autumn.ts     billing component                │
+                 │  lib/          firecrawl scrape helper, etc.    │
+                 │  logoVectorSearch.ts                            │
+                 └──────────────────────────┬──────────────────────┘
+                                            │
+       ┌────────────────────────────────────┼────────────────────────────┐
+       ▼                ▼                   ▼                ▼           ▼
+   OpenRouter        OpenAI            Replicate         Firecrawl      R2
+   (text gen)     (embeddings)   (logo SVG + CLIP)    (URL scrape)   (assets)
+```
+
+The frontend never talks to AI providers directly — every generation goes
+through a Convex action, which keeps API keys server-side and lets us cache
+intermediate results in the database.
+
+## Tech stack
+
+| Layer            | Choice                                                                  |
+| ---------------- | ----------------------------------------------------------------------- |
+| Framework        | [TanStack Start](https://tanstack.com/start) (Vite, file-based routing) |
+| UI               | React 19, [Tailwind CSS v4](https://tailwindcss.com), [shadcn/ui](https://ui.shadcn.com) (Radix primitives) |
+| Backend / DB     | [Convex](https://convex.dev) — queries, mutations, actions, workflows, file storage, vector search |
+| Auth             | [`@convex-dev/auth`](https://labs.convex.dev/auth) + [Resend](https://resend.com) magic links |
+| LLM gateway      | [Vercel AI SDK](https://sdk.vercel.ai) via [OpenRouter](https://openrouter.ai) |
+| Embeddings       | OpenAI `text-embedding-3-large` (text) + CLIP on Replicate (image)      |
+| Image generation | [Replicate](https://replicate.com) (`recraft-ai/recraft-20b-svg`)       |
+| Web scraping     | [Firecrawl](https://www.firecrawl.dev)                                  |
+| Asset storage    | Cloudflare R2 via [`@convex-dev/r2`](https://www.convex.dev/components/cloudflare-r2) |
+| Billing          | [Autumn](https://useautumn.com) (optional)                              |
+| Errors           | [Sentry](https://sentry.io) (optional)                                  |
+| Lint / format    | [Biome](https://biomejs.dev) + [Ultracite](https://github.com/biomejs/ultracite) rules |
+| Tests            | [Vitest](https://vitest.dev) + Testing Library                          |
+| Package manager  | [pnpm](https://pnpm.io)                                                 |
+
+## Prerequisites
+
+- **Node.js** ≥ 20 (LTS recommended)
+- **pnpm** ≥ 9 — `npm install -g pnpm`
+- A free **Convex** account — https://convex.dev
+- API keys for the providers you intend to use. The bare minimum to boot the
+  app (UI + auth + scraping + text modules) is Convex + Resend + OpenRouter +
+  Firecrawl. Logo generation additionally needs Replicate, and the logo
+  vector search needs OpenAI + Replicate (CLIP) + R2.
+
+## Quick start
 
 ```bash
+# 1. Clone and install
+git clone https://github.com/yosefserkez/brandkite.git
+cd brandkite
 pnpm install
-pnpm start
+
+# 2. Configure environment
+cp .env.example .env.local
+# Edit .env.local — at minimum you need a value for VITE_CONVEX_URL,
+# which the next step will fill in for you.
+
+# 3. Provision a Convex deployment (interactive on first run)
+npx convex dev --once --configure=new
+# This writes VITE_CONVEX_URL and CONVEX_DEPLOYMENT into .env.local.
+
+# 4. Initialize Convex Auth (one-time, follow the prompts)
+npx @convex-dev/auth
+
+# 5. Set the server-side secrets on your Convex deployment
+npx convex env set AUTH_RESEND_KEY      re_...
+npx convex env set OPENROUTER_API_KEY   sk-or-...
+npx convex env set FIRECRAWL_API_KEY    fc-...
+npx convex env set OPENAI_API_KEY       sk-...      # optional, logo search
+npx convex env set REPLICATE_API_TOKEN  r8_...      # optional, logo gen
+# Cloudflare R2 + Autumn keys: see .env.example and the relevant component docs.
+
+# 6. Start everything (two terminals)
+npx convex dev          # terminal 1: backend, pushes functions on save
+pnpm dev                # terminal 2: Vite dev server on http://localhost:3000
 ```
 
-# Building For Production
-
-To build this application for production:
+Optional — seed a public showcase company:
 
 ```bash
-pnpm build
+pnpm seed
 ```
 
-## Testing
+## Environment variables
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+A full annotated list lives in [`.env.example`](./.env.example). Quick map:
 
-```bash
-pnpm test
+| Variable                   | Used by                       | Where to set            |
+| -------------------------- | ----------------------------- | ----------------------- |
+| `VITE_CONVEX_URL`          | browser → Convex client       | `.env.local`            |
+| `VITE_SENTRY_DSN`          | client error reporting        | `.env.local` (optional) |
+| `VITE_SENTRY_ENV`          | client error reporting        | `.env.local` (optional) |
+| `VITE_APP_TITLE`           | document `<title>`            | `.env.local` (optional) |
+| `VITE_SENTRY_ORG` / `VITE_SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` | source map upload | CI build env (optional) |
+| `CONVEX_SITE_URL`          | `convex/auth.config.ts`       | Convex env (auto-set)   |
+| `AUTH_RESEND_KEY`          | `convex/auth.ts`              | Convex env              |
+| `OPENROUTER_API_KEY`       | every text module             | Convex env              |
+| `OPENAI_API_KEY`           | `convex/logoVectorSearch.ts`  | Convex env              |
+| `REPLICATE_API_TOKEN`      | `convex/modules/logo.ts`, CLIP embeddings | Convex env  |
+| `FIRECRAWL_API_KEY`        | `convex/lib/firecrawl.ts`     | Convex env              |
+| `AUTUMN_SECRET_KEY`        | `convex/autumn.ts` (billing)  | Convex env (optional)   |
+| `R2_*`                     | `@convex-dev/r2`              | Convex env              |
+
+Anything prefixed `VITE_` is exposed to the browser bundle — never put a
+secret there. Everything else lives in the Convex deployment and is only
+visible to server-side code.
+
+## Project structure
+
+```
+brandkite/
+├── convex/                 Backend — Convex functions, schema, components
+│   ├── schema.ts           Tables: companies, brandModules, brandAssets,
+│   │                       presence, logoEmbeddings (vector index), …
+│   ├── auth.ts             @convex-dev/auth + Resend magic-link provider
+│   ├── auth.config.ts      JWT provider config
+│   ├── companies.ts        CRUD + scrape-from-URL bootstrap flow
+│   ├── brandModules.ts     Generic module read/write/version helpers
+│   ├── modules/            One file per brand module type
+│   │   ├── brandContext.ts
+│   │   ├── name.ts  tagline.ts  mission.ts  story.ts  tone.ts
+│   │   ├── colors.ts  typography.ts  logo.ts
+│   │   └── …
+│   ├── workflows/index.ts  BRAND_MODULE_TYPES (single source of truth)
+│   ├── logoVectorSearch.ts Hybrid text+image search over logoEmbeddings
+│   ├── r2.ts               Cloudflare R2 file storage component
+│   ├── autumn.ts           Optional billing component
+│   ├── presence.ts         Lightweight per-company presence tracker
+│   ├── http.ts             HTTP routes (auth callbacks, etc.)
+│   └── lib/firecrawl.ts    URL scraper used by brandContext generation
+│
+├── src/
+│   ├── routes/             TanStack Router file-based routes
+│   │   ├── __root.tsx      App shell, providers, <Toaster />
+│   │   ├── index.tsx       Landing / studio entry
+│   │   ├── _authenticated/c/{$id,new}.tsx   Auth-only studio
+│   │   ├── public/c/$id.tsx                  Read-only public view
+│   │   └── gallery.tsx
+│   ├── components/
+│   │   ├── modules/        UI per brand module + shared primitives
+│   │   │                   (see src/components/modules/README.md)
+│   │   ├── ui/             shadcn/ui primitives (button, dialog, …)
+│   │   ├── new-company/    Onboarding flow (paste/upload/scrape)
+│   │   └── …
+│   ├── hooks/useBrandModule.ts   The hook every module screen uses
+│   ├── stores/             TanStack Store state
+│   ├── integrations/       Convex + TanStack Query glue
+│   ├── env.ts              Type-safe env access (t3-env)
+│   └── routeTree.gen.ts    Generated by TanStack Router — don't edit
+│
+├── public/                 Static assets, favicons, preview images
+├── scripts/logos/          Logo dataset ingestion (see scripts/logos/README.md)
+├── biome.json              Lint + format config (extends ultracite)
+├── components.json         shadcn/ui generator config
+├── vite.config.ts          Vite + TanStack Start + Nitro + Sentry plugins
+├── AGENTS.md               House style rules surfaced to coding agents
+└── convex.json / .cta.json Tool configs
 ```
 
-## Styling
+## Brand modules — how they work
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+A "brand module" is one slice of the brand kit (e.g. the name, the logo, the
+colors). Every module shares the same lifecycle:
 
+1. **Data model.** All modules live in one `brandModules` table keyed by
+   `companyId` + `type`. The `type` is one of `BRAND_MODULE_TYPES` declared in
+   [`convex/workflows/index.ts`](./convex/workflows/index.ts) — the single
+   source of truth for module names. Each row has a free-form `data` blob, a
+   `published` flag, and a `generationStatus`.
 
-## Linting & Formatting
+2. **Backend.** Each `convex/modules/<type>.ts` file exports the generation
+   pipeline: a Zod schema for the AI output, a prompt builder, and an action
+   (often inside a workflow step) that calls OpenRouter via the Vercel AI
+   SDK's `generateObject` and writes a new version row. `logo.ts` is the
+   exception — it calls Replicate, downloads the SVG, and stores it in R2.
 
-This project uses [Biome](https://biomejs.dev/) for linting and formatting. The following scripts are available:
+3. **Frontend.** Each `src/components/modules/<Type>Module.tsx` calls
+   `useBrandModule(companyId, type)` to get the live state and wraps content
+   in `BlockWrapper` + `ModuleActions`. See
+   [`src/components/modules/README.md`](./src/components/modules/README.md)
+   for the component patterns.
 
+### Adding a new module type
 
-```bash
-pnpm lint
-pnpm format
-pnpm check
+1. Add the type to `BRAND_MODULE_TYPES` in `convex/workflows/index.ts`.
+2. Create `convex/modules/<type>.ts` — define a Zod schema, a prompt, and an
+   `internalAction` that writes a row via the generic helpers in
+   `convex/brandModules.ts`.
+3. Wire the new action into the workflow in `convex/companies.ts` if you
+   want it generated automatically when a company is created.
+4. Create `src/components/modules/<Type>Module.tsx` following the pattern in
+   the modules README.
+5. Render it from `src/components/BrandStudioPage.tsx`.
+
+## Common tasks
+
+| Task                                | Command                          |
+| ----------------------------------- | -------------------------------- |
+| Install dependencies                | `pnpm install`                   |
+| Start Convex backend (watches)      | `npx convex dev`                 |
+| Start Vite dev server               | `pnpm dev`                       |
+| Type-check + lint + format check    | `pnpm check`                     |
+| Lint only                           | `pnpm lint`                      |
+| Format (write)                      | `pnpm format`                    |
+| Run unit tests                      | `pnpm test`                      |
+| Production build                    | `pnpm build`                     |
+| Preview production build            | `pnpm serve`                     |
+| Seed the "Brandkite" demo company   | `pnpm seed`                      |
+| Add a shadcn/ui component           | `pnpm dlx shadcn@latest add <c>` |
+| Initialize Convex Auth              | `pnpm init-convex-auth`          |
+
+## Deployment
+
+The repo ships with a `vercel.json` that runs:
+
+```
+npx convex deploy --cmd-url-env-var-name VITE_CONVEX_URL --cmd 'pnpm run build'
 ```
 
-
-## Setting up Convex
-
-- Set the `VITE_CONVEX_URL` and `CONVEX_DEPLOYMENT` environment variables in your `.env.local`. (Or run `npx convex dev --once --configure=new` to set them automatically.)
-- Run `npx convex dev` to start the Convex server.
-- Run `npx @convex-dev/auth` to initialize convex auth (`npx @convex-dev/auth --prod` for production)
-
-
-## Shadcn
-
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
-
-```bash
-pnpm dlx shadcn@latest add add button
-```
-
-
-## T3Env
-
-- You can use T3Env to add type safety to your environment variables.
-- Add Environment variables to the `src/env.mjs` file.
-- Use the environment variables in your code.
-
-### Usage
-
-```ts
-import { env } from "@/env";
-
-console.log(env.VITE_APP_TITLE);
-```
-
-## Routing
-This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add another a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
-import { Link } from "@tanstack/react-router";
-
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-        </nav>
-      </header>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
-
-The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-const peopleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/people",
-  loader: async () => {
-    const response = await fetch("https://swapi.dev/api/people");
-    return response.json() as Promise<{
-      results: {
-        name: string;
-      }[];
-    }>;
-  },
-  component: () => {
-    const data = peopleRoute.useLoaderData();
-    return (
-      <ul>
-        {data.results.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    );
-  },
-});
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-### React-Query
-
-React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
-
-First add your dependencies:
-
-```bash
-pnpm add @tanstack/react-query @tanstack/react-query-devtools
-```
-
-Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
-
-```tsx
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-// ...
-
-const queryClient = new QueryClient();
-
-// ...
-
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement);
-
-  root.render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  );
-}
-```
-
-You can also add TanStack Query Devtools to the root route (optional).
-
-```tsx
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
-const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <ReactQueryDevtools buttonPosition="top-right" />
-      <TanStackRouterDevtools />
-    </>
-  ),
-});
-```
-
-Now you can use `useQuery` to fetch your data.
-
-```tsx
-import { useQuery } from "@tanstack/react-query";
-
-import "./App.css";
-
-function App() {
-  const { data } = useQuery({
-    queryKey: ["people"],
-    queryFn: () =>
-      fetch("https://swapi.dev/api/people")
-        .then((res) => res.json())
-        .then((data) => data.results as { name: string }[]),
-    initialData: [],
-  });
-
-  return (
-    <div>
-      <ul>
-        {data.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export default App;
-```
-
-You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
-
-## State Management
-
-Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
-
-First you need to add TanStack Store as a dependency:
-
-```bash
-pnpm add @tanstack/store
-```
-
-Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
-
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store } from "@tanstack/store";
-import "./App.css";
-
-const countStore = new Store(0);
-
-function App() {
-  const count = useStore(countStore);
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-    </div>
-  );
-}
-
-export default App;
-```
-
-One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
-
-Let's check this out by doubling the count using derived state.
-
-```tsx
-import { useStore } from "@tanstack/react-store";
-import { Store, Derived } from "@tanstack/store";
-import "./App.css";
-
-const countStore = new Store(0);
-
-const doubledStore = new Derived({
-  fn: () => countStore.state * 2,
-  deps: [countStore],
-});
-doubledStore.mount();
-
-function App() {
-  const count = useStore(countStore);
-  const doubledCount = useStore(doubledStore);
-
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-      <div>Doubled - {doubledCount}</div>
-    </div>
-  );
-}
-
-export default App;
-```
-
-We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
-
-Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
-
-You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
+That single command deploys the Convex backend and builds the TanStack Start
+app, wiring the production `VITE_CONVEX_URL` into the bundle automatically.
+
+To deploy elsewhere:
+
+1. Pick a Node host that can run the `pnpm build` output (the Nitro adapter
+   produces a generic Node server in `.output/`; swap presets in `nitro` if
+   you need a different target).
+2. Run `npx convex deploy` once to provision the production deployment, then
+   set every server-side secret from [`.env.example`](./.env.example) via
+   `npx convex env set ... --prod`.
+3. Set `VITE_CONVEX_URL` to the production Convex URL in your host's build
+   env.
+4. Run `npx @convex-dev/auth --prod` once to provision production auth keys.
+
+## Trademark notice
+
+The source code is AGPL-3.0. The **"Brandkite" name and logo are trademarks**
+of the original author and are *not* covered by the license. If you fork
+this project to ship your own product, please rename it and replace the
+branding — see [`NOTICE`](./NOTICE) for the specific files to change.
+
+## License
+
+Brandkite is licensed under the **GNU Affero General Public License v3.0**
+(AGPL-3.0). See [`LICENSE`](./LICENSE) for the full text.
+
+The AGPL is a strong copyleft license: if you run a modified version of
+Brandkite as a network service, you must offer the modified source to your
+users. If that doesn't work for your use case, please open an issue to
+discuss alternative licensing.
