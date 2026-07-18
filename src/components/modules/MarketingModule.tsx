@@ -7,7 +7,6 @@ import type { BrandMarketing } from "../../../convex/modules/marketing";
 import { BrandText, useBrandText } from "../../contexts/BrandTextContext";
 import { useBrandModule } from "../../hooks/useBrandModule";
 import { SuspenseCard } from "../suspense-card";
-import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -159,36 +158,36 @@ function AdCard({ ad }: { ad: MarketingAd }) {
 	};
 
 	return (
-		<Card className="relative h-full">
-			<CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
-				<Badge variant="secondary">{replace(ad.angle)}</Badge>
-				<Button
-					className="text-gray-400 hover:text-gray-700"
+		<div className="group/ad flex h-full flex-col rounded-lg border border-gray-200 bg-white p-4">
+			<div className="flex items-center justify-between gap-2">
+				<span className="font-medium text-[11px] text-gray-400 uppercase tracking-wide">
+					{replace(ad.angle)}
+				</span>
+				<button
+					aria-label="Copy ad copy"
+					className="text-gray-300 opacity-0 transition hover:text-gray-600 group-hover/ad:opacity-100"
 					onClick={onCopy}
-					size="icon-sm"
 					title="Copy ad copy"
-					variant="ghost"
+					type="button"
 				>
 					<Copy className="h-3.5 w-3.5" />
-				</Button>
-			</CardHeader>
-			<CardContent className="space-y-3">
-				<BrandText
-					as="p"
-					className="wrap-break-word font-semibold text-gray-950 tracking-tight"
-				>
-					{ad.headline}
-				</BrandText>
-				<BrandText
-					as="p"
-					className="wrap-break-word text-gray-600 text-sm tracking-tight"
-				>
-					{ad.primaryText}
-				</BrandText>
-				<span className="inline-flex w-fit items-center rounded-full bg-brand-primary-50 px-3 py-1 font-medium text-brand-primary-700 text-xs">
-					{replace(ad.cta)}
-				</span>
-			</CardContent>
-		</Card>
+				</button>
+			</div>
+			<BrandText
+				as="p"
+				className="wrap-break-word pt-2 font-semibold text-base text-gray-900 leading-snug tracking-tight"
+			>
+				{ad.headline}
+			</BrandText>
+			<BrandText
+				as="p"
+				className="wrap-break-word pt-1.5 text-gray-500 text-sm leading-relaxed"
+			>
+				{ad.primaryText}
+			</BrandText>
+			<span className="mt-auto pt-3 font-medium text-gray-400 text-xs">
+				{replace(ad.cta)} →
+			</span>
+		</div>
 	);
 }

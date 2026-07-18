@@ -21,6 +21,7 @@ import type * as logoVectorSearch from "../logoVectorSearch.js";
 import type * as modules_brandContext from "../modules/brandContext.js";
 import type * as modules_colors from "../modules/colors.js";
 import type * as modules_logo from "../modules/logo.js";
+import type * as modules_marketing from "../modules/marketing.js";
 import type * as modules_mission from "../modules/mission.js";
 import type * as modules_name from "../modules/name.js";
 import type * as modules_story from "../modules/story.js";
@@ -62,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   "modules/brandContext": typeof modules_brandContext;
   "modules/colors": typeof modules_colors;
   "modules/logo": typeof modules_logo;
+  "modules/marketing": typeof modules_marketing;
   "modules/mission": typeof modules_mission;
   "modules/name": typeof modules_name;
   "modules/story": typeof modules_story;
