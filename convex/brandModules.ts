@@ -225,6 +225,10 @@ const MODULE_WORKFLOWS = {
 		workflow: internal.modules.social.socialWorkflow,
 		credits: 1,
 	},
+	website: {
+		workflow: internal.modules.website.websiteWorkflow,
+		credits: 1,
+	},
 	tone: {
 		workflow: internal.modules.tone.toneWorkflow,
 		credits: 1,

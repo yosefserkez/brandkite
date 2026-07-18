@@ -30,6 +30,7 @@ import type * as modules_story from "../modules/story.js";
 import type * as modules_tagline from "../modules/tagline.js";
 import type * as modules_tone from "../modules/tone.js";
 import type * as modules_typography from "../modules/typography.js";
+import type * as modules_website from "../modules/website.js";
 import type * as presence from "../presence.js";
 import type * as r2 from "../r2.js";
 import type * as seed from "../seed.js";
@@ -74,6 +75,7 @@ declare const fullApi: ApiFromModules<{
   "modules/tagline": typeof modules_tagline;
   "modules/tone": typeof modules_tone;
   "modules/typography": typeof modules_typography;
+  "modules/website": typeof modules_website;
   presence: typeof presence;
   r2: typeof r2;
   seed: typeof seed;
