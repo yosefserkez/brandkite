@@ -1,3 +1,5 @@
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { generateText } from "ai";
 import { v } from "convex/values";
 import Replicate from "replicate";
 import z from "zod";
@@ -109,6 +111,109 @@ const resolveAssetUrl = async (result: unknown): Promise<string | null> => {
 	return null;
 };
 
+// Recraft renders a full-canvas white rectangle as the first path. Strip it so
+// the logo is genuinely transparent.
+const stripBackground = (svg: string): string =>
+	svg.replace(/<path\b[^>]*><\/path>/g, (tag) => {
+		const isWhite =
+			/fill="rgb\(\s*255\s*,\s*255\s*,\s*255\s*\)"/i.test(tag) ||
+			/fill="#fff(?:fff)?"/i.test(tag);
+		const isFullRect =
+			/d="M\s*0\s*0\s*L\s*\d+\s*0\s*L\s*\d+\s*\d+\s*L\s*0\s*\d+\s*L\s*0\s*0\s*z"/i.test(
+				tag
+			);
+		return isWhite && isFullRect ? "" : tag;
+	});
+
+// Distinct creative directions so a single run yields a variety to pick from.
+const CONCEPT_DIRECTIVES = [
+	"Direction: an abstract geometric symbol that captures the brand's core idea in one confident shape.",
+	"Direction: a bold minimal emblem built on negative space or a single memorable form.",
+	"Direction: a distinctive mark that nods to the brand's domain while staying simple and iconic.",
+];
+
+// ── LLM-authored SVG marks ───────────────────────────────────────────────
+// A strong LLM writes the logo as clean geometric SVG directly. Excellent for
+// simple, iconic, small-legible marks and monograms; fully editable vectors.
+const LLM_SVG_MODEL = "x-ai/grok-4.3";
+const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
+
+const buildLlmSvgPrompt = (params: {
+	brandContext: BrandContext;
+	companyName?: string | null;
+	palette?: string[];
+	kind: "geometric" | "monogram";
+}): string => {
+	const { brandContext, companyName, palette, kind } = params;
+	const colors =
+		palette && palette.length > 0
+			? `Use 1-2 solid colors from this palette only: ${palette.join(", ")}.`
+			: "Use a single strong solid color.";
+	const initial = (companyName ?? "B").trim().charAt(0).toUpperCase() || "B";
+	const brief = [
+		`Brand: ${companyName ?? "the brand"}.`,
+		`What it is: ${brandContext.summary}`,
+		`Feel: ${brandContext.brand.summary}`,
+	].join("\n");
+
+	const task =
+		kind === "monogram"
+			? `Design a distinctive LOGO MONOGRAM built from the letter "${initial}", constructed from clean geometric forms (not a plain font glyph).`
+			: "Design a single iconic LOGO MARK (abstract symbol). Encode exactly ONE core idea — do not try to say three things.";
+
+	return [
+		"You are a world-class logo designer who outputs clean, production-ready SVG.",
+		"",
+		brief,
+		"",
+		task,
+		"",
+		"Hard constraints:",
+		'- viewBox="0 0 100 100".',
+		"- COMPOSITION: the entire mark must be visually centered and fully contained with at least 14 units of padding on ALL four sides (nothing between 0-14 or 86-100 on either axis). Nothing may touch or cross an edge. No large empty regions or lopsided placement — balanced and intentional.",
+		"- Use ONLY geometric primitives: <circle>, <rect>, <path>, <polygon>, <line>. Confident, precise geometry.",
+		`- ${colors} No gradients, no filters, no <text> (except a monogram built as shapes), no background rectangle.`,
+		"- Must read clearly at 24px: simple, balanced, memorable.",
+		"",
+		"Output ONLY raw SVG markup, starting with <svg and ending with </svg>. No markdown, no commentary.",
+	].join("\n");
+};
+
+const extractSvg = (text: string): string | null => {
+	const match = text.match(/<svg[\s\S]*?<\/svg>/i);
+	if (!match) {
+		return null;
+	}
+	const svg = match[0];
+	// Basic sanity: must have a viewBox or width, and at least one shape.
+	if (!/<(circle|rect|path|polygon|line|ellipse|polyline)\b/i.test(svg)) {
+		return null;
+	}
+	return svg;
+};
+
+const generateLlmSvgLogo = async (
+	ctx: ActionCtx,
+	params: {
+		brandContext: BrandContext;
+		companyName?: string | null;
+		palette?: string[];
+		kind: "geometric" | "monogram";
+	}
+): Promise<string> => {
+	const { text } = await generateText({
+		model: openrouter.chat(LLM_SVG_MODEL),
+		prompt: buildLlmSvgPrompt(params),
+		temperature: 0.9,
+	});
+	const svg = extractSvg(text);
+	if (!svg) {
+		throw new Error("LLM did not return valid SVG");
+	}
+	const bytes = new TextEncoder().encode(svg);
+	return await r2.store(ctx, bytes, { type: SVG_MIME_TYPE });
+};
+
 const downloadAsset = async (url: string): Promise<Uint8Array> => {
 	const response = await fetch(url);
 
@@ -170,7 +275,7 @@ const generateLogoAsset = async (
 	}
 
 	const file = await downloadAsset(assetUrl);
-	const svgText = new TextDecoder().decode(file);
+	const svgText = stripBackground(new TextDecoder().decode(file));
 
 	const cleanedBytes = new TextEncoder().encode(svgText);
 	return await r2.store(ctx, cleanedBytes, { type: SVG_MIME_TYPE });
@@ -180,7 +285,11 @@ export const logoSchema = z.object({
 	storageKey: z
 		.string()
 		.min(1)
-		.describe("Cloudflare R2 object key for the stored logo asset."),
+		.describe("Cloudflare R2 object key for the selected logo asset."),
+	options: z
+		.array(z.string())
+		.optional()
+		.describe("All generated logo concept keys the user can choose from."),
 	prompt: z
 		.string()
 		.min(1)
@@ -208,24 +317,65 @@ export const generateLogoInternal = internalAction({
 	},
 	handler: async (ctx, args): Promise<LogoModuleData> => {
 		const brandContext = args.brandContext as BrandContext;
-		const prompt = generateLogoPrompt({
+		const basePrompt = generateLogoPrompt({
 			brandContext,
 			companyName: args.companyName,
 			palette: args.palette,
 			colorMode: (args.colorMode as LogoColorMode | undefined) ?? "brand",
 		});
 
-		const storageKey = await generateLogoAsset(ctx, prompt, args.style);
+		const palette = args.palette;
+		const companyName = args.companyName;
+		// Mix methods for real variety: Recraft vector marks + LLM-authored
+		// geometric/monogram SVG. All in parallel; failures are dropped.
+		const generators: Array<() => Promise<string>> = [
+			() =>
+				generateLogoAsset(
+					ctx,
+					`${basePrompt}\n${CONCEPT_DIRECTIVES[0]}`,
+					args.style
+				),
+			() =>
+				generateLogoAsset(
+					ctx,
+					`${basePrompt}\n${CONCEPT_DIRECTIVES[1]}`,
+					args.style
+				),
+			() =>
+				generateLlmSvgLogo(ctx, {
+					brandContext,
+					companyName,
+					palette,
+					kind: "geometric",
+				}),
+			() =>
+				generateLlmSvgLogo(ctx, {
+					brandContext,
+					companyName,
+					palette,
+					kind: "monogram",
+				}),
+		];
+		const settled = await Promise.allSettled(generators.map((g) => g()));
+		const options = settled
+			.filter(
+				(r): r is PromiseFulfilledResult<string> => r.status === "fulfilled"
+			)
+			.map((r) => r.value);
+
+		if (options.length === 0) {
+			throw new Error("Logo generation failed for all concepts");
+		}
+
 		const result: LogoModuleData = {
-			storageKey,
-			prompt,
+			storageKey: options[0],
+			options,
+			prompt: basePrompt,
 			model: LOGO_MODEL_IDENTIFIER,
 			generatedAt: Date.now(),
 		};
 
-		logger.info("Generated logo", {
-			storageKey,
-		});
+		logger.info("Generated logo concepts", { count: options.length });
 
 		return result;
 	},
