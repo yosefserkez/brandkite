@@ -217,6 +217,10 @@ const MODULE_WORKFLOWS = {
 		workflow: internal.modules.story.storyWorkflow,
 		credits: 1,
 	},
+	marketing: {
+		workflow: internal.modules.marketing.marketingWorkflow,
+		credits: 1,
+	},
 	tone: {
 		workflow: internal.modules.tone.toneWorkflow,
 		credits: 1,
