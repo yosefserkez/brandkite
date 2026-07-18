@@ -22,6 +22,12 @@ Sell to early-stage founders/indie hackers/agencies who need a credible brand id
 ## Big product direction (owner, 2026-07-18) — see VISION.md
 Brandkite = a **living, consistent brand SYSTEM that scales across marketing** (anti-ChatGPT / not one-off). Lead with outcomes, de-emphasize colors/typography (make compact), minimal copy (NO ai-slop slogans/subtitles/bullets), calmer/softer aesthetic (pastel/watercolor/generated imagery), less padding/bands.
 
+## v2 BUILD STATUS (2026-07-18, committed direction = V2-DIRECTION.md)
+- ✅ **#1 Identity quality** (make-or-break): multi-method logo ensemble (4 concepts/run: 2 Recraft V4.1 + 2 LLM-authored geometric/monogram SVG) + transparent bg + concept picker. Verified across brands.
+- ✅ **#2 Publishable site** (flagship): real on-brand landing page at `/s/:slug` from the brand (logo/palette/fonts/website copy) + owner Publish control. **LIVE at brandkite.co/s/brandkite** — looks professional.
+- 🔧 **Design engine** (DESIGN-ENGINE.md): a PARALLEL agent is building `convex/lib/design/` (models/context/skills/checks/generate) + wiring modules. Foundation committed. Coordinate via shared tree — pull/rebase, don't race its files (convex/lib/design/, convex/modules/*).
+- ⏭ Next (non-conflicting, production): gate publishing Free-preview/Pro (Autumn) + verify checkout collects (test key); per-site OG meta; front-door reshape (identity+site first); Phase 5 API/MCP = engine surface 2 (parallel agent).
+
 ## NEXT SESSION — goal: run ads, get paying customers, run experiments/optimizations
 The critical path to *paying customers* (do in this order; don't run ads until 1–3 hold):
 1. **Verify payment actually collects** (BLOCKER for revenue). Wire the Autumn TEST-mode key (owner provided; value not stored — ask owner to re-share or set via `npx convex env set` on a test path), OR do a small real card test then refund. Confirm clicking Upgrade → Stripe Checkout charges a card. Until proven, "conversions" earn $0.
