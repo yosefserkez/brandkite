@@ -1,6 +1,6 @@
 # STATE
 
-_Last updated: 2026-07-18 ~12:00 ET (session 2026-07-18-0830, batch 3)_
+_Last updated: 2026-07-18 ~14:45 ET (session 2026-07-18-1430, batch 4)_
 
 ## Product & business state
 - Brandkite (brandkite.co, live): AI brand-kit studio — generates name, tagline, mission, colors, typography, SVG logo, ~25 more modules from a URL or short description. TanStack Start + React 19 + Convex + Vercel. Public AGPL repo `yosefserkez/brandkite`.
@@ -17,10 +17,10 @@ Sell to early-stage founders/indie hackers/agencies who need a credible brand id
 - 2026-07-18: Phase 0 intake + audit; Convex access restored (deploy key valid — early 401 was shell-quoting artifact); control system + skill created; **Batch 1 shipped to main/prod**: R2 signed-URL authz, dead SignInForm removed, SEO baseline (meta/OG/sitemap), PostHog analytics live (project 518164, personal org), Umami removed, CI added. VISION.md captured owner's "idea → launch-ready company" direction.
 
 ## Work in progress
-- Batch 3 shipped to main (build+CI green): landing hero/how-it-works, public-kit+gallery share-loop CTA, env-gated Google OAuth, checkout redirect fix, free grant 5→30/mo. Deploy triggered.
+- Batch 4 shipped to main + prod (generation quality): Grok 4.3 (deprecation fix), brand-aware V4.1 logo, tightened composable story, per-module controls (backend + logo colorMode/style UI). Composability model locked in VISION.md.
 
 ## Next recommended action
-1. **Owner actions** (unblock, then verify): provision Google OAuth creds + flip VITE_GOOGLE_AUTH_ENABLED; verify real Stripe Checkout collects a card (ideally add a test-mode Stripe env). 2. Seed the gallery with a few example kits (BACKLOG #15) so the share loop has content. 3. First distribution test (owner-approved launch post) once landing + funnel are polished. 4. Read PostHog once traffic accrues (magic-link drop-off, activation).
+Continue the complete-package expansion **module-by-module WITH controls** (owner priorities: marketing/ads copy, brand-strategy depth [vision/values/positioning/personas/messaging], launch/website copy). Each new module: declare `options` in its workflow args (shared regenerate passes it), compose from current published sibling blocks, add BrandStudioPage JSX + controls. Then: logo transparent-bg polish; broaden sibling-reads; owner actions (Google OAuth creds, real checkout verification, Autumn test-mode wiring).
 
 ## Blockers / pending
 - Google OAuth dormant until owner sets AUTH_GOOGLE_ID/SECRET.
