@@ -1,6 +1,6 @@
 # STATE
 
-_Last updated: 2026-07-18 ~10:30 ET (session 2026-07-18-0830, batch 2)_
+_Last updated: 2026-07-18 ~12:00 ET (session 2026-07-18-0830, batch 3)_
 
 ## Product & business state
 - Brandkite (brandkite.co, live): AI brand-kit studio — generates name, tagline, mission, colors, typography, SVG logo, ~25 more modules from a URL or short description. TanStack Start + React 19 + Convex + Vercel. Public AGPL repo `yosefserkez/brandkite`.
@@ -17,14 +17,15 @@ Sell to early-stage founders/indie hackers/agencies who need a credible brand id
 - 2026-07-18: Phase 0 intake + audit; Convex access restored (deploy key valid — early 401 was shell-quoting artifact); control system + skill created; **Batch 1 shipped to main/prod**: R2 signed-URL authz, dead SignInForm removed, SEO baseline (meta/OG/sitemap), PostHog analytics live (project 518164, personal org), Umami removed, CI added. VISION.md captured owner's "idea → launch-ready company" direction.
 
 ## Work in progress
-- Batch 2 shipped to main: Share button (was stub), Autumn customer name/email fix. Deploy pending push.
+- Batch 3 shipped to main (build+CI green): landing hero/how-it-works, public-kit+gallery share-loop CTA, env-gated Google OAuth, checkout redirect fix, free grant 5→30/mo. Deploy triggered.
 
 ## Next recommended action
-1. **Get owner decision on payment collection fix** (BACKLOG #1) — approval-gated billing config; can't collect revenue until done. 2. Reduce signup friction: add Google OAuth + read PostHog magic-link drop-off once traffic accrues (#2). 3. Landing copy → v1 positioning (#3). See FINDINGS-2026-07-18.md for the full picture.
+1. **Owner actions** (unblock, then verify): provision Google OAuth creds + flip VITE_GOOGLE_AUTH_ENABLED; verify real Stripe Checkout collects a card (ideally add a test-mode Stripe env). 2. Seed the gallery with a few example kits (BACKLOG #15) so the share loop has content. 3. First distribution test (owner-approved launch post) once landing + funnel are polished. 4. Read PostHog once traffic accrues (magic-link drop-off, activation).
 
 ## Blockers / pending
-- **Owner approval needed** to change billing to card-required checkout (money-collection path).
-- Autumn/Convex verified; Chrome + PostHog + Autumn MCP all connected.
+- Google OAuth dormant until owner sets AUTH_GOOGLE_ID/SECRET.
+- Real paid-checkout collection unverified end-to-end (live Stripe; needs owner or a test-mode env).
+- All MCPs (Autumn, PostHog, Chrome, Convex, Vercel) connected.
 
 ## Important commands
 See RUNBOOK.md. Quick: `pnpm dev` (app), `npx convex dev` (backend), `npx convex data <table> --prod`, `vercel deploy --prod`.
