@@ -17,10 +17,17 @@ Sell to early-stage founders/indie hackers/agencies who need a credible brand id
 - 2026-07-18: Phase 0 intake + audit; Convex access restored (deploy key valid — early 401 was shell-quoting artifact); control system + skill created; **Batch 1 shipped to main/prod**: R2 signed-URL authz, dead SignInForm removed, SEO baseline (meta/OG/sitemap), PostHog analytics live (project 518164, personal org), Umami removed, CI added. VISION.md captured owner's "idea → launch-ready company" direction.
 
 ## Work in progress
-- Batch 4 shipped to main + prod (generation quality): Grok 4.3 (deprecation fix), brand-aware V4.1 logo, tightened composable story, per-module controls (backend + logo colorMode/style UI). Composability model locked in VISION.md.
+- Batch 5 shipped (generation quality + product): Grok 4.3 fix; brand-aware V4.1 logo; tight composable story; per-module controls (logo + marketing); **marketing module** (ad copy, controls, anti-fabrication); getCurrentModule published-version fix; regenerated Brandkite demo kit; **interactive landing** (animated real-kit build + callouts + inline try-it input, neutral chrome, brand's own colors — LIVE); **brand kit Markdown export** (backend done+verified; UI landing).
 
-## Next recommended action
-Continue the complete-package expansion **module-by-module WITH controls** (owner priorities: marketing/ads copy, brand-strategy depth [vision/values/positioning/personas/messaging], launch/website copy). Each new module: declare `options` in its workflow args (shared regenerate passes it), compose from current published sibling blocks, add BrandStudioPage JSX + controls. Then: logo transparent-bg polish; broaden sibling-reads; owner actions (Google OAuth creds, real checkout verification, Autumn test-mode wiring).
+## Big product direction (owner, 2026-07-18) — see VISION.md
+Brandkite = a **living, consistent brand SYSTEM that scales across marketing** (anti-ChatGPT / not one-off). Lead with outcomes, de-emphasize colors/typography (make compact), minimal copy (NO ai-slop slogans/subtitles/bullets), calmer/softer aesthetic (pastel/watercolor/generated imagery), less padding/bands.
+
+## Next recommended action (prioritized)
+1. **Interactive consistency demo**: on landing, let visitor change a color/font → the marketing ad restyles live (client-side). The definitive "not one-off / anti-ChatGPT" proof (VISION.md "brand system, live").
+2. Kill AI-slop copy incl. the left sidebar "About BrandKite / Key Features" bullets (generic filler).
+3. Calmer aesthetic pass (pastel/soft), compact colors/typography, less padding.
+4. Expand modules (vision/values/positioning/personas/messaging; social; landing copy) — each declares `options`, composes from siblings.
+5. Owner actions: Google OAuth creds; real checkout verification; Autumn test-mode wiring. Logo transparent-bg polish.
 
 ## Blockers / pending
 - Google OAuth dormant until owner sets AUTH_GOOGLE_ID/SECRET.

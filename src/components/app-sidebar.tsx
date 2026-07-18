@@ -1,5 +1,6 @@
 import {
 	IconDots,
+	IconDownload,
 	IconFolder,
 	IconPlus,
 	IconShare3,
@@ -11,6 +12,7 @@ import { useCustomer } from "autumn-js/react";
 import {
 	Authenticated,
 	Unauthenticated,
+	useConvex,
 	useMutation,
 	useQuery,
 } from "convex/react";
@@ -55,6 +57,7 @@ import {
 	useSidebar,
 } from "@/components/ui/sidebar";
 import { track } from "@/lib/analytics";
+import { downloadBrandMarkdown } from "@/lib/export-brand-kit";
 import { cn } from "@/lib/utils";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -97,10 +100,34 @@ async function shareCompany(
 	}
 }
 
+async function exportCompanyMarkdown(
+	company: { _id: Id<"companies">; name: string },
+	convex: ReturnType<typeof useConvex>
+) {
+	track("share_clicked", { surface: "export_markdown" });
+
+	try {
+		const markdown = await convex.query(api.export.exportBrandMarkdown, {
+			companyId: company._id,
+		});
+		if (!markdown) {
+			toast.error("Nothing to export yet");
+			return;
+		}
+		downloadBrandMarkdown(markdown, company.name);
+		toast.success("Brand kit exported");
+	} catch (error) {
+		toast.error(
+			error instanceof Error ? error.message : "Failed to export brand kit"
+		);
+	}
+}
+
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 	const companies = useQuery(api.companies.listWithBrandData) || [];
 	const deleteCompany = useMutation(api.companies.deleteCompany);
 	const updateCompany = useMutation(api.companies.update);
+	const convex = useConvex();
 	const navigate = useNavigate();
 	const { toggleSidebar, state, isMobile } = useSidebar();
 	const { check } = useCustomer();
@@ -142,6 +169,9 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 
 	const handleShareClick = (company: (typeof companies)[number]) =>
 		shareCompany(company, updateCompany);
+
+	const handleExportClick = (company: (typeof companies)[number]) =>
+		exportCompanyMarkdown(company, convex);
 
 	const handleDeleteConfirm = async () => {
 		if (!companyToDelete) {
@@ -313,6 +343,12 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 													>
 														<IconShare3 />
 														<span>Share</span>
+													</DropdownMenuItem>
+													<DropdownMenuItem
+														onClick={() => handleExportClick(company)}
+													>
+														<IconDownload />
+														<span>Export as Markdown</span>
 													</DropdownMenuItem>
 													<DropdownMenuSeparator />
 													<DropdownMenuItem
