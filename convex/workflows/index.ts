@@ -32,6 +32,7 @@ export const BRAND_MODULE_TYPES = [
 	"story",
 	"marketing",
 	"social",
+	"website",
 ] as const;
 
 /**
