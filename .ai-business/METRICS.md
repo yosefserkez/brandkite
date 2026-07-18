@@ -2,8 +2,11 @@
 
 _Framework v1 — 2026-07-18. Analytics: PostHog project 518164 (personal org "Brandkite"). Web + product analytics unified there; Umami script on live site to be removed._
 
-## Baseline (2026-07-18 — all zeros)
-- Users: 0 real (1 seed admin). Companies: 1 (seed). MRR/ARR: $0. Traffic: unknown (no accessible analytics history).
+## Baseline (2026-07-18 — corrected via Autumn)
+- **Signed-up users: 13** (Autumn customers); ~7 activated (consumed credits). Companies: ~14. MRR/ARR: **$0 collected**.
+- **1 user reached Pro Annual ($300/yr) but never paid** — access granted on an unpaid `open` invoice (invoice-mode); free→paid intent = 1/13, revenue = $0. See FINDINGS-2026-07-18.md.
+- Free plan grants only **5 lifetime credits** (one-off, no reset) — likely activation throttle.
+- Traffic history: none accessible pre-PostHog. PostHog now live (verified firing on brandkite.co 2026-07-18).
 
 ## North star
 **Activated brand kits per week** (a kit with ≥5 generated modules including logo+colors+name) — proxies delivered value for every model on the table.
