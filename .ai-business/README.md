@@ -11,6 +11,7 @@ Any AI session (or human) should be able to resume from these files without conv
 | ACCESS.md | Which systems are available/missing (no secrets) |
 | AUTHORIZATION.md | Autonomy boundaries, budgets, approval rules |
 | STRATEGY.md | Diagnosis, revenue models, chosen strategy |
+| VISION.md | Long-range "idea → launch-ready company" direction |
 | METRICS.md | Measurement framework, event taxonomy, baselines |
 | ROADMAP.md | 90-day phased plan |
 | BACKLOG.md | Ranked backlog (impact × confidence ÷ effort) |

@@ -1,6 +1,8 @@
 # STRATEGY
 
-_v1 — 2026-07-18. Everything below is hypothesis until users exist; validation plan in EXPERIMENTS.md._
+_v1.1 — 2026-07-18. Everything below is hypothesis until users exist; validation plan in EXPERIMENTS.md._
+
+**North star (owner, 2026-07-18):** evolve past brand kits toward "idea → launch-ready company in minutes" — brand, site, launch assets, marketing engine for one-person builders. Full brainstorm and sequencing in [VISION.md](VISION.md); the kit becomes the compiler input for everything downstream, which is also the answer to the churn problem below. Near-term execution is unchanged (validate activation + willingness to pay first).
 
 ## Executive diagnosis
 **What it is:** an AI brand studio — paste a URL or a sentence, get a complete editable brand kit (~25 modules: name, tagline, mission, story, tone, personas, positioning, colors, typography, SVG logo w/ vector-searched inspiration) with versioning, regeneration, public share pages, and a gallery. The generation engine is genuinely good and the module breadth is a real differentiator vs. one-shot logo makers.
