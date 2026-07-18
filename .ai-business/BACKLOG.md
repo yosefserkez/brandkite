@@ -28,7 +28,9 @@ Core = composability (compose assets from current brand blocks; no auto-regen). 
 | # | Item | Notes |
 |---|---|---|
 | P1 | Per-module generation controls (#23) | logo: brand/mono/b&w + flat/line/3d; colors: mood; type: serif/sans. Thread options UI→regenerate→workflow→prompt |
-| P2 | Expand modules toward complete package | Implement the enum types that have NO workflow yet (vision, values, positioning, personas, messaging/differentiators, voice) + NEW asset modules: ad copy, social kit (bios/posts), one-liner/boilerplate, landing-page copy, email templates. Each composes from current blocks |
+| P0 | **Interactive "landing = demo" page** (owner, 2026-07-18) | Show-don't-tell + convert. Ideas: inline "try it" input in the hero that kicks off generation; callouts/arrows annotating each part of the live demo kit; make it wow + easy to try. Landing doubles as the product demo. Clean/sexy, on-system neutral, NO off-system colors. Needs focused craft pass |
+| ✔ | Marketing module (ad copy, platform/goal controls) | DONE 2026-07-18: backend + UI (clean/aligned/neutral), verified. First of the expanded asset modules |
+| P2 | Expand more modules toward complete package | Implement enum types with NO workflow yet (vision, values, positioning, personas, messaging/differentiators, voice) + NEW assets: social kit, one-liner/boilerplate, landing-page copy, email/deck. Each composes from current blocks + controls. New module workflows MUST declare `options` arg |
 | P3 | Broaden composability | Wire sibling-reads into remaining text modules (tagline/mission/tone read each other) for consistency |
 | P4 | Logo polish | Strip Recraft's white background rect (make transparent); expose style/color controls (ties to P1) |
 | P5 | Visual QA loop | In-app "regenerate" already uses new pipeline; owner should eyeball outputs |
