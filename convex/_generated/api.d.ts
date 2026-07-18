@@ -12,6 +12,7 @@ import type * as auth from "../auth.js";
 import type * as autumn from "../autumn.js";
 import type * as brandModules from "../brandModules.js";
 import type * as companies from "../companies.js";
+import type * as export_ from "../export.js";
 import type * as http from "../http.js";
 import type * as index from "../index.js";
 import type * as lib_firecrawl from "../lib/firecrawl.js";
@@ -54,6 +55,7 @@ declare const fullApi: ApiFromModules<{
   autumn: typeof autumn;
   brandModules: typeof brandModules;
   companies: typeof companies;
+  export: typeof export_;
   http: typeof http;
   index: typeof index;
   "lib/firecrawl": typeof lib_firecrawl;

@@ -1,9 +1,13 @@
-import { useMutation } from "convex/react";
-import { useEffect } from "react";
+import { useConvex, useMutation } from "convex/react";
+import { Download } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { BrandTextProvider } from "../contexts/BrandTextContext";
 import { useCompanyBrand, useCompanyBrandName } from "../hooks/useCompanyBrand";
+import { track } from "../lib/analytics";
+import { downloadBrandMarkdown } from "../lib/export-brand-kit";
 import { GetStartedCard } from "./get-started-card";
 import ColorsModule from "./modules/ColorsModule";
 import LogoModule from "./modules/LogoModule";
@@ -12,6 +16,7 @@ import NamesModule from "./modules/NamesModule";
 import TextModule from "./modules/TextModule";
 import ToneModule from "./modules/ToneModule";
 import TypographyModule from "./modules/TypographyModule";
+import { Button } from "./ui/button";
 import { FlickeringGrid } from "./ui/flickering-grid";
 
 type BrandStudioPageProps = {
@@ -22,11 +27,35 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 	const { company, loading } = useCompanyBrand(companyId);
 	const companyName = useCompanyBrandName(companyId);
 	const updatePresence = useMutation(api.presence.updatePresence);
+	const convex = useConvex();
+	const [isExporting, setIsExporting] = useState(false);
 
 	useEffect(() => {
 		// biome-ignore lint/complexity/noVoid: deliberate fire-and-forget presence update
 		void updatePresence({ companyId });
 	}, [companyId, updatePresence]);
+
+	const handleExportClick = async () => {
+		track("share_clicked", { surface: "export_markdown" });
+		setIsExporting(true);
+		try {
+			const markdown = await convex.query(api.export.exportBrandMarkdown, {
+				companyId,
+			});
+			if (!markdown) {
+				toast.error("Nothing to export yet");
+				return;
+			}
+			downloadBrandMarkdown(markdown, companyName ?? company?.name);
+			toast.success("Brand kit exported");
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Failed to export brand kit"
+			);
+		} finally {
+			setIsExporting(false);
+		}
+	};
 
 	if (loading || !company) {
 		return (
@@ -43,6 +72,17 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 			<div className="mb-4 h-full overflow-y-auto bg-white">
 				{/* Module blocks */}
 				<div className="mx-auto max-w-5xl space-y-10 overflow-hidden px-4 py-4">
+					<div className="flex justify-end">
+						<Button
+							disabled={isExporting}
+							onClick={handleExportClick}
+							size="sm"
+							variant="outline"
+						>
+							<Download className="h-3.5 w-3.5" />
+							<span>Export as Markdown</span>
+						</Button>
+					</div>
 					{/* Names & Logo block - combined as header image with logo overlay */}
 					<NamesModule companyId={companyId} />
 					<div className="flex flex-col gap-10 md:grid md:grid-cols-4 md:grid-rows-1 md:gap-4 md:pb-6">
