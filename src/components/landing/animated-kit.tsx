@@ -80,6 +80,10 @@ export function AnimatedKit({
 	const tagline = replaceName(taglineData?.tagline, brandName);
 	const ad = marketing?.ads?.[0];
 
+	// Interactive: pick a brand color and watch the marketing restyle live.
+	const [pickedColor, setPickedColor] = useState<string | null>(null);
+	const activeColor = pickedColor ?? primaryHex ?? "#111827";
+
 	const ready = Boolean(
 		logoUrl && colors.length > 0 && tagline && ad && brandName
 	);
@@ -193,22 +197,38 @@ export function AnimatedKit({
 					</div>
 				</div>
 
-				{/* Color palette strip */}
+				{/* Color palette strip — interactive */}
 				<div className="border-gray-100 border-b px-6 py-5 md:px-8">
 					<Reveal show={step >= STEP_COLORS}>
 						<div className="flex overflow-hidden rounded-lg border border-gray-100">
-							{colors.map((color) => (
-								<div
-									className="flex h-16 flex-1 items-end justify-center pb-1.5"
-									key={`${color.name}-${color.hex}`}
-									style={{ backgroundColor: color.hex }}
-								>
-									<span className="rounded bg-white/85 px-1.5 py-0.5 font-medium font-mono text-[10px] text-gray-700 uppercase tracking-wide">
-										{color.hex}
-									</span>
-								</div>
-							))}
+							{colors.map((color) => {
+								const isActive = activeColor === color.hex;
+								return (
+									<button
+										aria-label={`Use ${color.name}`}
+										aria-pressed={isActive}
+										className={cn(
+											"group/swatch relative flex h-16 flex-1 items-end justify-center pb-1.5 outline-none transition-[flex] duration-300",
+											isActive && "flex-[1.4]"
+										)}
+										key={`${color.name}-${color.hex}`}
+										onClick={() => setPickedColor(color.hex)}
+										style={{ backgroundColor: color.hex }}
+										type="button"
+									>
+										<span className="rounded bg-white/85 px-1.5 py-0.5 font-medium font-mono text-[10px] text-gray-700 uppercase tracking-wide">
+											{color.hex}
+										</span>
+										{isActive ? (
+											<span className="absolute inset-0 ring-2 ring-gray-900/70 ring-inset" />
+										) : null}
+									</button>
+								);
+							})}
 						</div>
+						<p className="mt-2 text-center text-[11px] text-gray-400">
+							Pick a color — your marketing updates with it.
+						</p>
 					</Reveal>
 				</div>
 
@@ -216,8 +236,14 @@ export function AnimatedKit({
 				<div className="p-6 md:p-8">
 					<Reveal show={step >= STEP_AD}>
 						{ad ? (
-							<div className="rounded-xl border border-gray-100 bg-gray-50/60 p-5">
-								<p className="mb-2 font-medium text-[11px] text-gray-400 uppercase tracking-wider">
+							<div
+								className="rounded-xl border border-gray-100 border-l-[3px] bg-gray-50/60 p-5 transition-colors duration-500"
+								style={{ borderLeftColor: activeColor }}
+							>
+								<p
+									className="mb-2 font-medium text-[11px] uppercase tracking-wider transition-colors duration-500"
+									style={{ color: activeColor }}
+								>
 									Ad · {ad.angle}
 								</p>
 								<p className="font-semibold text-gray-900 text-lg leading-snug tracking-tight">
@@ -228,8 +254,8 @@ export function AnimatedKit({
 								</p>
 								<div className="mt-4">
 									<span
-										className="inline-flex items-center rounded-lg px-4 py-2 font-medium text-sm text-white shadow-sm"
-										style={{ backgroundColor: primaryHex ?? "#111827" }}
+										className="inline-flex items-center rounded-lg px-4 py-2 font-medium text-sm text-white shadow-sm transition-colors duration-500"
+										style={{ backgroundColor: activeColor }}
 									>
 										{replaceName(ad.cta, brandName)}
 									</span>
