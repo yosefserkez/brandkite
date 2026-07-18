@@ -19,5 +19,9 @@ _Ranked: impact × confidence ÷ effort. Re-rank continuously. Statuses: todo / 
 | 13 | Per-kit dynamic OG image generation | acquisition | M | M | M | todo |
 | 14 | Programmatic SEO pages ("brand kit for X") | acquisition | H | L | L | todo |
 
-Done this session: PostHog instrumentation; SEO baseline; CI; R2 authz; dead SignInForm removal; Share button (was stub); Autumn customer name/email fix; billing verification (E1).
+| 15 | Seed the gallery with 4-6 example public kits | acquisition | M | H | S | todo (CTA loop shipped; gallery still only has the seed company) |
+| 16 | Owner: provision Google OAuth creds + flip VITE_GOOGLE_AUTH_ENABLED | conversion | H | H | XS | todo (owner action) |
+| 17 | Owner: verify real Stripe Checkout collects a card (test-mode env ideal) | revenue | Critical | H | S | todo (owner action) |
+
+Done 2026-07-18: PostHog instrumentation; SEO baseline; CI; R2 authz; dead SignInForm removal; Share button; Autumn name/email fix; billing verification (E1) + checkout redirect fix; landing hero/how-it-works; public-kit/gallery share-loop CTA; env-gated Google OAuth; free grant 5→30/mo.
 Dropped: rewrite/replatform anything (no evidence); paid ads (gate not met).
