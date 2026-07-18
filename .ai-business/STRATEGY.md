@@ -1,5 +1,7 @@
 # STRATEGY
 
+> **⚠️ SUPERSEDED for product direction by [V2-DIRECTION.md](V2-DIRECTION.md) (2026-07-18).** Brandkite = the brand & identity layer for the AI-native company; wedge = genuinely great identity + a publishable live site; moat = quality + consistent source of truth; arc = brand-as-API infra. The revenue-model math below still informs pricing.
+
 _v1.1 — 2026-07-18. Everything below is hypothesis until users exist; validation plan in EXPERIMENTS.md._
 
 **North star (owner, 2026-07-18):** evolve past brand kits toward "idea → launch-ready company in minutes" — brand, site, launch assets, marketing engine for one-person builders. Full brainstorm and sequencing in [VISION.md](VISION.md); the kit becomes the compiler input for everything downstream, which is also the answer to the churn problem below. Near-term execution is unchanged (validate activation + willingness to pay first).
