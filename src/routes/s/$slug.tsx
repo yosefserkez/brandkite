@@ -1,60 +1,84 @@
 import { api } from "@convex/_generated/api";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
-import { useEffect } from "react";
+import { ConvexHttpClient } from "convex/browser";
 import { PublishedSite } from "@/components/site/published-site";
+
+type SiteData = Awaited<ReturnType<typeof loadSite>>;
+
+const SITE_ORIGIN = "https://brandkite.co";
+
+// Server-side (and on client navigation) fetch so the published site is fully
+// SSR'd: crawlable body + correct <title>/description/OG tags in the document
+// head. Real-time updates aren't needed for a static marketing page.
+async function loadSite(slug: string) {
+	const url = import.meta.env.VITE_CONVEX_URL as string | undefined;
+	if (!url) {
+		return null;
+	}
+	try {
+		const client = new ConvexHttpClient(url);
+		return await client.query(api.site.getSiteBySlug, { slug });
+	} catch {
+		// Never let a backend hiccup crash SSR — fall through to the
+		// unavailable state, which the client can recover from on retry.
+		return null;
+	}
+}
 
 export const Route = createFileRoute("/s/$slug")({
 	component: PublishedSiteRoute,
-	head: () => ({
-		meta: [
-			{ title: "Brandkite" },
+	loader: ({ params }) => loadSite(params.slug),
+	head: ({ loaderData, params }) => {
+		const data = loaderData as SiteData;
+		const canonical = `${SITE_ORIGIN}/s/${params?.slug ?? ""}`;
+
+		if (!data) {
+			return {
+				meta: [
+					{ title: "Brandkite" },
+					{
+						name: "description",
+						content: "A brand landing page made with Brandkite.",
+					},
+				],
+			};
+		}
+
+		const title = data.name;
+		const description = data.tagline || `${data.name} — made with Brandkite.`;
+		const image = data.logoUrl ?? undefined;
+
+		const meta: Array<Record<string, string>> = [
+			{ title },
+			{ name: "description", content: description },
+			{ property: "og:type", content: "website" },
+			{ property: "og:title", content: title },
+			{ property: "og:description", content: description },
+			{ property: "og:url", content: canonical },
+			{ property: "og:site_name", content: title },
 			{
-				name: "description",
-				content: "A brand landing page made with Brandkite.",
+				name: "twitter:card",
+				content: image ? "summary" : "summary_large_image",
 			},
-		],
-	}),
+			{ name: "twitter:title", content: title },
+			{ name: "twitter:description", content: description },
+		];
+		if (image) {
+			meta.push({ property: "og:image", content: image });
+			meta.push({ name: "twitter:image", content: image });
+		}
+
+		return {
+			meta,
+			links: [{ rel: "canonical", href: canonical }],
+		};
+	},
 });
 
 function PublishedSiteRoute() {
-	const { slug } = Route.useParams();
-	const data = useQuery(api.site.getSiteBySlug, { slug });
+	const data = Route.useLoaderData();
 
-	// Keep the document head in sync with the loaded brand (client-side).
-	useEffect(() => {
-		if (typeof document === "undefined") {
-			return;
-		}
-		if (!data) {
-			return;
-		}
-		document.title = data.name;
-		const description = data.tagline || `${data.name} — made with Brandkite.`;
-		let meta = document.head.querySelector<HTMLMetaElement>(
-			'meta[name="description"]'
-		);
-		if (!meta) {
-			meta = document.createElement("meta");
-			meta.name = "description";
-			document.head.append(meta);
-		}
-		meta.content = description;
-	}, [data]);
-
-	if (data === undefined) {
-		return (
-			<output className="flex min-h-screen items-center justify-center bg-white">
-				<span
-					aria-hidden="true"
-					className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-gray-900"
-				/>
-				<span className="sr-only">Loading</span>
-			</output>
-		);
-	}
-
-	if (data === null) {
+	if (data === null || data === undefined) {
 		return (
 			<div className="flex min-h-screen items-center justify-center bg-white px-6">
 				<div className="text-center">
