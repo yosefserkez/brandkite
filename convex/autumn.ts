@@ -1,22 +1,28 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { Autumn } from "@useautumn/convex";
-import { components } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 
 export const autumn = new Autumn(components.autumn, {
 	secretKey: process.env.AUTUMN_SECRET_KEY ?? "",
 
-	// biome-ignore lint/suspicious/noExplicitAny: ctx is not typed
+	// biome-ignore lint/suspicious/noExplicitAny: ctx is the untyped Autumn identify ctx (an ActionCtx)
 	identify: async (ctx: any) => {
-		const user = await ctx.auth.getUserIdentity();
-		if (!user) {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
 			return null;
 		}
 
-		const userId = user.subject.split("|")[0];
+		// identify() runs in an action, which has no ctx.db, so we look up the
+		// user's profile via an internal query instead.
+		const user = await ctx.runQuery(internal.users.getUserForBilling, {
+			userId,
+		});
+
 		return {
 			customerId: userId,
 			customerData: {
-				name: user.name as string, // TODO: Get this during signup?
-				email: user.email as string, // TODO: Figure out how to get this from getUserIdentity
+				name: user?.name ?? user?.email,
+				email: user?.email,
 			},
 		};
 	},
