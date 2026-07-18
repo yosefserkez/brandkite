@@ -98,8 +98,10 @@ export const getSiteBySlug = query({
 
 		const name = company.name;
 		const logoData = byType.logo as { storageKey?: string } | undefined;
+		// 7 days (R2/S3 signed-URL max) so this URL survives as the site's
+		// og:image — link unfurlers must still resolve it well after sharing.
 		const logoUrl = logoData?.storageKey
-			? await r2.getUrl(logoData.storageKey)
+			? await r2.getUrl(logoData.storageKey, { expiresIn: 60 * 60 * 24 * 7 })
 			: null;
 		const colors = byType.colors as
 			| { colors?: Array<{ hex: string; name: string; role: string }> }
