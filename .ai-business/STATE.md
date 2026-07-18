@@ -24,9 +24,9 @@ Brandkite = a **living, consistent brand SYSTEM that scales across marketing** (
 
 ## v2 BUILD STATUS (2026-07-18, committed direction = V2-DIRECTION.md)
 - ✅ **#1 Identity quality** (make-or-break): multi-method logo ensemble (4 concepts/run: 2 Recraft V4.1 + 2 LLM-authored geometric/monogram SVG) + transparent bg + concept picker. Verified across brands.
-- ✅ **#2 Publishable site** (flagship): real on-brand landing page at `/s/:slug` from the brand (logo/palette/fonts/website copy) + owner Publish control. **LIVE at brandkite.co/s/brandkite** — looks professional.
-- 🔧 **Design engine** (DESIGN-ENGINE.md): a PARALLEL agent is building `convex/lib/design/` (models/context/skills/checks/generate) + wiring modules. Foundation committed. Coordinate via shared tree — pull/rebase, don't race its files (convex/lib/design/, convex/modules/*).
-- ⏭ Next (non-conflicting, production): gate publishing Free-preview/Pro (Autumn) + verify checkout collects (test key); per-site OG meta; front-door reshape (identity+site first); Phase 5 API/MCP = engine surface 2 (parallel agent).
+- ✅ **#2 Publishable site** (flagship): real on-brand landing page at `/s/:slug` from the brand (logo/palette/fonts/website copy) + owner Publish control. **LIVE at brandkite.co/s/brandkite** — looks professional. Now **SSR'd** (server loader): crawlable body + real title/description/OG/Twitter/canonical in head (was client-only shell); logo og:image on a 7-day URL.
+- 🔧 **Design engine** (DESIGN-ENGINE.md): PARALLEL agent shipped **Phase A** — `convex/lib/design/` (models/context/skills/checks/`generateChecked`) with all 10 modules rewired onto shared skill fragments + deterministic checks + one corrective retry. Phase B (rendered-critique jury on identity) + C (MCP/token export) specified. Coordinate via shared tree — pull/rebase, don't race its files (convex/lib/design/, convex/modules/*).
+- ⏭ Next (non-conflicting, production): gate publishing Free-preview/Pro (Autumn) + verify checkout collects (test key); branded OG **card** per site (vs bare-logo summary); front-door reshape (identity+site first); Phase 5 API/MCP = engine surface (parallel agent Phase C).
 
 ## NEXT SESSION — goal: run ads, get paying customers, run experiments/optimizations
 The critical path to *paying customers* (do in this order; don't run ads until 1–3 hold):
