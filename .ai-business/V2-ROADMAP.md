@@ -2,18 +2,18 @@
 
 _Direction: [V2-DIRECTION.md]. Autonomous build. Update statuses as work lands._
 
-## Phase 1 — Identity quality (the make-or-break bar) [IN PROGRESS]
-- [ ] Logo: generate MULTIPLE distinct concepts per run (3-4), let user pick + regenerate individually. Variety = perceived quality.
-- [ ] Logo prompt/model: iconic, simple, memorable marks; strip Recraft white background (transparent); tasteful defaults.
-- [ ] Cohesive identity: ensure color + type pair well with the logo and each other (a real system, not 3 unrelated outputs).
-- [ ] Quality check: generate for 3-5 varied brands, eyeball; iterate prompts until "I'd ship this."
+## Phase 1 — Identity quality (the make-or-break bar) [DONE 2026-07-18]
+- [x] Multi-method logo ensemble: 4 concepts/run (2 Recraft V4.1 + 2 LLM-authored geometric/monogram SVG), user picks. Verified across brands (padlock/shield/monogram all on-brand).
+- [x] Transparent background (strip Recraft white rect).
+- [x] Concept picker UI + batch signed-URL query.
+- [~] Deeper quality (jury/critique/novelty gate) = DESIGN-ENGINE Phase B (parallel agent building the engine).
 
-## Phase 2 — Publishable live site (the flagship living output)
-- [ ] A real, beautiful public landing page rendered from the brand (logo, colors, fonts) + website module copy — NOT the studio card. Full hero/features/CTA/footer, on-brand.
-- [ ] Public route + hosting on brandkite.co (e.g. `/s/:slug` or subdomain). Slug per company.
-- [ ] Publish/unpublish control; edit → site updates. SEO/OG per site.
-- [ ] Gate publishing behind Pro (free = preview only).
-- [ ] Custom domain support (later; may partner).
+## Phase 2 — Publishable live site [DONE 2026-07-18]
+- [x] Real on-brand landing page at `/s/:slug` from brand (logo, palette, brand Google fonts, website copy) — nav/hero/features/CTA/footer. Verified live at /s/brandkite.
+- [x] publish/unpublish + slug + public getSiteBySlug; owner Publish-site control in studio.
+- [x] "Made with Brandkite" footer loop; per-site head/meta.
+- [ ] Gate publishing behind Pro (free = preview) — Phase 4.
+- [ ] Custom domain (later; may partner). OG image per site.
 
 ## Phase 3 — Front-door reshape (identity + site first, demote strategy filler)
 - [ ] Reorder studio: identity + site + go-to-market up top; mission/vision/values/personas/tone/story optional/collapsed.
