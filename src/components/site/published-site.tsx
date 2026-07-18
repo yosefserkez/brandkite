@@ -123,14 +123,10 @@ const LUMA_G = 0.7152;
 const LUMA_B = 0.0722;
 const LIGHT_SURFACE_LUMINANCE = 0.45;
 
-// Alpha levels used for brand-tinted washes, borders and overlays.
+// Alpha levels used for brand-tinted washes and borders.
 const ALPHA_HAIRLINE = 0.14;
-const ALPHA_TINT = 0.08;
-const ALPHA_TINT_STRONG = 0.12;
 const ALPHA_OUTLINE = 0.28;
 const ALPHA_WASH = 0.1;
-const ALPHA_GLOW = 0.35;
-const FEATURE_NUMBER_PAD = 2;
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
 	if (!hex) {
@@ -273,20 +269,19 @@ export function PublishedSite({ data }: { data: PublishedSiteData }) {
 						}}
 					/>
 					<div className="relative mx-auto max-w-4xl px-5 pt-20 pb-16 text-center sm:px-8 sm:pt-28 sm:pb-24">
-						<span
-							className="mb-6 inline-flex items-center gap-2 rounded-full border px-3 py-1 font-medium text-xs uppercase tracking-wider"
-							style={{
-								borderColor: rgba(accent, ALPHA_OUTLINE),
-								backgroundColor: rgba(accent, ALPHA_TINT),
-								color: accent,
-							}}
-						>
-							<span
-								className="h-1.5 w-1.5 rounded-full"
-								style={{ backgroundColor: accent }}
-							/>
-							{data.tagline || data.name}
-						</span>
+						{data.tagline ? (
+							<p
+								className="mb-6 flex items-center justify-center gap-2 font-medium text-sm"
+								style={{ color: accent, fontFamily: bodyStack }}
+							>
+								<span
+									aria-hidden="true"
+									className="h-px w-6"
+									style={{ backgroundColor: accent }}
+								/>
+								{data.tagline}
+							</p>
+						) : null}
 						<h1
 							className="text-balance font-bold text-4xl text-gray-950 leading-[1.05] tracking-tight sm:text-6xl"
 							style={{ fontFamily: headlineStack }}
@@ -324,22 +319,14 @@ export function PublishedSite({ data }: { data: PublishedSiteData }) {
 						className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24"
 						id="features"
 					>
-						<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-							{website.features.map((feature, index) => (
-								<article
-									className="group rounded-2xl border border-gray-100 bg-white p-7 transition-shadow hover:shadow-lg"
-									key={feature.title}
-									style={{ borderColor: rgba(neutral, ALPHA_HAIRLINE) }}
-								>
+						<div className="grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+							{website.features.map((feature) => (
+								<article className="pt-5" key={feature.title}>
 									<span
-										className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl font-bold text-base"
-										style={{
-											backgroundColor: rgba(accent, ALPHA_TINT_STRONG),
-											color: accent,
-										}}
-									>
-										{String(index + 1).padStart(FEATURE_NUMBER_PAD, "0")}
-									</span>
+										aria-hidden="true"
+										className="mb-5 block h-0.5 w-8"
+										style={{ backgroundColor: accent }}
+									/>
 									<h3
 										className="font-semibold text-gray-950 text-xl tracking-tight"
 										style={{ fontFamily: headlineStack }}
@@ -358,17 +345,10 @@ export function PublishedSite({ data }: { data: PublishedSiteData }) {
 				{/* Closing CTA band */}
 				<section className="px-5 pb-20 sm:px-8" id="cta">
 					<div
-						className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl px-6 py-16 text-center sm:px-16 sm:py-20"
+						className="mx-auto max-w-6xl rounded-3xl px-6 py-16 text-center sm:px-16 sm:py-20"
 						style={{ backgroundColor: primary, color: onPrimary }}
 					>
-						<div
-							aria-hidden="true"
-							className="pointer-events-none absolute inset-0"
-							style={{
-								background: `radial-gradient(50% 80% at 50% 0%, ${rgba(accent, ALPHA_GLOW)} 0%, rgba(0,0,0,0) 70%)`,
-							}}
-						/>
-						<div className="relative">
+						<div>
 							<h2
 								className="mx-auto max-w-2xl text-balance font-bold text-3xl leading-tight tracking-tight sm:text-4xl"
 								style={{ fontFamily: headlineStack }}
