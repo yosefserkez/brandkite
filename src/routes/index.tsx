@@ -86,7 +86,7 @@ function PublicCompanyView() {
 			<LandingHero onGenerate={openLogin} />
 
 			{/* Live "watch it build" demo — a real generated kit */}
-			<section className="pb-16 md:pb-24">
+			<section className="pb-8 md:pb-12">
 				{publicCompany === undefined ? (
 					<div className="flex h-64 items-center justify-center">
 						<div className="h-full w-full max-w-2xl">
@@ -105,24 +105,18 @@ function PublicCompanyView() {
 
 			{/* The full, real kit */}
 			{publicCompany ? (
-				<section className="w-full border-gray-100 border-t bg-gray-50/60 py-14 md:py-20">
+				<section className="w-full border-gray-100 border-t py-10 md:py-14">
 					<div className="mx-auto max-w-5xl px-4">
-						<div className="mb-8 text-center">
-							<h2 className="font-semibold text-3xl text-gray-950 tracking-tight md:text-4xl">
-								Explore the full kit
-							</h2>
-							<p className="mt-2 text-balance text-gray-500 text-sm md:text-base">
-								Every module below is real output from a single prompt — edit,
-								regenerate, and export it all.
-							</p>
-						</div>
+						<h2 className="mb-6 text-center font-semibold text-2xl text-gray-950 tracking-tight md:text-3xl">
+							Explore the full kit
+						</h2>
 						<BrandStudioPage companyId={publicCompany._id as Id<"companies">} />
 					</div>
 				</section>
 			) : null}
 
 			{/* Bottom conversion CTA */}
-			<section className="bg-white py-20 md:py-28">
+			<section className="border-gray-100 border-t bg-white py-14 md:py-20">
 				<div className="mx-auto flex max-w-2xl flex-col items-center gap-6 px-4 text-center">
 					<h2 className="text-balance font-semibold text-4xl text-gray-950 leading-tight tracking-tight md:text-5xl">
 						Your brand is one prompt away.
