@@ -15,7 +15,9 @@ _Direction: [V2-DIRECTION.md]. Autonomous build. Update statuses as work lands._
 - [x] SSR the `/s/:slug` route (server loader via ConvexHttpClient): crawlable body + real `<title>`/description/OG/Twitter/canonical in head — was a client-only shell before. Logo served as a 7-day signed URL so og:image previews don't expire. (2026-07-18)
 - [ ] Gate publishing behind Pro (free = preview) — Phase 4.
 - [ ] Custom domain (later; may partner).
+- [x] JSON-LD Organization structured data on each published site (2026-07-18).
 - [ ] Branded OG **card** per site (1200×630, `og:image` route) — currently og:image is the bare logo (summary card); a rendered card unfurls better.
+- [ ] Per-site **brand favicon** (use the brand logo) — needs to OVERRIDE the root layout's default favicons, not append (appending gives an ambiguous dual-favicon). Do via TanStack head dedup/merge on the `/s` route.
 - [ ] Missing/unpublished slug should return **HTTP 404**, not 200 — else search engines can index the "not available" page. (Tried & reverted: `notFound()` renders a blank "Error" shell in SSR; `setResponseStatus` gives 404 + friendly body but its import pulls `node:async_hooks` into the client bundle and breaks the build. Do it via a `createServerFn` server-fn loader, or set status in a server middleware. Keep transient backend errors as 500/retry, not 404.)
 
 ## Design engine workstream (decision record: DESIGN-ENGINE.md)
