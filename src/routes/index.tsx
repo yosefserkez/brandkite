@@ -3,6 +3,8 @@ import { Authenticated, Unauthenticated, useQuery } from "convex/react";
 import { useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BrandStudioPage } from "@/components/BrandStudioPage";
+import { HowItWorks } from "@/components/landing/how-it-works";
+import { LandingHero } from "@/components/landing/landing-hero";
 import { MobileHeader } from "@/components/mobile-header";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -74,30 +76,29 @@ function AuthLandingRedirect() {
 function PublicCompanyView() {
 	const publicCompany = useQuery(api.companies.getFirstPublic);
 
-	if (publicCompany === undefined) {
-		return (
-			<div className="flex h-full items-center justify-center">
-				<div className="h-full w-full">
-					<FlickeringGrid />
+	return (
+		<div className="h-full overflow-y-auto bg-white">
+			<LandingHero />
+			<HowItWorks />
+			{publicCompany === undefined ? (
+				<div className="flex h-40 items-center justify-center">
+					<div className="h-full w-full">
+						<FlickeringGrid />
+					</div>
 				</div>
-			</div>
-		);
-	}
-
-	if (!publicCompany) {
-		return (
-			<div className="flex h-full items-center justify-center">
-				<div className="text-center">
-					<h2 className="mb-2 font-semibold text-2xl text-gray-900">
-						No public companies available
-					</h2>
-					<p className="text-gray-600">
-						Please sign in to view your companies or create a new one.
-					</p>
+			) : null}
+			{publicCompany ? (
+				<div className="mx-auto max-w-5xl px-4 pb-4">
+					<div className="mb-2 flex items-center gap-2">
+						<div className="h-px flex-1 bg-gray-200" />
+						<p className="whitespace-nowrap font-medium text-gray-500 text-xs uppercase tracking-wide">
+							See a real kit made in minutes
+						</p>
+						<div className="h-px flex-1 bg-gray-200" />
+					</div>
+					<BrandStudioPage companyId={publicCompany._id as Id<"companies">} />
 				</div>
-			</div>
-		);
-	}
-
-	return <BrandStudioPage companyId={publicCompany._id as Id<"companies">} />;
+			) : null}
+		</div>
+	);
 }
