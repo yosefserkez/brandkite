@@ -20,6 +20,7 @@ export default function LogoModule({ companyId, className }: LogoModuleProps) {
 
 	const logoUrl = useQuery(api.r2.getSignedUrl, {
 		key: data?.storageKey,
+		companyId,
 	});
 
 	const onCopy = () => {
