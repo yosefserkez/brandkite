@@ -80,9 +80,11 @@ export function AnimatedKit({
 	const tagline = replaceName(taglineData?.tagline, brandName);
 	const ad = marketing?.ads?.[0];
 
-	// Interactive: pick a brand color and watch the marketing restyle live.
+	// Interactive: pick a brand color / font and watch the marketing restyle live.
 	const [pickedColor, setPickedColor] = useState<string | null>(null);
 	const activeColor = pickedColor ?? primaryHex ?? "#111827";
+	const [font, setFont] = useState<"Inter" | "Space Grotesk">("Space Grotesk");
+	const headingFont = `"${font}", system-ui, sans-serif`;
 
 	const ready = Boolean(
 		logoUrl && colors.length > 0 && tagline && ad && brandName
@@ -185,7 +187,10 @@ export function AnimatedKit({
 					</Reveal>
 					<div className="min-w-0 flex-1">
 						<Reveal show={step >= STEP_NAME}>
-							<h3 className="truncate font-semibold text-2xl text-gray-950 tracking-tight md:text-3xl">
+							<h3
+								className="truncate font-semibold text-2xl text-gray-950 tracking-tight md:text-3xl"
+								style={{ fontFamily: headingFont }}
+							>
 								{brandName}
 							</h3>
 						</Reveal>
@@ -226,9 +231,29 @@ export function AnimatedKit({
 								);
 							})}
 						</div>
-						<p className="mt-2 text-center text-[11px] text-gray-400">
-							Pick a color — your marketing updates with it.
-						</p>
+						<div className="mt-2.5 flex items-center justify-center gap-3">
+							<span className="text-[11px] text-gray-400">
+								Pick a color or font — your marketing updates with it.
+							</span>
+							<span className="inline-flex rounded-md border border-gray-200 p-0.5">
+								{(["Space Grotesk", "Inter"] as const).map((f) => (
+									<button
+										className={cn(
+											"rounded px-2 py-0.5 text-[11px] transition-colors",
+											font === f
+												? "bg-gray-900 text-white"
+												: "text-gray-500 hover:text-gray-900"
+										)}
+										key={f}
+										onClick={() => setFont(f)}
+										style={{ fontFamily: `"${f}", sans-serif` }}
+										type="button"
+									>
+										{f === "Space Grotesk" ? "Grotesk" : "Inter"}
+									</button>
+								))}
+							</span>
+						</div>
 					</Reveal>
 				</div>
 
@@ -246,7 +271,10 @@ export function AnimatedKit({
 								>
 									Ad · {ad.angle}
 								</p>
-								<p className="font-semibold text-gray-900 text-lg leading-snug tracking-tight">
+								<p
+									className="font-semibold text-gray-900 text-lg leading-snug tracking-tight"
+									style={{ fontFamily: headingFont }}
+								>
 									{replaceName(ad.headline, brandName)}
 								</p>
 								<p className="mt-1.5 text-gray-500 text-sm leading-relaxed">
