@@ -31,6 +31,7 @@ export const BRAND_MODULE_TYPES = [
 	"voice",
 	"story",
 	"marketing",
+	"social",
 ] as const;
 
 /**
