@@ -134,6 +134,7 @@ export const taglineWorkflow = workflow.define({
 	args: {
 		companyId: v.id("companies"),
 		publish: v.optional(v.boolean()),
+		options: v.optional(v.record(v.string(), v.string())),
 	},
 	handler: async (ctx, args): Promise<BrandTagline> => {
 		const brandContextDoc = (
