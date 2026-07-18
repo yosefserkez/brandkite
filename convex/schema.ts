@@ -22,9 +22,13 @@ const applicationTables = {
 		description: v.string(),
 		ownerId: v.id("users"),
 		isPublic: v.boolean(),
+		// Published live landing site.
+		siteSlug: v.optional(v.string()),
+		sitePublished: v.optional(v.boolean()),
 		createdAt: v.number(),
 		updatedAt: v.number(),
 	})
+		.index("by_site_slug", ["siteSlug"])
 		.index("by_owner", ["ownerId"])
 		.index("by_public", ["isPublic"]),
 
