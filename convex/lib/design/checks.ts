@@ -31,6 +31,8 @@ export const findBuzzwords = (text: string): CheckViolation[] => {
 	).map((word) => `Banned buzzword used: "${word}" — rephrase concretely.`);
 };
 
+const EM_DASH_PATTERN = /—/g;
+
 // Statistic-shaped claims (counts, percentages, ratings, "#1") that do not
 // appear in the source brand context are treated as fabricated.
 const STAT_PATTERNS = [
@@ -66,7 +68,7 @@ const APHORISM_PATTERN =
 
 export const findCadenceTells = (text: string): CheckViolation[] => {
 	const violations: CheckViolation[] = [];
-	const emDashes = (text.match(/—/g) ?? []).length;
+	const emDashes = (text.match(EM_DASH_PATTERN) ?? []).length;
 	if (emDashes > EM_DASH_LIMIT) {
 		violations.push(
 			`${emDashes} em-dashes — an AI cadence tell. Use at most one; restructure the other sentences.`
@@ -94,42 +96,61 @@ export const copyChecks = (
 
 // ── Color checks ───────────────────────────────────────────────────────────
 
+const HEX_CHANNELS_PATTERN = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i;
+const HEX_RADIX = 16;
+
 const hexToRgb = (hex: string): [number, number, number] | null => {
-	const match = hex.trim().match(/^#?([0-9a-f]{6})$/i);
+	const match = hex.trim().match(HEX_CHANNELS_PATTERN);
 	if (!match) {
 		return null;
 	}
-	const value = Number.parseInt(match[1], 16);
-	// biome-ignore lint/nursery/noBitwiseOperators: standard hex unpack
-	return [(value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff];
+	return [
+		Number.parseInt(match[1], HEX_RADIX),
+		Number.parseInt(match[2], HEX_RADIX),
+		Number.parseInt(match[3], HEX_RADIX),
+	];
 };
 
+// WCAG 2.x relative-luminance constants (sRGB linearization + luma weights).
+const RGB_MAX = 255;
+const SRGB_LINEAR_THRESHOLD = 0.039_28;
+const SRGB_LINEAR_DIVISOR = 12.92;
+const SRGB_GAMMA_OFFSET = 0.055;
+const SRGB_GAMMA_DIVISOR = 1.055;
+const SRGB_GAMMA_EXPONENT = 2.4;
+const LUMA_WEIGHT_R = 0.2126;
+const LUMA_WEIGHT_G = 0.7152;
+const LUMA_WEIGHT_B = 0.0722;
+const CONTRAST_OFFSET = 0.05;
+
 const channelLuminance = (channel: number): number => {
-	const c = channel / 255;
-	return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+	const c = channel / RGB_MAX;
+	return c <= SRGB_LINEAR_THRESHOLD
+		? c / SRGB_LINEAR_DIVISOR
+		: ((c + SRGB_GAMMA_OFFSET) / SRGB_GAMMA_DIVISOR) ** SRGB_GAMMA_EXPONENT;
 };
 
 const relativeLuminance = (rgb: [number, number, number]): number =>
-	0.2126 * channelLuminance(rgb[0]) +
-	0.7152 * channelLuminance(rgb[1]) +
-	0.0722 * channelLuminance(rgb[2]);
+	LUMA_WEIGHT_R * channelLuminance(rgb[0]) +
+	LUMA_WEIGHT_G * channelLuminance(rgb[1]) +
+	LUMA_WEIGHT_B * channelLuminance(rgb[2]);
 
 export const contrastRatio = (hexA: string, hexB: string): number => {
 	const a = hexToRgb(hexA);
 	const b = hexToRgb(hexB);
-	if (!a || !b) {
+	if (!(a && b)) {
 		return 0;
 	}
 	const la = relativeLuminance(a);
 	const lb = relativeLuminance(b);
 	const [lighter, darker] = la > lb ? [la, lb] : [lb, la];
-	return (lighter + 0.05) / (darker + 0.05);
+	return (lighter + CONTRAST_OFFSET) / (darker + CONTRAST_OFFSET);
 };
 
 const rgbDistance = (hexA: string, hexB: string): number => {
 	const a = hexToRgb(hexA);
 	const b = hexToRgb(hexB);
-	if (!a || !b) {
+	if (!(a && b)) {
 		return Number.POSITIVE_INFINITY;
 	}
 	return Math.sqrt(
@@ -150,11 +171,11 @@ export const paletteChecks = (hexes: string[]): CheckViolation[] => {
 			"No palette color is readable as text on white (needs WCAG contrast >= 4.5:1). Deepen the anchor color."
 		);
 	}
-	for (let i = 0; i < hexes.length; i++) {
-		for (let j = i + 1; j < hexes.length; j++) {
-			if (rgbDistance(hexes[i], hexes[j]) < SIMILARITY_THRESHOLD) {
+	for (const [i, hexA] of hexes.entries()) {
+		for (const hexB of hexes.slice(i + 1)) {
+			if (rgbDistance(hexA, hexB) < SIMILARITY_THRESHOLD) {
 				violations.push(
-					`Colors ${hexes[i]} and ${hexes[j]} are nearly identical — make each color earn a distinct role.`
+					`Colors ${hexA} and ${hexB} are nearly identical — make each color earn a distinct role.`
 				);
 			}
 		}
@@ -202,15 +223,20 @@ export const typographyChecks = (fonts: {
 
 // ── SVG checks (logo) ──────────────────────────────────────────────────────
 
+const SVG_VIEWBOX_PATTERN = /viewBox="0 0 100 100"/;
+const SVG_FORBIDDEN_PATTERN = /<(linearGradient|radialGradient|filter|text)\b/i;
+const SVG_SHAPE_PATTERN =
+	/<(circle|rect|path|polygon|line|ellipse|polyline)\b/i;
+
 export const svgChecks = (svg: string): CheckViolation[] => {
 	const violations: CheckViolation[] = [];
-	if (!/viewBox="0 0 100 100"/.test(svg)) {
+	if (!SVG_VIEWBOX_PATTERN.test(svg)) {
 		violations.push('SVG must use viewBox="0 0 100 100".');
 	}
-	if (/<(linearGradient|radialGradient|filter|text)\b/i.test(svg)) {
+	if (SVG_FORBIDDEN_PATTERN.test(svg)) {
 		violations.push("SVG must not contain gradients, filters, or <text>.");
 	}
-	if (!/<(circle|rect|path|polygon|line|ellipse|polyline)\b/i.test(svg)) {
+	if (!SVG_SHAPE_PATTERN.test(svg)) {
 		violations.push("SVG contains no drawable shapes.");
 	}
 	return violations;

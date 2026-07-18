@@ -1,17 +1,27 @@
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-
-import { generateObject } from "ai";
 import { v } from "convex/values";
 import z from "zod";
 import { workflow } from "..";
 import { internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
+import { copyChecks } from "../lib/design/checks";
+import { brandKitBlock, distinctivenessBlock } from "../lib/design/context";
+import { generateChecked } from "../lib/design/generate";
+import { textModel } from "../lib/design/models";
+import {
+	COPY_CRAFT,
+	composeSystem,
+	DISTINCTIVE_VOICE,
+	NO_FABRICATION,
+} from "../lib/design/skills";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4.3";
-const SYSTEM_PROMPT =
-	"You are a conversion copywriter writing a landing page in the brand's voice. Write specific, benefit-led copy that reads like a real product site — clear, confident, and human. No buzzwords ('revolutionary', 'seamless', 'unlock', 'empower', 'elevate', 'supercharge'), no clichés, no fabricated stats or testimonials. Every line earns its place.";
+const SYSTEM_PROMPT = composeSystem(
+	"You are a conversion copywriter writing a landing page in the brand's voice. Write specific, benefit-led copy that reads like a real product site — clear, confident, and human.",
+	COPY_CRAFT,
+	NO_FABRICATION,
+	DISTINCTIVE_VOICE
+);
 const TEMPERATURE = 0.75;
 const FEATURE_COUNT = 3;
 
@@ -51,10 +61,6 @@ export const websiteValidator = v.object({
 	cta: v.object({ headline: v.string(), buttonText: v.string() }),
 });
 
-const openrouter = createOpenRouter({
-	apiKey: process.env.OPENROUTER_API_KEY,
-});
-
 const STYLE_GUIDANCE: Record<string, string> = {
 	benefit: "Style: benefit-led. Lead with outcomes the customer gets.",
 	minimal: "Style: minimal and calm. Short, confident, lots of restraint.",
@@ -83,14 +89,9 @@ const buildWebsitePrompt = ({
 		"",
 		"Use the actual brand name naturally; do not use placeholder tokens.",
 		"",
-		"Brand kit to stay consistent with:",
-		tagline ? `- Tagline: "${tagline}"` : "",
-		mission ? `- Mission: ${mission}` : "",
-		`- What the brand is: ${brandContext.summary}`,
-		`- Who it serves: ${brandContext.customer.summary}`,
-		`- Product: ${brandContext.product.summary}`,
-		`- Brand voice: ${brandContext.brand.summary}`,
-		`- Industry: ${brandContext.industry ?? "Unspecified"}`,
+		brandKitBlock({ brandContext, tagline, mission }),
+		"",
+		distinctivenessBlock(brandContext),
 		"",
 		"Produce:",
 		"- hero: a headline + one supporting subheadline.",
@@ -120,15 +121,17 @@ export const generateWebsite = internalAction({
 			style: args.style,
 		});
 
-		const { object } = await generateObject({
-			model: openrouter.chat(MODEL_NAME),
+		const website = await generateChecked({
+			model: textModel(),
 			system: SYSTEM_PROMPT,
-			schema: z.object({ value: websiteSchema }),
 			prompt,
 			temperature: TEMPERATURE,
+			schema: websiteSchema,
+			check: (value) => copyChecks(value, prompt),
+			label: "website",
 		});
 
-		return { website: object.value };
+		return { website };
 	},
 });
 

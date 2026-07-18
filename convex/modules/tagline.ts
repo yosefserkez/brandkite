@@ -1,17 +1,25 @@
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-
-import { generateObject } from "ai";
 import { v } from "convex/values";
 import z from "zod";
 import { workflow } from "..";
 import { internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
+import { copyChecks } from "../lib/design/checks";
+import { tokenizeBrandName } from "../lib/design/context";
+import { generateChecked } from "../lib/design/generate";
+import { textModel } from "../lib/design/models";
+import {
+	COPY_CRAFT,
+	composeSystem,
+	DISTINCTIVE_VOICE,
+} from "../lib/design/skills";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4.3";
-const SYSTEM_PROMPT =
-	"You are an expert brand copywriter. You craft crisp, evocative taglines that express a brand's core promise in 5-10 vivid words. Use the literal token {company_name} whenever you reference the brand. Never output the actual brand name.";
+const SYSTEM_PROMPT = composeSystem(
+	"You are an expert brand copywriter. You craft crisp, evocative taglines that express a brand's core promise in 5-10 vivid words. Use the literal token {company_name} whenever you reference the brand. Never output the actual brand name.",
+	COPY_CRAFT,
+	DISTINCTIVE_VOICE
+);
 
 export const taglineSchema = z.object({
 	tagline: z
@@ -25,10 +33,6 @@ export type BrandTagline = z.infer<typeof taglineSchema>;
 
 export const taglineValidator = v.object({
 	tagline: v.string(),
-});
-
-const openrouter = createOpenRouter({
-	apiKey: process.env.OPENROUTER_API_KEY,
 });
 
 type BuildPromptArgs = {
@@ -83,26 +87,12 @@ const buildTaglinePrompt = ({
 	].join("\n");
 };
 
-const escapeRegExp = (value: string): string =>
-	value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
 const normalizeTagline = (
 	tagline: BrandTagline,
 	companyName?: string | null
-): BrandTagline => {
-	const trimmed = tagline.tagline.trim();
-
-	if (!companyName) {
-		return { tagline: trimmed };
-	}
-
-	const escapedCompanyName = escapeRegExp(companyName);
-	const namePattern = new RegExp(`\\b${escapedCompanyName}\\b`, "gi");
-
-	return {
-		tagline: trimmed.replace(namePattern, "{company_name}"),
-	};
-};
+): BrandTagline => ({
+	tagline: tokenizeBrandName(tagline.tagline, companyName),
+});
 
 export const generateBrandTagline = internalAction({
 	args: {
@@ -116,16 +106,18 @@ export const generateBrandTagline = internalAction({
 			companyName: args.companyName ?? null,
 		});
 
-		const { object } = await generateObject({
-			model: openrouter.chat(MODEL_NAME),
+		const raw = await generateChecked({
+			model: textModel(),
 			system: SYSTEM_PROMPT,
-			schema: z.object({ value: taglineSchema }),
 			prompt,
 			temperature: 0.7,
+			schema: taglineSchema,
+			check: (value) => copyChecks(value, prompt),
+			label: "tagline",
 		});
 
 		return {
-			tagline: normalizeTagline(object.value, args.companyName ?? null),
+			tagline: normalizeTagline(raw, args.companyName ?? null),
 		};
 	},
 });
@@ -181,4 +173,3 @@ export const taglineWorkflow = workflow.define({
 		return tagline;
 	},
 });
-

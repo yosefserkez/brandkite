@@ -1,17 +1,25 @@
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-
-import { generateObject } from "ai";
 import { v } from "convex/values";
 import z from "zod";
 import { workflow } from "..";
 import { internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
+import { copyChecks } from "../lib/design/checks";
+import { tokenizeBrandName } from "../lib/design/context";
+import { generateChecked } from "../lib/design/generate";
+import { textModel } from "../lib/design/models";
+import {
+	COPY_CRAFT,
+	composeSystem,
+	NO_FABRICATION,
+} from "../lib/design/skills";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4.3";
-const SYSTEM_PROMPT =
-	"You are a brand strategist writing the brand story section of a brand kit. Write a tight, usable brand narrative a founder can paste onto an About page — concrete, confident, and specific. Ground every claim in the supplied context. No purple prose, no clichés, no marketing buzzwords (no 'revolutionize', 'seamless', 'empower', 'passion', 'journey'). Prefer plain, declarative sentences over flowery ones.";
+const SYSTEM_PROMPT = composeSystem(
+	"You are a brand strategist writing the brand story section of a brand kit. Write a tight, usable brand narrative a founder can paste onto an About page — concrete, confident, and specific. Ground every claim in the supplied context. No purple prose; prefer plain, declarative sentences over flowery ones.",
+	COPY_CRAFT,
+	NO_FABRICATION
+);
 const STORY_TEMPERATURE = 0.7;
 
 export const storySchema = z.object({
@@ -26,10 +34,6 @@ export type BrandStory = z.infer<typeof storySchema>;
 
 export const storyValidator = v.object({
 	story: v.string(),
-});
-
-const openrouter = createOpenRouter({
-	apiKey: process.env.OPENROUTER_API_KEY,
 });
 
 const buildStoryPrompt = (params: {
@@ -88,26 +92,12 @@ const buildStoryPrompt = (params: {
 	].join("\n");
 };
 
-const escapeRegExp = (value: string): string =>
-	value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
 const normalizeStory = (
 	story: BrandStory,
 	companyName?: string | null
-): BrandStory => {
-	const trimmedStory = story.story.trim();
-
-	if (!companyName) {
-		return { story: trimmedStory };
-	}
-
-	const escapedCompanyName = escapeRegExp(companyName);
-	const namePattern = new RegExp(`\\b${escapedCompanyName}\\b`, "gi");
-
-	return {
-		story: trimmedStory.replace(namePattern, "{company_name}"),
-	};
-};
+): BrandStory => ({
+	story: tokenizeBrandName(story.story, companyName),
+});
 
 export const generateBrandStory = internalAction({
 	args: {
@@ -125,16 +115,18 @@ export const generateBrandStory = internalAction({
 			mission: args.mission ?? undefined,
 		});
 
-		const { object } = await generateObject({
-			model: openrouter.chat(MODEL_NAME),
+		const raw = await generateChecked({
+			model: textModel(),
 			system: SYSTEM_PROMPT,
-			schema: z.object({ value: storySchema }),
 			prompt,
 			temperature: STORY_TEMPERATURE,
+			schema: storySchema,
+			check: (value) => copyChecks(value, prompt),
+			label: "story",
 		});
 
 		return {
-			story: normalizeStory(object.value, args.companyName ?? undefined),
+			story: normalizeStory(raw, args.companyName ?? undefined),
 		};
 	},
 });
