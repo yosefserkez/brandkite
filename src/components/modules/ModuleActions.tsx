@@ -89,7 +89,7 @@ function buildModuleActions({
 			if (handlers.onRegenerate) {
 				handlers.onRegenerate();
 			} else {
-				ctx.regenerate(false);
+				ctx.regenerate({ publish: false });
 			}
 		};
 		actions.push({

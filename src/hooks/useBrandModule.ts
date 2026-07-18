@@ -24,6 +24,11 @@ export type BrandModuleVersionDoc = {
 	computedVersion?: number;
 };
 
+export type RegenerateOptions = {
+	publish?: boolean;
+	options?: Record<string, string>;
+};
+
 type UseBrandModuleResult = {
 	versions: BrandModuleVersionDoc[];
 	selected: BrandModuleVersionDoc | null;
@@ -34,7 +39,7 @@ type UseBrandModuleResult = {
 	isRegenerating: boolean;
 	publishSelected: () => Promise<void>;
 	saveSelected: (nextData: unknown) => Promise<void>;
-	regenerate: (publish?: boolean) => Promise<void>;
+	regenerate: (opts?: RegenerateOptions) => Promise<void>;
 };
 export default UseBrandModuleResult;
 
@@ -147,7 +152,7 @@ export function useBrandModule(
 	);
 
 	const regenerate = useCallback(
-		async (publish?: boolean) => {
+		async (opts?: RegenerateOptions) => {
 			setIsRegenerating(true);
 			setShouldSelectNewestAfterRegen(true);
 			setRegenRequestedAt(Date.now());
@@ -159,7 +164,8 @@ export function useBrandModule(
 				await regenerateModule({
 					companyId,
 					type: moduleType,
-					publish: publish ?? false,
+					publish: opts?.publish ?? false,
+					options: opts?.options,
 				}).catch((error) => {
 					toast.error(error.data);
 					return;
