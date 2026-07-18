@@ -4,7 +4,10 @@
 |---|---|---|---|
 | One-shot job-to-be-done → churn kills any subscription model | High | Agency ICP (repeat use) + one-time purchase bridge; validate in Phase 2 | Open (strategic) |
 | Zero distribution; product may never be seen | High | Phase 1 channel tests before building more product | Open |
-| Willingness-to-pay unvalidated | High | Autumn end-to-end test now; first-10-customers push in Phase 2 | Open |
+| **Payment never collected (invoice-mode grants paid access unpaid)** | **Critical** | Switch paid attach to card-required checkout (APPROVAL REQUIRED); see FINDINGS-2026-07-18.md | **Open — top priority** |
+| Willingness-to-pay | Partly validated | 1 user reached Pro Annual $300/yr unprompted; need paid collection + more | Improved |
+| Free = 5 lifetime credits may throttle activation before "wow" | Med | Test 5/day or larger one-off grant; measure via PostHog | Open |
+| Magic-link-only signup wall at first action (no OAuth/demo) | Med-High | Measure drop-off (PostHog now live), add Google OAuth / demo mode | Open |
 | R2 signed URLs issued without ownership check (convex/r2.ts) | Med (low today, 0 users) | Fix in Batch 1 | Doing |
 | Zero tests/CI → regressions ship silently | Med | CI in Batch 1; tests on revenue-critical flows thereafter | Doing |
 | AI provider cost/quality drift (OpenRouter Grok/Gemini, Replicate, OpenAI) | Med | Per-generation cost + failure metrics in PostHog; model routing already cheap | Open |
