@@ -77,6 +77,7 @@ export const Route = createFileRoute("/s/$slug")({
 
 function PublishedSiteRoute() {
 	const data = Route.useLoaderData();
+	const { slug } = Route.useParams();
 
 	if (data === null || data === undefined) {
 		return (
@@ -101,5 +102,24 @@ function PublishedSiteRoute() {
 		);
 	}
 
-	return <PublishedSite data={data} />;
+	const jsonLd = {
+		"@context": "https://schema.org",
+		"@type": "Organization",
+		name: data.name,
+		url: `${SITE_ORIGIN}/s/${slug}`,
+		...(data.tagline ? { description: data.tagline } : {}),
+		...(data.logoUrl ? { logo: data.logoUrl } : {}),
+	};
+
+	return (
+		<>
+			{/* biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD from
+			    trusted server data, serialized via JSON.stringify. */}
+			<script
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+				type="application/ld+json"
+			/>
+			<PublishedSite data={data} />
+		</>
+	);
 }
