@@ -2,6 +2,9 @@
 
 _Owner's directive 2026-07-18: "imagine going from idea to full brand and company ready in minutes… a 1-person engineer can use Brandkite to turn their product into a business with everything they need to market, sell, and grow." Brainstorm, not spec. Nothing here overrides evidence gates in ROADMAP.md._
 
+## Dogfooding + design-system output (owner, 2026-07-18)
+Brandkite's endgame: it generates a **design system** from the brand kit that can then generate downstream assets — websites, decks/PowerPoints, ad creative, etc. Corollary the owner insists on: **Brandkite should build and use its own product** — brandkite.co's own UI/marketing/assets should be generated from Brandkite's own brand system (dogfooding). Practical near-term rule: keep the app UI **clean and subtle** and never introduce off-system colors/styling by hand (e.g. an arbitrary purple CTA). Use the neutral system; when the brand system is gener-able, drive the UI from it.
+
 ## Composability model (owner, 2026-07-18) — READ THIS FIRST
 The core principle is **composability, NOT auto-regeneration.** Brand elements (name, tagline, colors, logo, tone, personality) are reusable building blocks; every asset (ads, marketing, social, landing) is **composed from the current blocks** at generation time, so it's consistent by construction. Editing a block never auto-regenerates anything downstream — the user regenerates when they choose, and it re-composes from current blocks.
 - Every asset is generated **from the current kit state** — a new ad/marketing/social/logo pulls the current name, tagline, colors, logo, tone, personality at generation time, so new output is consistent by construction.
