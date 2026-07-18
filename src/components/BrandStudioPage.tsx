@@ -7,6 +7,7 @@ import { useCompanyBrand, useCompanyBrandName } from "../hooks/useCompanyBrand";
 import { GetStartedCard } from "./get-started-card";
 import ColorsModule from "./modules/ColorsModule";
 import LogoModule from "./modules/LogoModule";
+import MarketingModule from "./modules/MarketingModule";
 import NamesModule from "./modules/NamesModule";
 import TextModule from "./modules/TextModule";
 import ToneModule from "./modules/ToneModule";
@@ -74,15 +75,16 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 						}}
 						module="story"
 					/>
+					<MarketingModule companyId={companyId} />
 					<ColorsModule companyId={companyId} />
 					<ToneModule companyId={companyId} />
 					<TypographyModule companyId={companyId} />
 					<div className="mt-12 flex flex-col items-center gap-2 rounded-lg bg-gray-50 p-4 text-center">
-						<p className="text-sm text-gray-500">
+						<p className="text-gray-500 text-sm">
 							Questions, suggestions, or feedback?&nbsp;
 							<a
+								className="text-brand-primary-700 underline transition-colors hover:text-brand-primary-900 focus:outline-none focus:ring-1 focus:ring-brand-primary-300"
 								href="mailto:yosef@brandkite.co"
-								className="underline text-brand-primary-700 hover:text-brand-primary-900 focus:outline-none focus:ring-1 focus:ring-brand-primary-300 transition-colors"
 							>
 								Contact us
 							</a>
