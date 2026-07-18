@@ -17,6 +17,7 @@ import SocialModule from "./modules/SocialModule";
 import TextModule from "./modules/TextModule";
 import ToneModule from "./modules/ToneModule";
 import TypographyModule from "./modules/TypographyModule";
+import WebsiteModule from "./modules/WebsiteModule";
 import { Button } from "./ui/button";
 import { FlickeringGrid } from "./ui/flickering-grid";
 
@@ -117,6 +118,7 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 					/>
 					<MarketingModule companyId={companyId} />
 					<SocialModule companyId={companyId} />
+					<WebsiteModule companyId={companyId} />
 					<ToneModule companyId={companyId} />
 					{/* Colors & typography — the reference details, kept compact */}
 					<div className="grid gap-10 md:grid-cols-2 md:gap-6">
