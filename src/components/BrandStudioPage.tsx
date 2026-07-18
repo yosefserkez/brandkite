@@ -88,7 +88,6 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 					<div className="flex flex-col gap-10 md:grid md:grid-cols-4 md:grid-rows-1 md:gap-4 md:pb-6">
 						<div className="col-span-1 flex flex-col gap-10 md:gap-4">
 							<LogoModule className="h-full w-full" companyId={companyId} />
-							<div className="hidden h-full w-full rounded-t-lg bg-linear-to-b from-brand-primary-50 to-gray-50 md:block" />
 						</div>
 						<div className="col-span-3 flex flex-col gap-10 md:gap-4">
 							<TextModule
@@ -116,14 +115,17 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 						module="story"
 					/>
 					<MarketingModule companyId={companyId} />
-					<ColorsModule companyId={companyId} />
 					<ToneModule companyId={companyId} />
-					<TypographyModule companyId={companyId} />
+					{/* Colors & typography — the reference details, kept compact */}
+					<div className="grid gap-10 md:grid-cols-2 md:gap-6">
+						<ColorsModule companyId={companyId} />
+						<TypographyModule companyId={companyId} />
+					</div>
 					<div className="mt-12 flex flex-col items-center gap-2 rounded-lg bg-gray-50 p-4 text-center">
 						<p className="text-gray-500 text-sm">
 							Questions, suggestions, or feedback?&nbsp;
 							<a
-								className="text-brand-primary-700 underline transition-colors hover:text-brand-primary-900 focus:outline-none focus:ring-1 focus:ring-brand-primary-300"
+								className="text-gray-700 underline transition-colors hover:text-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-300"
 								href="mailto:yosef@brandkite.co"
 							>
 								Contact us
