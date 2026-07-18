@@ -2,6 +2,15 @@
 
 _Owner's directive 2026-07-18: "imagine going from idea to full brand and company ready in minutes… a 1-person engineer can use Brandkite to turn their product into a business with everything they need to market, sell, and grow." Brainstorm, not spec. Nothing here overrides evidence gates in ROADMAP.md._
 
+## Composability model (owner, 2026-07-18) — READ THIS FIRST
+The core principle is **composability, NOT auto-regeneration.** Brand elements (name, tagline, colors, logo, tone, personality) are reusable building blocks; every asset (ads, marketing, social, landing) is **composed from the current blocks** at generation time, so it's consistent by construction. Editing a block never auto-regenerates anything downstream — the user regenerates when they choose, and it re-composes from current blocks.
+- Every asset is generated **from the current kit state** — a new ad/marketing/social/logo pulls the current name, tagline, colors, logo, tone, personality at generation time, so new output is consistent by construction.
+- Shared visual tokens (colors, logo) are **referenced live** wherever assets display them, so editing colors updates where they're shown.
+- **Do NOT auto-regenerate** downstream assets when an upstream element changes (e.g. changing colors must not regenerate the logo or rewrite existing ads). The user decides when to regenerate; regeneration then re-pulls current state.
+- Positioning is about a **complete, consistent brand + marketing + asset system**, not generic one-off tagline/logo tools.
+
+Implementation implication: modules must read current **published sibling modules** (not just brandContext) as input — the current code only reads brandContext, which is why output isn't internally consistent. Wire sibling-reads into generation; leave regeneration manual.
+
 ## The reframe
 Today Brandkite answers "what should my brand look like?" The vision answers a bigger question: **"I built a thing — make it a company."** That moves us from a one-shot deliverable (brand kit) to an ongoing operating layer (the marketing/GTM side of a business), which is exactly what fixes the churn problem in STRATEGY.md. The brand kit stops being the product; it becomes **the compiler input**. Every downstream artifact — site, ads, emails, decks — compiles *from* the kit, stays consistent with it, and regenerates when the kit changes.
 
