@@ -12,8 +12,11 @@ _Direction: [V2-DIRECTION.md]. Autonomous build. Update statuses as work lands._
 - [x] Real on-brand landing page at `/s/:slug` from brand (logo, palette, brand Google fonts, website copy) — nav/hero/features/CTA/footer. Verified live at /s/brandkite.
 - [x] publish/unpublish + slug + public getSiteBySlug; owner Publish-site control in studio.
 - [x] "Made with Brandkite" footer loop; per-site head/meta.
+- [x] SSR the `/s/:slug` route (server loader via ConvexHttpClient): crawlable body + real `<title>`/description/OG/Twitter/canonical in head — was a client-only shell before. Logo served as a 7-day signed URL so og:image previews don't expire. (2026-07-18)
 - [ ] Gate publishing behind Pro (free = preview) — Phase 4.
-- [ ] Custom domain (later; may partner). OG image per site.
+- [ ] Custom domain (later; may partner).
+- [ ] Branded OG **card** per site (1200×630, `og:image` route) — currently og:image is the bare logo (summary card); a rendered card unfurls better.
+- [ ] Missing/unpublished slug should return **HTTP 404** (loader `notFound()`), not 200 — else search engines can index the "not available" page. Guard against transient backend errors (500/retry, not 404).
 
 ## Design engine workstream (decision record: DESIGN-ENGINE.md)
 _One engine, three surfaces: module workflows, user-facing MCP, our own dev harness + site tokens._
