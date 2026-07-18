@@ -241,6 +241,9 @@ export const regenerateModule = action({
 		companyId: v.id("companies"),
 		type: brandModuleTypeValidator,
 		publish: v.optional(v.boolean()),
+		// Per-module generation controls (e.g. logo colorMode/style). Each
+		// workflow interprets its own keys; unrecognized options are ignored.
+		options: v.optional(v.record(v.string(), v.string())),
 	},
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
@@ -279,6 +282,7 @@ export const regenerateModule = action({
 		const result: unknown = await workflow.start(ctx, workflowRef, {
 			companyId: args.companyId,
 			publish: args.publish,
+			options: args.options,
 		});
 
 		if (result) {

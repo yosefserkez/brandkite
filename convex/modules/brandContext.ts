@@ -228,6 +228,7 @@ export const brandContextWorkflow = workflow.define({
 		companyId: v.id("companies"),
 		documents: v.array(documentValidator),
 		publish: v.optional(v.boolean()),
+		options: v.optional(v.record(v.string(), v.string())),
 	},
 	handler: async (
 		ctx: WorkflowContext,
