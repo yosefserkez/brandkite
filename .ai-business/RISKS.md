@@ -5,7 +5,7 @@
 | One-shot job-to-be-done → churn kills any subscription model | High | Agency ICP (repeat use) + one-time purchase bridge; validate in Phase 2 | Open (strategic) |
 | Zero distribution; product may never be seen | High | Phase 1 channel tests before building more product | Open |
 | **Payment never collected (invoice-mode grants paid access unpaid)** | **Critical** | Switch paid attach to card-required checkout (APPROVAL REQUIRED); see FINDINGS-2026-07-18.md | **Open — top priority** |
-| Willingness-to-pay | Partly validated | 1 user reached Pro Annual $300/yr unprompted; need paid collection + more | Improved |
+| Willingness-to-pay UNVALIDATED | High | The only "purchase" was the owner testing; 13 signups are friends. Need real strangers + a working card checkout | Open |
 | Free = 5 lifetime credits may throttle activation before "wow" | Med | Test 5/day or larger one-off grant; measure via PostHog | Open |
 | Magic-link-only signup wall at first action (no OAuth/demo) | Med-High | Measure drop-off (PostHog now live), add Google OAuth / demo mode | Open |
 | R2 signed URLs issued without ownership check (convex/r2.ts) | Med (low today, 0 users) | Fix in Batch 1 | Doing |

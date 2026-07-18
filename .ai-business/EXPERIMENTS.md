@@ -12,4 +12,6 @@ _Format: hypothesis → design → threshold → result → decision. No experim
 | E5 | One-time purchase beats subscription for one-shot users | "Launch Kit" one-time option on pricing page | one-time ≥ 30% of purchase intent | planned (Phase 2) |
 
 ## Completed
-(none yet)
+| ID | Change | Date | Result to watch |
+|---|---|---|---|
+| E6 | Free credit grant 5 lifetime → **30/month** (Autumn, applied to all 10 test customers, no versioning) | 2026-07-18 | A full kit costs ~27 credits, so 5 couldn't complete one. Watch signup→kit_activated once traffic exists; expect higher activation. Upgrade incentive preserved (Starter 100/mo, Pro 500/mo). |
