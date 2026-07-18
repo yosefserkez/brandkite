@@ -10,7 +10,7 @@ import { internalAction } from "../_generated/server";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4-fast";
+const MODEL_NAME = "x-ai/grok-4.3";
 const SYSTEM_PROMPT =
 	"You are a senior brand color strategist. Create emotionally resonant yet practical color palettes that translate a brand strategy into a usable design system. Use the literal token {company_name} whenever you reference the brand in the story. Never output the actual brand name.";
 

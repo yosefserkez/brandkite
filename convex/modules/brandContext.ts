@@ -174,7 +174,7 @@ export type BrandContext = Infer<typeof brandContextValidator>;
 
 export type BrandDocument = Infer<typeof documentValidator>;
 
-const MODEL_NAME = "x-ai/grok-4-fast";
+const MODEL_NAME = "x-ai/grok-4.3";
 const SYSTEM_PROMPT =
 	"You are a business analyst. Extract and structure brand information from the provided content. Keep the responses concise and to the point, no longer than 2 sentences.";
 

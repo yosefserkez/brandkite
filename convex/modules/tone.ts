@@ -9,7 +9,7 @@ import { internalAction } from "../_generated/server";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4-fast";
+const MODEL_NAME = "x-ai/grok-4.3";
 const SYSTEM_PROMPT =
 	"You are a brand voice strategist crafting tone of voice guides that feel human, empathetic, and practical. Translate strategy into clear tone principles with tangible examples drawn from the provided context. Use the literal token {company_name} whenever you reference the brand in the story. Never output the actual brand name.";
 

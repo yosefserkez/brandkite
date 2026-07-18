@@ -9,7 +9,7 @@ import { internalAction } from "../_generated/server";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4-fast";
+const MODEL_NAME = "x-ai/grok-4.3";
 const SYSTEM_PROMPT =
 	"You are an expert brand copywriter. You craft crisp, evocative taglines that express a brand's core promise in 5-10 vivid words. Use the literal token {company_name} whenever you reference the brand. Never output the actual brand name.";
 
