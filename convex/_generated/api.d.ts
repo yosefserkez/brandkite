@@ -25,6 +25,7 @@ import type * as modules_logo from "../modules/logo.js";
 import type * as modules_marketing from "../modules/marketing.js";
 import type * as modules_mission from "../modules/mission.js";
 import type * as modules_name from "../modules/name.js";
+import type * as modules_social from "../modules/social.js";
 import type * as modules_story from "../modules/story.js";
 import type * as modules_tagline from "../modules/tagline.js";
 import type * as modules_tone from "../modules/tone.js";
@@ -68,6 +69,7 @@ declare const fullApi: ApiFromModules<{
   "modules/marketing": typeof modules_marketing;
   "modules/mission": typeof modules_mission;
   "modules/name": typeof modules_name;
+  "modules/social": typeof modules_social;
   "modules/story": typeof modules_story;
   "modules/tagline": typeof modules_tagline;
   "modules/tone": typeof modules_tone;
