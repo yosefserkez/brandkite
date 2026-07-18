@@ -1,4 +1,3 @@
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateText } from "ai";
 import { v } from "convex/values";
 import Replicate from "replicate";
@@ -7,6 +6,9 @@ import { workflow } from "..";
 import { internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { type ActionCtx, action, internalAction } from "../_generated/server";
+import { svgChecks } from "../lib/design/checks";
+import { svgModel } from "../lib/design/models";
+import { LOGO_CRAFT } from "../lib/design/skills";
 import { logger } from "../logger";
 import { r2 } from "../r2";
 import { BrandModuleTypes } from "../workflows";
@@ -81,11 +83,12 @@ const generateLogoPrompt = (params: {
 		`Brand feel / voice: ${brandContext.brand.summary}`,
 		"",
 		"Design requirements:",
-		"- One clean, iconic vector symbol that captures the brand's essence — specific to this brand, not a generic abstract squiggle.",
 		"- Simple, balanced, memorable, and scalable: must read clearly at favicon size and as a large mark.",
 		"- Flat vector shapes with clean, confident geometry. No text, letters, numbers, photorealism, 3D, or busy detail.",
 		colorGuidance,
 		"- Transparent background.",
+		"",
+		LOGO_CRAFT,
 	].join("\n");
 };
 
@@ -135,9 +138,6 @@ const CONCEPT_DIRECTIVES = [
 // ── LLM-authored SVG marks ───────────────────────────────────────────────
 // A strong LLM writes the logo as clean geometric SVG directly. Excellent for
 // simple, iconic, small-legible marks and monograms; fully editable vectors.
-const LLM_SVG_MODEL = "x-ai/grok-4.3";
-const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
-
 const buildLlmSvgPrompt = (params: {
 	brandContext: BrandContext;
 	companyName?: string | null;
@@ -167,6 +167,8 @@ const buildLlmSvgPrompt = (params: {
 		brief,
 		"",
 		task,
+		"",
+		LOGO_CRAFT,
 		"",
 		"Hard constraints:",
 		'- viewBox="0 0 100 100".',
@@ -201,12 +203,31 @@ const generateLlmSvgLogo = async (
 		kind: "geometric" | "monogram";
 	}
 ): Promise<string> => {
-	const { text } = await generateText({
-		model: openrouter.chat(LLM_SVG_MODEL),
-		prompt: buildLlmSvgPrompt(params),
-		temperature: 0.9,
-	});
-	const svg = extractSvg(text);
+	const basePrompt = buildLlmSvgPrompt(params);
+	const attempt = async (prompt: string): Promise<string | null> => {
+		const { text } = await generateText({
+			model: svgModel(),
+			prompt,
+			temperature: 0.9,
+		});
+		return extractSvg(text);
+	};
+
+	let svg = await attempt(basePrompt);
+	// One corrective retry if the mark violates deterministic SVG hygiene.
+	const violations = svg ? svgChecks(svg) : ["No valid SVG returned."];
+	if (violations.length > 0) {
+		logger.info("LLM SVG failed checks; retrying once", { violations });
+		const retry = await attempt(
+			[
+				basePrompt,
+				"",
+				"Your previous attempt failed these checks — fix every one:",
+				...violations.map((violation) => `- ${violation}`),
+			].join("\n")
+		);
+		svg = retry && svgChecks(retry).length === 0 ? retry : (retry ?? svg);
+	}
 	if (!svg) {
 		throw new Error("LLM did not return valid SVG");
 	}

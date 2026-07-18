@@ -1,17 +1,20 @@
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-
-import { generateObject } from "ai";
 import { v } from "convex/values";
 import z from "zod";
 import { workflow } from "..";
 import { internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
+import { copyChecks } from "../lib/design/checks";
+import { tokenizeBrandName } from "../lib/design/context";
+import { generateChecked } from "../lib/design/generate";
+import { textModel } from "../lib/design/models";
+import { COPY_CRAFT, composeSystem } from "../lib/design/skills";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4.3";
-const SYSTEM_PROMPT =
-	"You are a brand voice strategist crafting tone of voice guides that feel human, empathetic, and practical. Translate strategy into clear tone principles with tangible examples drawn from the provided context. Use the literal token {company_name} whenever you reference the brand in the story. Never output the actual brand name.";
+const SYSTEM_PROMPT = composeSystem(
+	"You are a brand voice strategist crafting tone of voice guides that feel human, empathetic, and practical. Translate strategy into clear tone principles with tangible examples drawn from the provided context. Use the literal token {company_name} whenever you reference the brand in the story. Never output the actual brand name.",
+	COPY_CRAFT
+);
 
 const TONE_EXAMPLE_COUNT = 3;
 
@@ -61,13 +64,6 @@ export const toneValidator = v.object({
 	),
 });
 
-const openrouter = createOpenRouter({
-	apiKey: process.env.OPENROUTER_API_KEY,
-});
-
-const escapeRegExp = (value: string): string =>
-	value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
 type BuildTonePromptArgs = {
 	brandContext: BrandContext;
 	companyName?: string | null;
@@ -116,7 +112,7 @@ const buildTonePrompt = (args: BuildTonePromptArgs): string => {
 		"  * A headline that sounds like a benefit-focused tone pillar.",
 		"  * A short scenario label describing where this tone shows up.",
 		"  * A concise description showing how copy should feel in that moment.",
-		"- Reference customer realities and the lived context of Boonton (if relevant) without making up facts.",
+		"- Reference customer realities from the supplied context without making up facts.",
 		"- Keep language plain, human, and free from jargon.",
 		"",
 		"Respond strictly in JSON satisfying the provided schema.",
@@ -134,20 +130,13 @@ const normalizeTone = (
 		context: example.context.trim(),
 	}));
 
-	if (!companyName) {
-		return { summary, examples };
-	}
-
-	const escapedCompanyName = escapeRegExp(companyName);
-	const namePattern = new RegExp(`\\b${escapedCompanyName}\\b`, "gi");
-
 	return {
-		summary: summary.replace(namePattern, "{company_name}"),
+		summary: tokenizeBrandName(summary, companyName),
 		examples: examples.map((example) => ({
 			...example,
-			title: example.title.replace(namePattern, "{company_name}"),
-			description: example.description.replace(namePattern, "{company_name}"),
-			context: example.context.replace(namePattern, "{company_name}"),
+			title: tokenizeBrandName(example.title, companyName),
+			description: tokenizeBrandName(example.description, companyName),
+			context: tokenizeBrandName(example.context, companyName),
 		})),
 	};
 };
@@ -164,15 +153,17 @@ export const generateBrandTone = internalAction({
 			companyName: args.companyName ?? null,
 		});
 
-		const { object } = await generateObject({
-			model: openrouter.chat(MODEL_NAME),
+		const raw = await generateChecked({
+			model: textModel(),
 			system: SYSTEM_PROMPT,
-			schema: z.object({ value: toneSchema }),
 			prompt,
 			temperature: 0.65,
+			schema: toneSchema,
+			check: (value) => copyChecks(value, prompt),
+			label: "tone",
 		});
 
-		const tone = normalizeTone(object.value, args.companyName ?? null);
+		const tone = normalizeTone(raw, args.companyName ?? null);
 		return { tone };
 	},
 });

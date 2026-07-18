@@ -15,6 +15,12 @@ _Direction: [V2-DIRECTION.md]. Autonomous build. Update statuses as work lands._
 - [ ] Gate publishing behind Pro (free = preview) — Phase 4.
 - [ ] Custom domain (later; may partner). OG image per site.
 
+## Design engine workstream (decision record: DESIGN-ENGINE.md)
+_One engine, three surfaces: module workflows, user-facing MCP, our own dev harness + site tokens._
+- [x] **Phase A — corpus + shared prompts + deterministic checks** (2026-07-18): skills corpus (`design/skills/`), engine lib (`convex/lib/design/` — models/context/skills/checks + `generateChecked` one-corrective-retry loop), all 10 generating modules rewired onto it (incl. marketing/social/website added to the validation registry; Boonton leftover fixed in tone), dev-side skill `.claude/skills/brandkite-design/`.
+- [ ] **Phase B — rendered-critique loop on identity** (deepens Phase 1's bar): diverge (3-5 forced-distinct directions) → deterministic checks → render (SVG rasterize first; no browser) → pairwise multi-lens jury (vision model via `lib/design/models`) → select/refine (max 1 round). `logoEmbeddings` as novelty gate. `options.novelty` + `options.intensity` dials. Eval: pairwise tests on 3-5 varied brands; watch per-module token spend (jury ≈ 4-6× calls).
+- [ ] **Phase C — Brandkite MCP server + closed dogfood loop** (absorbs Phase 5 token export): MCP over Convex HTTP action — `get_brand_kit` / `get_design_tokens` / `generate_asset` / `critique_asset`; token exporter (CSS vars / JSON / Tailwind); brandkite.co `--brand-*` tokens driven by our own published kit via the same MCP a customer would use.
+
 ## Phase 3 — Front-door reshape (identity + site first, demote strategy filler)
 - [ ] Reorder studio: identity + site + go-to-market up top; mission/vision/values/personas/tone/story optional/collapsed.
 - [ ] Message: founder-to-founder, outcome-first. Rewrite key copy.

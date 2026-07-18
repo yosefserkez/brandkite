@@ -1,16 +1,25 @@
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { generateObject } from "ai";
 import { v } from "convex/values";
 import z from "zod";
 import { workflow } from "..";
 import { internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
+import { copyChecks, typographyChecks } from "../lib/design/checks";
+import { tokenizeBrandName } from "../lib/design/context";
+import { generateChecked } from "../lib/design/generate";
+import { textModel } from "../lib/design/models";
+import {
+	ANTI_DEFAULT_LOOKS,
+	composeSystem,
+	TYPOGRAPHY_CRAFT,
+} from "../lib/design/skills";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4.3";
-const SYSTEM_PROMPT =
-	"You are an experienced brand typographer. Translate strategy into a cohesive typography system that is clear, practical to implement on the web, and rooted in accessibility guidelines. Write in natural language without marketing fluff.";
+const SYSTEM_PROMPT = composeSystem(
+	"You are an experienced brand typographer. Translate strategy into a cohesive typography system that is clear, practical to implement on the web, and rooted in accessibility guidelines. Write in natural language without marketing fluff.",
+	TYPOGRAPHY_CRAFT,
+	ANTI_DEFAULT_LOOKS
+);
 const TYPOGRAPHY_TEMPERATURE = 0.65;
 
 export const typographySchema = z.object({
@@ -84,24 +93,7 @@ export const typographyValidator = v.object({
 	specimenCopy: v.string(),
 });
 
-const openrouter = createOpenRouter({
-	apiKey: process.env.OPENROUTER_API_KEY,
-});
-
-const escapeRegExp = (value: string): string =>
-	value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-const replaceBrandNameToken = (
-	value: string,
-	companyName?: string | null
-): string => {
-	const trimmed = value.trim();
-	if (!companyName) {
-		return trimmed;
-	}
-	const pattern = new RegExp(`\\b${escapeRegExp(companyName)}\\b`, "gi");
-	return trimmed.replace(pattern, "{company_name}");
-};
+const replaceBrandNameToken = tokenizeBrandName;
 
 const normalizeTypography = (
 	data: BrandTypography,
@@ -188,19 +180,24 @@ export const generateBrandTypography = internalAction({
 			companyName: args.companyName ?? undefined,
 		});
 
-		const { object } = await generateObject({
-			model: openrouter.chat(MODEL_NAME),
+		const raw = await generateChecked({
+			model: textModel(),
 			system: SYSTEM_PROMPT,
-			schema: z.object({ value: typographySchema }),
 			prompt,
 			temperature: TYPOGRAPHY_TEMPERATURE,
+			schema: typographySchema,
+			check: (value) => [
+				...typographyChecks({
+					primaryFontName: value.primaryFont.name,
+					headlineFontName: value.headlineFont.name,
+				}),
+				...copyChecks(value, prompt),
+			],
+			label: "typography",
 		});
 
 		return {
-			typography: normalizeTypography(
-				object.value,
-				args.companyName ?? undefined
-			),
+			typography: normalizeTypography(raw, args.companyName ?? undefined),
 		};
 	},
 });

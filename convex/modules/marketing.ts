@@ -1,17 +1,27 @@
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-
-import { generateObject } from "ai";
 import { v } from "convex/values";
 import z from "zod";
 import { workflow } from "..";
 import { internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
+import { copyChecks } from "../lib/design/checks";
+import { brandKitBlock, distinctivenessBlock } from "../lib/design/context";
+import { generateChecked } from "../lib/design/generate";
+import { textModel } from "../lib/design/models";
+import {
+	COPY_CRAFT,
+	composeSystem,
+	DISTINCTIVE_VOICE,
+	NO_FABRICATION,
+} from "../lib/design/skills";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4.3";
-const SYSTEM_PROMPT =
-	"You are a senior performance-marketing copywriter. Write sharp, specific ad copy that sounds like the brand and drives action. Lead with the customer's problem or desire, not the product. No hype, no clichés, no buzzwords ('revolutionary', 'seamless', 'unlock', 'game-changer', 'elevate'). CRITICAL: never fabricate facts — no invented user counts, customer numbers, percentages, ratings, awards, or testimonials. Only cite a number or claim if it appears verbatim in the supplied brand context; otherwise make the case qualitatively.";
+const SYSTEM_PROMPT = composeSystem(
+	"You are a senior performance-marketing copywriter. Write sharp, specific ad copy that sounds like the brand and drives action. Lead with the customer's problem or desire, not the product.",
+	COPY_CRAFT,
+	NO_FABRICATION,
+	DISTINCTIVE_VOICE
+);
 const TEMPERATURE = 0.8;
 const AD_COUNT = 3;
 
@@ -62,10 +72,6 @@ export const marketingValidator = v.object({
 	),
 });
 
-const openrouter = createOpenRouter({
-	apiKey: process.env.OPENROUTER_API_KEY,
-});
-
 const PLATFORM_GUIDANCE: Record<string, string> = {
 	generic: "Platform: general digital ads. Keep copy platform-agnostic.",
 	google:
@@ -111,15 +117,9 @@ const buildMarketingPrompt = ({
 		"",
 		"Use the actual brand name naturally where it helps; do not use placeholder tokens.",
 		"",
-		"Brand kit to stay consistent with:",
-		tagline ? `- Tagline: "${tagline}"` : "",
-		mission ? `- Mission: ${mission}` : "",
-		story ? `- Story: ${story}` : "",
-		`- What the brand is: ${brandContext.summary}`,
-		`- Who it serves: ${brandContext.customer.summary}`,
-		`- Product: ${brandContext.product.summary}`,
-		`- Brand voice: ${brandContext.brand.summary}`,
-		`- Industry: ${brandContext.industry ?? "Unspecified"}`,
+		brandKitBlock({ brandContext, tagline, mission, story }),
+		"",
+		distinctivenessBlock(brandContext),
 		"",
 		"Produce:",
 		"- valueProp: one punchy sentence capturing the core value.",
@@ -153,15 +153,17 @@ export const generateMarketing = internalAction({
 			goal: args.goal,
 		});
 
-		const { object } = await generateObject({
-			model: openrouter.chat(MODEL_NAME),
+		const marketing = await generateChecked({
+			model: textModel(),
 			system: SYSTEM_PROMPT,
-			schema: z.object({ value: marketingSchema }),
 			prompt,
 			temperature: TEMPERATURE,
+			schema: marketingSchema,
+			check: (value) => copyChecks(value, prompt),
+			label: "marketing",
 		});
 
-		return { marketing: object.value };
+		return { marketing };
 	},
 });
 

@@ -1,17 +1,20 @@
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-
-import { generateObject } from "ai";
 import { v } from "convex/values";
 import z from "zod";
 import { workflow } from "..";
 import { internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
+import { copyChecks } from "../lib/design/checks";
+import { tokenizeBrandName } from "../lib/design/context";
+import { generateChecked } from "../lib/design/generate";
+import { textModel } from "../lib/design/models";
+import { COPY_CRAFT, composeSystem } from "../lib/design/skills";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4.3";
-const SYSTEM_PROMPT =
-	"You are a seasoned brand strategist. Write concise, conviction-filled mission statements that ground lofty aspirations in practical commitments. Avoid jargon and keep the language human, active, and believable.";
+const SYSTEM_PROMPT = composeSystem(
+	"You are a seasoned brand strategist. Write concise, conviction-filled mission statements that ground lofty aspirations in practical commitments. Avoid jargon and keep the language human, active, and believable.",
+	COPY_CRAFT
+);
 const TEMPERATURE = 0.6;
 
 const MIN_MISSION_LENGTH = 12;
@@ -29,10 +32,6 @@ export type BrandMission = z.infer<typeof missionSchema>;
 
 export const missionValidator = v.object({
 	mission: v.string(),
-});
-
-const openrouter = createOpenRouter({
-	apiKey: process.env.OPENROUTER_API_KEY,
 });
 
 type BuildMissionPromptArgs = {
@@ -80,24 +79,12 @@ const buildMissionPrompt = ({
 	].join("\n");
 };
 
-const escapeRegExp = (value: string): string =>
-	value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
 const normalizeMission = (
 	mission: BrandMission,
 	companyName?: string | null
-): BrandMission => {
-	const trimmedMission = mission.mission.trim();
-
-	if (!companyName) {
-		return { mission: trimmedMission };
-	}
-
-	const escapedCompanyName = escapeRegExp(companyName);
-	const namePattern = new RegExp(`\\b${escapedCompanyName}\\b`, "gi");
-
-	return { mission: trimmedMission.replace(namePattern, "{company_name}") };
-};
+): BrandMission => ({
+	mission: tokenizeBrandName(mission.mission, companyName),
+});
 
 export const generateMission = internalAction({
 	args: {
@@ -111,16 +98,18 @@ export const generateMission = internalAction({
 			companyName: args.companyName ?? undefined,
 		});
 
-		const { object } = await generateObject({
-			model: openrouter.chat(MODEL_NAME),
+		const raw = await generateChecked({
+			model: textModel(),
 			system: SYSTEM_PROMPT,
-			schema: z.object({ value: missionSchema }),
 			prompt,
 			temperature: TEMPERATURE,
+			schema: missionSchema,
+			check: (value) => copyChecks(value, prompt),
+			label: "mission",
 		});
 
 		return {
-			mission: normalizeMission(object.value, args.companyName ?? undefined),
+			mission: normalizeMission(raw, args.companyName ?? undefined),
 		};
 	},
 });

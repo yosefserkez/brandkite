@@ -1,18 +1,25 @@
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-
-import { generateObject } from "ai";
 import { v } from "convex/values";
 import z from "zod";
 import { workflow } from "..";
 import { internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { internalAction } from "../_generated/server";
+import { paletteChecks } from "../lib/design/checks";
+import { generateChecked } from "../lib/design/generate";
+import { textModel } from "../lib/design/models";
+import {
+	ANTI_DEFAULT_LOOKS,
+	COLOR_CRAFT,
+	composeSystem,
+} from "../lib/design/skills";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4.3";
-const SYSTEM_PROMPT =
-	"You are a senior brand color strategist. Create emotionally resonant yet practical color palettes that translate a brand strategy into a usable design system. Use the literal token {company_name} whenever you reference the brand in the story. Never output the actual brand name.";
+const SYSTEM_PROMPT = composeSystem(
+	"You are a senior brand color strategist. Create emotionally resonant yet practical color palettes that translate a brand strategy into a usable design system. Use the literal token {company_name} whenever you reference the brand in the story. Never output the actual brand name.",
+	COLOR_CRAFT,
+	ANTI_DEFAULT_LOOKS
+);
 
 const HEX_PREFIX = "#";
 const HEX_FULL_LENGTH = 6;
@@ -90,10 +97,6 @@ type GeneratePaletteArgs = {
 	brandContext: BrandContext;
 	companyName?: string | null;
 };
-
-const openrouter = createOpenRouter({
-	apiKey: process.env.OPENROUTER_API_KEY,
-});
 
 const buildPrompt = (args: GeneratePaletteArgs): string => {
 	const { brandContext, companyName } = args;
@@ -180,15 +183,17 @@ export const generateBrandPalette = internalAction({
 			companyName: args.companyName ?? null,
 		});
 
-		const { object } = await generateObject({
-			model: openrouter.chat(MODEL_NAME),
+		const raw = await generateChecked({
+			model: textModel(),
 			system: SYSTEM_PROMPT,
-			schema: z.object({ value: colorsSchema }),
 			prompt,
 			temperature: 0.7,
+			schema: colorsSchema,
+			check: (value) => paletteChecks(value.colors.map((color) => color.hex)),
+			label: "colors",
 		});
 
-		const palette = normalizePalette(object.value);
+		const palette = normalizePalette(raw);
 		return { palette };
 	},
 });

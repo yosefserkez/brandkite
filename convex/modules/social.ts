@@ -1,17 +1,27 @@
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-
-import { generateObject } from "ai";
 import { v } from "convex/values";
 import z from "zod";
 import { workflow } from "..";
 import { internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
+import { copyChecks } from "../lib/design/checks";
+import { brandKitBlock, distinctivenessBlock } from "../lib/design/context";
+import { generateChecked } from "../lib/design/generate";
+import { textModel } from "../lib/design/models";
+import {
+	COPY_CRAFT,
+	composeSystem,
+	DISTINCTIVE_VOICE,
+	NO_FABRICATION,
+} from "../lib/design/skills";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4.3";
-const SYSTEM_PROMPT =
-	"You are a social media strategist who writes in the brand's voice. Produce concise, human, on-brand social copy. No hashtag spam (at most one or two, only if natural), no emoji spray, no clichés, no fabricated stats or testimonials. Bios must fit each platform's norms.";
+const SYSTEM_PROMPT = composeSystem(
+	"You are a social media strategist who writes in the brand's voice. Produce concise, human, on-brand social copy. No hashtag spam (at most one or two, only if natural), no emoji spray. Bios must fit each platform's norms.",
+	COPY_CRAFT,
+	NO_FABRICATION,
+	DISTINCTIVE_VOICE
+);
 const TEMPERATURE = 0.8;
 const BIO_COUNT = 3;
 const POST_COUNT = 2;
@@ -57,10 +67,6 @@ export const socialValidator = v.object({
 	posts: v.array(v.object({ hook: v.string(), body: v.string() })),
 });
 
-const openrouter = createOpenRouter({
-	apiKey: process.env.OPENROUTER_API_KEY,
-});
-
 const TONE_GUIDANCE: Record<string, string> = {
 	brand: "Match the brand's own voice as described below.",
 	professional: "Lean professional and credible; speak to a business audience.",
@@ -90,13 +96,9 @@ const buildSocialPrompt = ({
 		"",
 		"Use the actual brand name naturally; do not use placeholder tokens.",
 		"",
-		"Brand kit to stay consistent with:",
-		tagline ? `- Tagline: "${tagline}"` : "",
-		mission ? `- Mission: ${mission}` : "",
-		`- What the brand is: ${brandContext.summary}`,
-		`- Who it serves: ${brandContext.customer.summary}`,
-		`- Brand voice: ${brandContext.brand.summary}`,
-		`- Industry: ${brandContext.industry ?? "Unspecified"}`,
+		brandKitBlock({ brandContext, tagline, mission }),
+		"",
+		distinctivenessBlock(brandContext),
 		"",
 		"Produce:",
 		"- bios: one each for X, LinkedIn, and Instagram (platform-appropriate length), plus a suggested handle.",
@@ -125,15 +127,17 @@ export const generateSocial = internalAction({
 			tone: args.tone,
 		});
 
-		const { object } = await generateObject({
-			model: openrouter.chat(MODEL_NAME),
+		const social = await generateChecked({
+			model: textModel(),
 			system: SYSTEM_PROMPT,
-			schema: z.object({ value: socialSchema }),
 			prompt,
 			temperature: TEMPERATURE,
+			schema: socialSchema,
+			check: (value) => copyChecks(value, prompt),
+			label: "social",
 		});
 
-		return { social: object.value };
+		return { social };
 	},
 });
 
