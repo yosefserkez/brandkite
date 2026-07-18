@@ -22,12 +22,20 @@ Sell to early-stage founders/indie hackers/agencies who need a credible brand id
 ## Big product direction (owner, 2026-07-18) — see VISION.md
 Brandkite = a **living, consistent brand SYSTEM that scales across marketing** (anti-ChatGPT / not one-off). Lead with outcomes, de-emphasize colors/typography (make compact), minimal copy (NO ai-slop slogans/subtitles/bullets), calmer/softer aesthetic (pastel/watercolor/generated imagery), less padding/bands.
 
-## Next recommended action (prioritized)
-1. **Interactive consistency demo**: on landing, let visitor change a color/font → the marketing ad restyles live (client-side). The definitive "not one-off / anti-ChatGPT" proof (VISION.md "brand system, live").
-2. Kill AI-slop copy incl. the left sidebar "About BrandKite / Key Features" bullets (generic filler).
-3. Calmer aesthetic pass (pastel/soft), compact colors/typography, less padding.
-4. Expand modules (vision/values/positioning/personas/messaging; social; landing copy) — each declares `options`, composes from siblings.
-5. Owner actions: Google OAuth creds; real checkout verification; Autumn test-mode wiring. Logo transparent-bg polish.
+## NEXT SESSION — goal: run ads, get paying customers, run experiments/optimizations
+The critical path to *paying customers* (do in this order; don't run ads until 1–3 hold):
+1. **Verify payment actually collects** (BLOCKER for revenue). Wire the Autumn TEST-mode key (owner provided; value not stored — ask owner to re-share or set via `npx convex env set` on a test path), OR do a small real card test then refund. Confirm clicking Upgrade → Stripe Checkout charges a card. Until proven, "conversions" earn $0.
+2. **Make signup + activation convert.** Add Google OAuth (needs owner to create Google creds + set AUTH_GOOGLE_ID/SECRET, then flip VITE_GOOGLE_AUTH_ENABLED). Watch PostHog for magic-link drop-off. Ensure the landing → signup → first-kit funnel is smooth (PostHog events already instrumented).
+3. **Landing conversion polish** (also the product demo): the interactive "change color/font → ads restyle live" proof (VISION.md); kill AI-slop copy incl. the sidebar About/Key-Features bullets; calmer aesthetic; compact colors/typography.
+4. **Then run ad experiments** — needs owner **budget approval + stop conditions** (AUTHORIZATION.md: paid ads require approval). Start one channel, small budget, clear success threshold; measure with PostHog; iterate. Design as EXPERIMENTS.md entries.
+5. Ongoing product depth (supports retention/expansion): expand modules (vision/values/positioning/messaging, social, landing copy) — each declares `options`, composes from siblings. Logo transparent-bg polish.
+
+## Owner actions needed (unblock the above)
+- Autumn test-mode key (re-share) OR approve a small real-card checkout test.
+- Google OAuth credentials.
+- Ad budget + per-experiment cap + which channel to test first.
+
+## Resume via `/grow-to-1m-arr` — read STATE.md, VISION.md, AUTHORIZATION.md; verify prod via PostHog (personal project 518164) + `npx convex data --prod`.
 
 ## Blockers / pending
 - Google OAuth dormant until owner sets AUTH_GOOGLE_ID/SECRET.
