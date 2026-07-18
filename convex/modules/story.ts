@@ -9,16 +9,16 @@ import { internalAction } from "../_generated/server";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4-fast";
+const MODEL_NAME = "x-ai/grok-4.3";
 const SYSTEM_PROMPT =
-	"You are a seasoned brand storyteller. Write vivid, emotionally compelling narratives that translate brand strategy into human stories. Ground every detail in the supplied context. Keep prose clear, evocative, and free of marketing buzzwords. Maintain authenticity and avoid exaggeration.";
-const STORY_TEMPERATURE = 0.85;
+	"You are a brand strategist writing the brand story section of a brand kit. Write a tight, usable brand narrative a founder can paste onto an About page — concrete, confident, and specific. Ground every claim in the supplied context. No purple prose, no clichés, no marketing buzzwords (no 'revolutionize', 'seamless', 'empower', 'passion', 'journey'). Prefer plain, declarative sentences over flowery ones.";
+const STORY_TEMPERATURE = 0.7;
 
 export const storySchema = z.object({
 	story: z
 		.string()
 		.describe(
-			"Cohesive brand story written as multiple short paragraphs separated by blank lines. Lead with the customer's lived experience, weave in the founder or brand origin, and close with the transformation the brand enables."
+			"A concise brand story of 2-3 short paragraphs (about 90-160 words total), separated by blank lines. Paragraph 1: the real problem the customer faces and why it matters. Paragraph 2: what the brand does about it and what makes it different. Paragraph 3 (optional, 1-2 sentences): the outcome for the customer. Usable as-is on an About page. No headings or lists."
 		),
 });
 
@@ -35,8 +35,10 @@ const openrouter = createOpenRouter({
 const buildStoryPrompt = (params: {
 	brandContext: BrandContext;
 	companyName?: string | null;
+	tagline?: string | null;
+	mission?: string | null;
 }): string => {
-	const { brandContext, companyName } = params;
+	const { brandContext, companyName, tagline, mission } = params;
 
 	const docSummaries = brandContext.documents.length
 		? brandContext.documents.map((doc) => `- ${doc.summary}`).join("\n")
@@ -52,6 +54,9 @@ const buildStoryPrompt = (params: {
 		`Brand name for context: ${companyName ?? "Unnamed brand"}`,
 		"Use the literal token {company_name} whenever you reference the brand in the story. Never output the actual brand name.",
 		"",
+		tagline ? `Stay consistent with the tagline: "${tagline}"` : "",
+		mission ? `Stay consistent with the mission: "${mission}"` : "",
+		tagline || mission ? "" : "",
 		"Brand context:",
 		`- Summary: ${brandContext.summary}`,
 		`- Industry: ${brandContext.industry ?? "Unspecified"}`,
@@ -72,14 +77,14 @@ const buildStoryPrompt = (params: {
 				)
 			: "",
 		"",
-		"Write a brand story that:",
-		"- Opens with the emotional tension the customer feels today.",
-		"- Introduces a relatable person (founder, customer, or team member) drawn from the context.",
-		"- Explains the brand's solution in plain language.",
-		"- Paints the moment of transformation and the community or experience surrounding it.",
-		"- Closes with a grounded promise of what life feels like with the brand.",
+		"Write the brand story:",
+		"- 2-3 short paragraphs, ~90-160 words total. Every sentence earns its place.",
+		"- Paragraph 1: the concrete problem this customer faces today and why it matters.",
+		"- Paragraph 2: what the brand does about it, in plain language, and the one thing that makes it different.",
+		"- Optional final 1-2 sentences: the tangible outcome for the customer.",
+		"- Specific and grounded, not abstract. No buzzwords, no clichés, no hype.",
 		"",
-		"Respond with the full story as plain text paragraphs only. Do not include additional headings, lists, or metadata.",
+		"Respond with the story as plain text paragraphs only. No headings, lists, or metadata.",
 	].join("\n");
 };
 
@@ -109,11 +114,15 @@ export const generateBrandStory = internalAction({
 		companyId: v.id("companies"),
 		brandContext: brandContextValidator,
 		companyName: v.optional(v.string()),
+		tagline: v.optional(v.string()),
+		mission: v.optional(v.string()),
 	},
 	handler: async (_ctx, args): Promise<{ story: BrandStory }> => {
 		const prompt = buildStoryPrompt({
 			brandContext: args.brandContext as BrandContext,
 			companyName: args.companyName ?? undefined,
+			tagline: args.tagline ?? undefined,
+			mission: args.mission ?? undefined,
 		});
 
 		const { object } = await generateObject({
@@ -151,6 +160,19 @@ export const storyWorkflow = workflow.define({
 			companyId: args.companyId,
 		});
 
+		const taglineDoc = (
+			await ctx.runQuery(internal.brandModules.getCurrentModule, {
+				companyId: args.companyId,
+				type: BrandModuleTypes.Tagline,
+			})
+		)?.data as { tagline?: string } | null;
+		const missionDoc = (
+			await ctx.runQuery(internal.brandModules.getCurrentModule, {
+				companyId: args.companyId,
+				type: BrandModuleTypes.Mission,
+			})
+		)?.data as { mission?: string } | null;
+
 		const moduleId = await ctx.runMutation(
 			internal.brandModules.createModuleInternal,
 			{
@@ -167,6 +189,8 @@ export const storyWorkflow = workflow.define({
 				companyId: args.companyId,
 				brandContext: brandContextDoc,
 				companyName: company?.name ?? undefined,
+				tagline: taglineDoc?.tagline ?? undefined,
+				mission: missionDoc?.mission ?? undefined,
 			}
 		);
 
