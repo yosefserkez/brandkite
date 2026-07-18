@@ -1,5 +1,8 @@
 # VISION — from brand kits to "launch in minutes"
 
+> **Committed v2 direction: [V2-DIRECTION.md](V2-DIRECTION.md).** Brand & identity layer for the AI-native company → brand-as-API infrastructure as customers scale. This file's composability/dogfooding notes still apply.
+
+
 _Owner's directive 2026-07-18: "imagine going from idea to full brand and company ready in minutes… a 1-person engineer can use Brandkite to turn their product into a business with everything they need to market, sell, and grow." Brainstorm, not spec. Nothing here overrides evidence gates in ROADMAP.md._
 
 ## The core thesis — why Brandkite, not ChatGPT (owner, 2026-07-18)
