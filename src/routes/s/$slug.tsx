@@ -44,13 +44,13 @@ function PublishedSiteRoute() {
 
 	if (data === undefined) {
 		return (
-			<div className="flex min-h-screen items-center justify-center bg-white">
-				<div
-					aria-label="Loading"
+			<output className="flex min-h-screen items-center justify-center bg-white">
+				<span
+					aria-hidden="true"
 					className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-gray-900"
-					role="status"
 				/>
-			</div>
+				<span className="sr-only">Loading</span>
+			</output>
 		);
 	}
 
