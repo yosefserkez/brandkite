@@ -313,13 +313,33 @@ export const getModulesForGeneration = internalQuery({
 
 export const getCurrentModule = internalQuery({
 	args: { companyId: v.id("companies"), type: brandModuleTypeValidator },
-	handler: async (ctx, args) =>
-		await ctx.db
+	handler: async (ctx, args) => {
+		// Return the newest PUBLISHED version. Without the published filter,
+		// .first() on this index (ordered by the boolean `published`, false
+		// first) can return a stale unpublished version once a module has been
+		// regenerated — which would feed stale data to composed modules.
+		const published = await ctx.db
 			.query("brandModules")
 			.withIndex("by_company_type_current", (q) =>
+				q
+					.eq("companyId", args.companyId)
+					.eq("type", args.type.toString())
+					.eq("published", true)
+			)
+			.order("desc")
+			.first();
+		if (published) {
+			return published;
+		}
+		// Fallback: no published version yet (e.g. mid-generation) — newest any.
+		return await ctx.db
+			.query("brandModules")
+			.withIndex("by_company_type", (q) =>
 				q.eq("companyId", args.companyId).eq("type", args.type.toString())
 			)
-			.first(),
+			.order("desc")
+			.first();
+	},
 });
 
 export const getPublishedModules = internalQuery({
