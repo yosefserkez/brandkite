@@ -5,6 +5,7 @@ import { useCustomer } from "autumn-js/react";
 import { ArrowRight, ChevronDown, Loader2 } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
 	Accordion,
 	AccordionContent,
@@ -98,11 +99,32 @@ export default function CheckoutDialog(params: CheckoutDialogProps) {
 								quantity: option.quantity,
 							}));
 
-							await attach({
+							const res = await attach({
 								productId: checkoutResult.product.id,
 								...(params.checkoutParams || {}),
 								options,
+								successUrl: window.location.href,
 							});
+
+							if (res?.error) {
+								toast.error(
+									res.error.message ?? "Checkout failed. Please try again."
+								);
+								setLoading(false);
+								return;
+							}
+
+							// A checkout_url means payment is required — send the user to
+							// Stripe Checkout to enter a card before access is granted.
+							const checkoutUrl = (res?.data as { checkout_url?: string })
+								?.checkout_url;
+							if (checkoutUrl) {
+								window.location.href = checkoutUrl;
+								return;
+							}
+
+							// No checkout_url: applied immediately (free plan or existing
+							// card), so the purchase is complete.
 							track("plan_purchased", {
 								plan: checkoutResult.product.id,
 								is_free: checkoutResult.product.properties?.is_free,
