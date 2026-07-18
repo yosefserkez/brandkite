@@ -14,3 +14,4 @@ todos.json
 *.ignore*
 # Local Netlify folder
 .netlify
+.env.local

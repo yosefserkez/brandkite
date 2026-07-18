@@ -1,4 +1,5 @@
 import { useQuery } from "convex/react";
+import { usePostHog } from "posthog-js/react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { LogoModuleData } from "../../../convex/modules/logo";
@@ -14,6 +15,7 @@ type LogoModuleProps = {
 };
 
 export default function LogoModule({ companyId, className }: LogoModuleProps) {
+	const posthog = usePostHog();
 	const ctx = useBrandModule(companyId, "logo");
 
 	const data = ctx.selected?.data as LogoModuleData | undefined;
@@ -32,6 +34,7 @@ export default function LogoModule({ companyId, className }: LogoModuleProps) {
 		if (!logoUrl) {
 			return;
 		}
+		posthog.capture("logo_downloaded");
 		const a = document.createElement("a");
 		a.href = logoUrl;
 		a.download = "logo.svg";

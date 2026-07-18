@@ -1,5 +1,6 @@
 import { useCustomer } from "autumn-js/react";
 import { Copy, Download, MoreVertical, RefreshCw } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
 import type UseBrandModuleResult from "../../hooks/useBrandModule";
@@ -152,6 +153,7 @@ export function ModuleActions({
 	hideVersionSelector = false,
 	hideRegenerate = false,
 }: ModuleActionsProps) {
+	const posthog = usePostHog();
 	const iconSize = variant === "full" ? "sm" : "md";
 	const allActions = buildModuleActions({
 		ctx,
@@ -159,7 +161,17 @@ export function ModuleActions({
 		customActions: actions,
 		iconSize,
 		hideRegenerate,
-	});
+	}).map((action) =>
+		action.label === "Copy"
+			? {
+					...action,
+					onClick: () => {
+						posthog.capture("brand_asset_copied");
+						action.onClick();
+					},
+				}
+			: action
+	);
 
 	// Compact variant: dropdown menu
 	if (variant === "compact") {

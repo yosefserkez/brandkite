@@ -3,6 +3,7 @@ import type { BrandContext } from "@convex/modules/brandContext";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCustomer } from "autumn-js/react";
 import { useAction, useMutation, useQuery } from "convex/react";
+import { usePostHog } from "posthog-js/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Billing } from "@/components/billing";
@@ -21,6 +22,7 @@ type Step = "input" | "processing" | "form";
 
 function NewCompanyRoute() {
 	const navigate = useNavigate();
+	const posthog = usePostHog();
 	const { check } = useCustomer();
 	const companies = useQuery(api.companies.listWithBrandData) || [];
 	const [step, setStep] = useState<Step>("input");
@@ -49,6 +51,12 @@ function NewCompanyRoute() {
 			}
 		}
 
+		posthog.capture("brand_input_submitted", {
+			has_urls: data.urls.length > 0,
+			has_files: (data.files?.length ?? 0) > 0,
+			has_text: data.rawText.length > 0,
+		});
+
 		setStep("processing");
 		setIsProcessing(true);
 
@@ -75,6 +83,8 @@ function NewCompanyRoute() {
 			return;
 		}
 
+		posthog.capture("brand_context_confirmed");
+
 		setIsProcessing(true);
 		try {
 			const companyId = await createCompany({
@@ -83,6 +93,7 @@ function NewCompanyRoute() {
 				isPublic: false,
 				brandContext,
 			});
+			posthog.capture("company_created", { company_id: companyId });
 			toast.success("Company created successfully!");
 			navigate({ to: "/c/$id", params: { id: companyId } });
 		} catch (_error) {

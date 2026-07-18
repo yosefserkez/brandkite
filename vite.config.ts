@@ -1,10 +1,12 @@
-import { nitro } from "nitro/vite";
 import { wrapVinxiConfigWithSentry } from "@sentry/tanstackstart-react";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
+import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import viteTsConfigPaths from "vite-tsconfig-paths";
+
+const INGEST_REWRITE = /^\/ingest/;
 
 const config = defineConfig({
 	plugins: [
@@ -17,6 +19,28 @@ const config = defineConfig({
 		nitro(),
 		viteReact(),
 	],
+	server: {
+		proxy: {
+			"/ingest/static": {
+				target: "https://us-assets.i.posthog.com",
+				changeOrigin: true,
+				rewrite: (path) => path.replace(INGEST_REWRITE, ""),
+				secure: false,
+			},
+			"/ingest/array": {
+				target: "https://us-assets.i.posthog.com",
+				changeOrigin: true,
+				rewrite: (path) => path.replace(INGEST_REWRITE, ""),
+				secure: false,
+			},
+			"/ingest": {
+				target: "https://us.i.posthog.com",
+				changeOrigin: true,
+				rewrite: (path) => path.replace(INGEST_REWRITE, ""),
+				secure: false,
+			},
+		},
+	},
 });
 
 export default wrapVinxiConfigWithSentry(config, {

@@ -5,7 +5,8 @@ import {
 	IconLogout,
 } from "@tabler/icons-react";
 import { useQuery } from "convex/react";
-import { useState } from "react";
+import { usePostHog } from "posthog-js/react";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -30,6 +31,17 @@ export function NavUser() {
 	const { signOut } = useAuthActions();
 	const viewer = useQuery(api.users.viewer);
 	const [billingOpen, setBillingOpen] = useState(false);
+	const posthog = usePostHog();
+
+	useEffect(() => {
+		if (!viewer?._id) {
+			return;
+		}
+		posthog.identify(viewer._id as string, {
+			email: viewer.email,
+			name: viewer.name,
+		});
+	}, [viewer?._id, viewer?.email, viewer?.name, posthog]);
 
 	// If no user is logged in, return null
 	if (!viewer) {
@@ -97,7 +109,12 @@ export function NavUser() {
 								<IconUserCircle />
 								Account
 							</DropdownMenuItem> */}
-							<DropdownMenuItem onClick={() => setBillingOpen(true)}>
+							<DropdownMenuItem
+								onClick={() => {
+									setBillingOpen(true);
+									posthog.capture("billing_dialog_opened");
+								}}
+							>
 								<IconCreditCard />
 								Billing
 							</DropdownMenuItem>
@@ -105,6 +122,8 @@ export function NavUser() {
 						<DropdownMenuSeparator />
 						<DropdownMenuItem
 							onClick={async () => {
+								posthog.capture("user_signed_out");
+								posthog.reset();
 								await signOut();
 								window.location.href = "/";
 							}}

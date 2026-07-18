@@ -10,6 +10,7 @@ import {
 	Scripts,
 } from "@tanstack/react-router";
 import { ConvexReactClient } from "convex/react";
+import { PostHogProvider } from "posthog-js/react";
 import { Toaster } from "sonner";
 import { AutumnWrapper } from "../components/autumn-wrapper";
 import appCss from "../styles.css?url";
@@ -84,13 +85,26 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				/>
 			</head>
 			<body>
-				<ConvexAuthProvider client={convex}>
-					<ErrorBoundary>
-						<AutumnWrapper>{children}</AutumnWrapper>
-					</ErrorBoundary>
-				</ConvexAuthProvider>
-				<Toaster />
-				<Scripts />
+				<PostHogProvider
+					apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN}
+					options={{
+						api_host: "/ingest",
+						ui_host:
+							import.meta.env.VITE_PUBLIC_POSTHOG_HOST ||
+							"https://us.posthog.com",
+						defaults: "2025-05-24",
+						capture_exceptions: true,
+						debug: import.meta.env.DEV,
+					}}
+				>
+					<ConvexAuthProvider client={convex}>
+						<ErrorBoundary>
+							<AutumnWrapper>{children}</AutumnWrapper>
+						</ErrorBoundary>
+					</ConvexAuthProvider>
+					<Toaster />
+					<Scripts />
+				</PostHogProvider>
 			</body>
 		</html>
 	);

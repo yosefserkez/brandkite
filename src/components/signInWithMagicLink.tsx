@@ -1,4 +1,5 @@
 import { useAuthActions } from "@convex-dev/auth/react";
+import { usePostHog } from "posthog-js/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ function SignInWithMagicLink({
 	handleLinkSent: () => void;
 }) {
 	const { signIn } = useAuthActions();
+	const posthog = usePostHog();
 	const [submitting, setSubmitting] = useState(false);
 	return (
 		<form
@@ -45,7 +47,10 @@ function SignInWithMagicLink({
 				setSubmitting(true);
 				const formData = new FormData(event.currentTarget);
 				signIn("resend", formData)
-					.then(handleLinkSent)
+					.then(() => {
+						posthog.capture("magic_link_requested");
+						handleLinkSent();
+					})
 					.catch((_error) => {
 						toast.error("Could not send sign-in link");
 						setSubmitting(false);

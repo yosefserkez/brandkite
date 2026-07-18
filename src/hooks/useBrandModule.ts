@@ -1,5 +1,6 @@
 import type { BrandModuleType } from "@convex/workflows";
 import { useAction, useMutation, useQuery } from "convex/react";
+import { usePostHog } from "posthog-js/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
@@ -41,6 +42,7 @@ export function useBrandModule(
 	companyId: Id<"companies">,
 	moduleType: BrandModuleType
 ): UseBrandModuleResult {
+	const posthog = usePostHog();
 	const versions = useQuery(api.brandModules.getModulesByType, {
 		companyId,
 		type: moduleType,
@@ -122,10 +124,11 @@ export function useBrandModule(
 				moduleId: selected._id,
 				publish: true,
 			});
+			posthog.capture("module_published", { module_type: moduleType });
 		} finally {
 			setIsPublishing(false);
 		}
-	}, [selected, updateModule]);
+	}, [selected, updateModule, posthog, moduleType]);
 
 	const saveSelected = useCallback(
 		async (nextData: unknown) => {
@@ -150,6 +153,7 @@ export function useBrandModule(
 			setIsRegenerating(true);
 			setShouldSelectNewestAfterRegen(true);
 			setRegenRequestedAt(Date.now());
+			posthog.capture("module_regenerated", { module_type: moduleType });
 			try {
 				await regenerateModule({
 					companyId,
@@ -163,7 +167,7 @@ export function useBrandModule(
 				setIsRegenerating(false);
 			}
 		},
-		[companyId, moduleType, regenerateModule]
+		[companyId, moduleType, regenerateModule, posthog]
 	);
 
 	return {

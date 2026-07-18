@@ -1,5 +1,6 @@
 import { useAction, useMutation } from "convex/react";
 import { Loader2, RefreshCw } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -26,6 +27,7 @@ export function ChangeNameDialog({
 	onOpenChange,
 	generatedNames,
 }: ChangeNameDialogProps) {
+	const posthog = usePostHog();
 	const { name: currentName, updateName } = useCompanyName(companyId);
 	const generateDomainsAction = useAction(api.modules.name.generateDomains);
 	const regenerateModule = useMutation(api.brandModules.regenerateModule);
@@ -99,6 +101,9 @@ export function ChangeNameDialog({
 				return;
 			}
 
+			posthog.capture("company_name_changed", {
+				name_type: nameToSave ? "generated" : "custom",
+			});
 			await updateName(newName);
 			onOpenChange(false);
 		} catch {
