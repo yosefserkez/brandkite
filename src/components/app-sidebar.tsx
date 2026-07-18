@@ -54,6 +54,7 @@ import {
 	SidebarTrigger,
 	useSidebar,
 } from "@/components/ui/sidebar";
+import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -69,9 +70,37 @@ function getCompanyInitials(name: string): string {
 	return name.slice(0, 2).toUpperCase();
 }
 
+async function shareCompany(
+	company: { _id: Id<"companies">; isPublic?: boolean },
+	updateCompany: ReturnType<typeof useMutation<typeof api.companies.update>>
+) {
+	track("share_clicked", { surface: "sidebar" });
+
+	const publicUrl = `${window.location.origin}/public/c/${company._id}`;
+
+	try {
+		if (!company.isPublic) {
+			await updateCompany({ companyId: company._id, isPublic: true });
+			track("kit_published", { company_id: company._id });
+		}
+		await navigator.clipboard.writeText(publicUrl);
+		toast.success("Public link copied to clipboard");
+	} catch (error) {
+		if (company.isPublic) {
+			await navigator.clipboard.writeText(publicUrl);
+			toast.success("Public link copied to clipboard");
+		} else {
+			toast.error(
+				error instanceof Error ? error.message : "Failed to share company"
+			);
+		}
+	}
+}
+
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 	const companies = useQuery(api.companies.listWithBrandData) || [];
 	const deleteCompany = useMutation(api.companies.deleteCompany);
+	const updateCompany = useMutation(api.companies.update);
 	const navigate = useNavigate();
 	const { toggleSidebar, state, isMobile } = useSidebar();
 	const { check } = useCustomer();
@@ -110,6 +139,9 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 		setCompanyToDelete({ id: companyId, name: companyName });
 		setDeleteDialogOpen(true);
 	};
+
+	const handleShareClick = (company: (typeof companies)[number]) =>
+		shareCompany(company, updateCompany);
 
 	const handleDeleteConfirm = async () => {
 		if (!companyToDelete) {
@@ -277,9 +309,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 														<span>Edit Context</span>
 													</DropdownMenuItem>
 													<DropdownMenuItem
-														onClick={() => {
-															toast.info("Share functionality coming soon!");
-														}}
+														onClick={() => handleShareClick(company)}
 													>
 														<IconShare3 />
 														<span>Share</span>
