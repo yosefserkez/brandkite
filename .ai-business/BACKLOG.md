@@ -23,5 +23,15 @@ _Ranked: impact × confidence ÷ effort. Re-rank continuously. Statuses: todo / 
 | 16 | Owner: provision Google OAuth creds + flip VITE_GOOGLE_AUTH_ENABLED | conversion | H | H | XS | todo (owner action) |
 | 17 | Owner: verify real Stripe Checkout collects a card (test-mode env ideal) | revenue | Critical | H | S | todo (owner action) |
 
+## Product direction: complete, composable brand+marketing package (owner, 2026-07-18)
+Core = composability (compose assets from current brand blocks; no auto-regen). Current 8 modules are "not enough."
+| # | Item | Notes |
+|---|---|---|
+| P1 | Per-module generation controls (#23) | logo: brand/mono/b&w + flat/line/3d; colors: mood; type: serif/sans. Thread options UI→regenerate→workflow→prompt |
+| P2 | Expand modules toward complete package | Implement the enum types that have NO workflow yet (vision, values, positioning, personas, messaging/differentiators, voice) + NEW asset modules: ad copy, social kit (bios/posts), one-liner/boilerplate, landing-page copy, email templates. Each composes from current blocks |
+| P3 | Broaden composability | Wire sibling-reads into remaining text modules (tagline/mission/tone read each other) for consistency |
+| P4 | Logo polish | Strip Recraft's white background rect (make transparent); expose style/color controls (ties to P1) |
+| P5 | Visual QA loop | In-app "regenerate" already uses new pipeline; owner should eyeball outputs |
+
 Done 2026-07-18: PostHog instrumentation; SEO baseline; CI; R2 authz; dead SignInForm removal; Share button; Autumn name/email fix; billing verification (E1) + checkout redirect fix; landing hero/how-it-works; public-kit/gallery share-loop CTA; env-gated Google OAuth; free grant 5→30/mo.
 Dropped: rewrite/replatform anything (no evidence); paid ads (gate not met).

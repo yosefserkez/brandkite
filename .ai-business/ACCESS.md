@@ -17,7 +17,7 @@ _Never store secret values here. Last updated 2026-07-18._
 ## Requested / pending
 | System | What's needed | Why |
 |---|---|---|
-| Autumn (useautumn.com) | dashboard access or confirmation products exist | Verify Free/Starter/Pro products & credits feature match code |
+| Autumn TEST-mode key | provided by owner 2026-07-18 (value NOT stored anywhere per policy) | For end-to-end checkout testing without live charges. Not yet wired — needs test-env catalog + dev deployment; deferred while focus is generation quality |
 
 ## Deferred
 | System | Trigger |
