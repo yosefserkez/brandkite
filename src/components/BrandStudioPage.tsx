@@ -13,6 +13,7 @@ import ColorsModule from "./modules/ColorsModule";
 import LogoModule from "./modules/LogoModule";
 import MarketingModule from "./modules/MarketingModule";
 import NamesModule from "./modules/NamesModule";
+import SocialModule from "./modules/SocialModule";
 import TextModule from "./modules/TextModule";
 import ToneModule from "./modules/ToneModule";
 import TypographyModule from "./modules/TypographyModule";
@@ -115,6 +116,7 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 						module="story"
 					/>
 					<MarketingModule companyId={companyId} />
+					<SocialModule companyId={companyId} />
 					<ToneModule companyId={companyId} />
 					{/* Colors & typography — the reference details, kept compact */}
 					<div className="grid gap-10 md:grid-cols-2 md:gap-6">
