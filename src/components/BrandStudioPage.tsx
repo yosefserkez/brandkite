@@ -1,4 +1,4 @@
-import { useConvex, useMutation } from "convex/react";
+import { Authenticated, useConvex, useMutation } from "convex/react";
 import { Download } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import TextModule from "./modules/TextModule";
 import ToneModule from "./modules/ToneModule";
 import TypographyModule from "./modules/TypographyModule";
 import WebsiteModule from "./modules/WebsiteModule";
+import { PublishSiteButton } from "./publish-site-button";
 import { Button } from "./ui/button";
 import { FlickeringGrid } from "./ui/flickering-grid";
 
@@ -74,7 +75,10 @@ export function BrandStudioPage({ companyId }: BrandStudioPageProps) {
 			<div className="mb-4 h-full overflow-y-auto bg-white">
 				{/* Module blocks */}
 				<div className="mx-auto max-w-5xl space-y-10 overflow-hidden px-4 py-4">
-					<div className="flex justify-end">
+					<div className="flex justify-end gap-2">
+						<Authenticated>
+							<PublishSiteButton companyId={companyId} />
+						</Authenticated>
 						<Button
 							disabled={isExporting}
 							onClick={handleExportClick}

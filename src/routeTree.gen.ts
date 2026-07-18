@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SSlugRouteImport } from './routes/s/$slug'
 import { Route as PublicCIdRouteImport } from './routes/public/c/$id'
 import { Route as AuthenticatedCNewRouteImport } from './routes/_authenticated/c/new'
 import { Route as AuthenticatedCIdRouteImport } from './routes/_authenticated/c/$id'
@@ -28,6 +29,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SSlugRoute = SSlugRouteImport.update({
+  id: '/s/$slug',
+  path: '/s/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PublicCIdRoute = PublicCIdRouteImport.update({
@@ -49,6 +55,7 @@ const AuthenticatedCIdRoute = AuthenticatedCIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/gallery': typeof GalleryRoute
+  '/s/$slug': typeof SSlugRoute
   '/c/$id': typeof AuthenticatedCIdRoute
   '/c/new': typeof AuthenticatedCNewRoute
   '/public/c/$id': typeof PublicCIdRoute
@@ -56,6 +63,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/gallery': typeof GalleryRoute
+  '/s/$slug': typeof SSlugRoute
   '/c/$id': typeof AuthenticatedCIdRoute
   '/c/new': typeof AuthenticatedCNewRoute
   '/public/c/$id': typeof PublicCIdRoute
@@ -65,20 +73,28 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/gallery': typeof GalleryRoute
+  '/s/$slug': typeof SSlugRoute
   '/_authenticated/c/$id': typeof AuthenticatedCIdRoute
   '/_authenticated/c/new': typeof AuthenticatedCNewRoute
   '/public/c/$id': typeof PublicCIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/gallery' | '/c/$id' | '/c/new' | '/public/c/$id'
+  fullPaths:
+    | '/'
+    | '/gallery'
+    | '/s/$slug'
+    | '/c/$id'
+    | '/c/new'
+    | '/public/c/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/gallery' | '/c/$id' | '/c/new' | '/public/c/$id'
+  to: '/' | '/gallery' | '/s/$slug' | '/c/$id' | '/c/new' | '/public/c/$id'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/gallery'
+    | '/s/$slug'
     | '/_authenticated/c/$id'
     | '/_authenticated/c/new'
     | '/public/c/$id'
@@ -88,6 +104,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   GalleryRoute: typeof GalleryRoute
+  SSlugRoute: typeof SSlugRoute
   PublicCIdRoute: typeof PublicCIdRoute
 }
 
@@ -112,6 +129,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/s/$slug': {
+      id: '/s/$slug'
+      path: '/s/$slug'
+      fullPath: '/s/$slug'
+      preLoaderRoute: typeof SSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/public/c/$id': {
@@ -156,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   GalleryRoute: GalleryRoute,
+  SSlugRoute: SSlugRoute,
   PublicCIdRoute: PublicCIdRoute,
 }
 export const routeTree = rootRouteImport
