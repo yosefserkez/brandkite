@@ -45,11 +45,23 @@ export default function LogoModule({ companyId, className }: LogoModuleProps) {
 	const [style, setStyle] = useState<LogoStyle>("auto");
 
 	const data = ctx.selected?.data as LogoModuleData | undefined;
+	const options = data?.options ?? [];
 
 	const logoUrl = useQuery(api.r2.getSignedUrl, {
 		key: data?.storageKey,
 		companyId,
 	});
+
+	const optionUrls = useQuery(
+		api.r2.getSignedUrls,
+		options.length > 1 ? { keys: options, companyId } : "skip"
+	);
+
+	const selectOption = (key: string) => {
+		if (data && key !== data.storageKey) {
+			ctx.saveSelected({ ...data, storageKey: key });
+		}
+	};
 
 	const onCopy = () => {
 		if (logoUrl) {
@@ -78,8 +90,30 @@ export default function LogoModule({ companyId, className }: LogoModuleProps) {
 			loadingSkeleton={<SuspenseCard contentHeight={100} headerText="Logo" />}
 		>
 			<Card className="h-full w-full">
-				<CardContent className="h-full w-full">
-					{logoUrl && <Logo url={logoUrl} />}
+				<CardContent className="flex h-full w-full flex-col gap-3">
+					<div className="flex flex-1 items-center justify-center">
+						{logoUrl && <Logo url={logoUrl} />}
+					</div>
+					{optionUrls && optionUrls.length > 1 ? (
+						<div className="flex flex-wrap items-center justify-center gap-2">
+							{optionUrls.map(({ key, url }) => (
+								<button
+									aria-label="Use this logo concept"
+									aria-pressed={key === data?.storageKey}
+									className={`flex size-12 items-center justify-center rounded-md border p-1.5 transition-colors ${
+										key === data?.storageKey
+											? "border-gray-900 ring-1 ring-gray-900"
+											: "border-gray-200 hover:border-gray-400"
+									}`}
+									key={key}
+									onClick={() => selectOption(key)}
+									type="button"
+								>
+									<Logo url={url} />
+								</button>
+							))}
+						</div>
+					) : null}
 				</CardContent>
 			</Card>
 			<Authenticated>
