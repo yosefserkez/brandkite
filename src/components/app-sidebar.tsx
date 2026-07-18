@@ -404,53 +404,6 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 							<SidebarGroupContent>
 								<div className="space-y-3 text-sm">
 									<div>
-										<h3 className="mb-2 font-semibold text-sm">
-											About BrandKite
-										</h3>
-										<p className="text-muted-foreground text-xs leading-relaxed">
-											Create and manage your company's complete brand identity.
-											Generate professional logos, colors, typography, and brand
-											guidelines powered by AI.
-										</p>
-									</div>
-									<div>
-										<h4 className="mb-1.5 font-medium text-xs">Key Features</h4>
-										<ul className="space-y-1 text-muted-foreground text-xs">
-											<li className="flex items-start gap-1.5">
-												<span className="mt-0.5">•</span>
-												<span>AI-powered brand generation</span>
-											</li>
-											<li className="flex items-start gap-1.5">
-												<span className="mt-0.5">•</span>
-												<span>Complete brand identity system</span>
-											</li>
-											<li className="flex items-start gap-1.5">
-												<span className="mt-0.5">•</span>
-												<span>Logo, colors, and typography</span>
-											</li>
-											<li className="flex items-start gap-1.5">
-												<span className="mt-0.5">•</span>
-												<span>Brand guidelines and documentation</span>
-											</li>
-										</ul>
-									</div>
-									<div className="pt-2">
-										<p className="mb-3 text-muted-foreground text-xs">
-											<button
-												className="cursor-pointer font-medium text-primary hover:text-primary-hover hover:underline"
-												onClick={() => setLoginDialogOpen(true)}
-												type="button"
-											>
-												Sign in{" "}
-											</button>{" "}
-											to create your own brand identity.
-											{/* <Link
-												className="cursor-pointer font-medium text-primary hover:text-primary-hover hover:underline"
-												to="/gallery"
-											>
-												explore public examples
-											</Link> */}
-										</p>
 										<Button
 											className="w-full"
 											onClick={() => setLoginDialogOpen(true)}
