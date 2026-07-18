@@ -3,14 +3,21 @@ import { useQuery } from "convex/react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { MobileHeader } from "@/components/mobile-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-	SidebarInset,
-	SidebarProvider,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { api } from "../../convex/_generated/api";
 
 export const Route = createFileRoute("/gallery")({
 	component: GalleryRoute,
+	head: () => ({
+		meta: [
+			{ title: "Brand kit gallery — Brandkite" },
+			{
+				name: "description",
+				content:
+					"Browse complete AI-generated brand kits — names, logos, colors, typography, and brand strategy — made with Brandkite.",
+			},
+		],
+	}),
 });
 
 function getCompanyInitials(name: string): string {
