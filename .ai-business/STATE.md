@@ -1,6 +1,6 @@
 # STATE
 
-_Last updated: 2026-07-18 ~09:00 ET (session 2026-07-18-0830)_
+_Last updated: 2026-07-18 ~09:10 ET (session 2026-07-18-0830)_
 
 ## Product & business state
 - Brandkite (brandkite.co, live): AI brand-kit studio — generates name, tagline, mission, colors, typography, SVG logo, ~25 more modules from a URL or short description. TanStack Start + React 19 + Convex + Vercel. Public AGPL repo `yosefserkez/brandkite`.
@@ -14,16 +14,15 @@ Sell to early-stage founders/indie hackers/agencies who need a credible brand id
 **Zero users / zero distribution.** Nothing else matters until real people hit the funnel. Secondary: no analytics existed (being fixed), activation friction unknown.
 
 ## Work completed
-- 2026-07-18: Phase 0 intake; full repo + access audit; Convex login restored; confirmed Vercel deploy key is VALID (early 401 was a shell-quoting artifact — pipeline works); prod env has all API keys incl. AUTUMN_SECRET_KEY; created this control system.
+- 2026-07-18: Phase 0 intake + audit; Convex access restored (deploy key valid — early 401 was shell-quoting artifact); control system + skill created; **Batch 1 shipped to main/prod**: R2 signed-URL authz, dead SignInForm removed, SEO baseline (meta/OG/sitemap), PostHog analytics live (project 518164, personal org), Umami removed, CI added. VISION.md captured owner's "idea → launch-ready company" direction.
 
 ## Work in progress
-- First execution batch (branch TBD): R2 signed-URL authz fix, dead SignInForm removal, SEO baseline, PostHog instrumentation (env-gated), GitHub Actions CI.
+- Verifying prod deploy + CI green; then PostHog event smoke-test on live site.
 
 ## Next recommended action
-Finish first execution batch → deploy → walk the live funnel end-to-end as a user → then first distribution tests (see ROADMAP Phase 1).
+1. Verify deploy/CI/meta/PostHog on brandkite.co. 2. E1: Autumn checkout end-to-end (BACKLOG #6). 3. Funnel walkthrough + friction doc (#7). Then ROADMAP Phase 0 gate review.
 
 ## Blockers / pending
-- **PostHog client token**: user created personal project 518164 (us.posthog.com/project/518164) but the `phc_` token hasn't been provided; claude.ai PostHog MCP is the user's WORK org (Blueprint) — never use it for Brandkite. Instrumentation ships env-gated (`VITE_POSTHOG_KEY`).
 - Autumn dashboard not yet inspected — billing products unverified end-to-end.
 - No Chrome extension connection for browser walkthroughs (retry later).
 
