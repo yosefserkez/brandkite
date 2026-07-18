@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
+import { track } from "../lib/analytics";
 
 export type GenerationStatus =
 	| "idle"
@@ -150,6 +151,10 @@ export function useBrandModule(
 			setIsRegenerating(true);
 			setShouldSelectNewestAfterRegen(true);
 			setRegenRequestedAt(Date.now());
+			track("module_generation_started", {
+				module_type: moduleType,
+				company_id: companyId,
+			});
 			try {
 				await regenerateModule({
 					companyId,

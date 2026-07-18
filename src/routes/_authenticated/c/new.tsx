@@ -11,6 +11,7 @@ import { NewCompany } from "@/components/new-company/context-input";
 import { ContextInputProcessing } from "@/components/new-company/context-input-processing";
 import { ModulesMarquee } from "@/components/new-company/modules-marquee";
 import { Meteors } from "@/components/ui/meteors";
+import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/c/new")({
@@ -83,6 +84,7 @@ function NewCompanyRoute() {
 				isPublic: false,
 				brandContext,
 			});
+			track("company_created", { company_id: companyId });
 			toast.success("Company created successfully!");
 			navigate({ to: "/c/$id", params: { id: companyId } });
 		} catch (_error) {
