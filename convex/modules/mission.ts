@@ -9,7 +9,7 @@ import { internalAction } from "../_generated/server";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4-fast";
+const MODEL_NAME = "x-ai/grok-4.3";
 const SYSTEM_PROMPT =
 	"You are a seasoned brand strategist. Write concise, conviction-filled mission statements that ground lofty aspirations in practical commitments. Avoid jargon and keep the language human, active, and believable.";
 const TEMPERATURE = 0.6;

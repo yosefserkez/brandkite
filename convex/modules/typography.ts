@@ -8,7 +8,7 @@ import { internalAction } from "../_generated/server";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const MODEL_NAME = "x-ai/grok-4-fast";
+const MODEL_NAME = "x-ai/grok-4.3";
 const SYSTEM_PROMPT =
 	"You are an experienced brand typographer. Translate strategy into a cohesive typography system that is clear, practical to implement on the web, and rooted in accessibility guidelines. Write in natural language without marketing fluff.";
 const TYPOGRAPHY_TEMPERATURE = 0.65;
