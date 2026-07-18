@@ -10,7 +10,7 @@ import { r2 } from "../r2";
 import { BrandModuleTypes } from "../workflows";
 import { type BrandContext, brandContextValidator } from "./brandContext";
 
-const LOGO_MODEL_IDENTIFIER = "recraft-ai/recraft-v3-svg";
+const LOGO_MODEL_IDENTIFIER = "recraft-ai/recraft-v4.1-svg";
 const SVG_MIME_TYPE = "image/svg+xml";
 
 type WorkflowHandlerParams = Parameters<
