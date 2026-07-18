@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { AppSidebar } from "@/components/app-sidebar";
+import { MakeYourOwnCta } from "@/components/make-your-own-cta";
 import { MobileHeader } from "@/components/mobile-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -54,6 +55,10 @@ function GalleryRoute() {
 									<p className="text-gray-600">
 										Explore publicly shared brand identities
 									</p>
+								</div>
+
+								<div className="mb-8">
+									<MakeYourOwnCta surface="gallery_cta" />
 								</div>
 
 								{publicCompanies.length === 0 ? (

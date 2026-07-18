@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BrandStudioPage } from "@/components/BrandStudioPage";
+import { MakeYourOwnCta } from "@/components/make-your-own-cta";
 import { MobileHeader } from "@/components/mobile-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { track } from "@/lib/analytics";
@@ -42,6 +43,9 @@ function PublicCompanyRoute() {
 				<SidebarInset>
 					<div className="flex flex-1 flex-col">
 						<MobileHeader />
+						<div className="border-gray-200 border-b bg-gray-50 px-4 py-3">
+							<MakeYourOwnCta surface="public_kit_cta" />
+						</div>
 						<main className="flex-1 overflow-hidden">
 							<BrandStudioPage companyId={id as Id<"companies">} />
 						</main>
