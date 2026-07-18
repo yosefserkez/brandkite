@@ -158,6 +158,54 @@ const buildMarkdown = (companyName: string, modules: ModuleMap): string => {
 		parts.push(section("Marketing", mkBody));
 	}
 
+	const social = modules.social as
+		| {
+				bios?: Array<{ platform?: string; handle?: string; bio?: string }>;
+				posts?: Array<{ hook?: string; body?: string }>;
+		  }
+		| undefined;
+	if (social) {
+		const socialBody = [
+			...(social.bios ?? []).map(
+				(b) =>
+					`- **${asString(b.platform)}** (@${asString(b.handle)}): ${withName(asString(b.bio), name)}`
+			),
+			(social.posts ?? []).length ? "\n**Post ideas:**" : "",
+			...(social.posts ?? []).map(
+				(p) =>
+					`- ${withName(asString(p.hook), name)} — ${withName(asString(p.body), name)}`
+			),
+		]
+			.filter(Boolean)
+			.join("\n");
+		parts.push(section("Social", socialBody));
+	}
+
+	const website = modules.website as
+		| {
+				hero?: { headline?: string; subheadline?: string };
+				features?: Array<{ title?: string; description?: string }>;
+				cta?: { headline?: string; buttonText?: string };
+		  }
+		| undefined;
+	if (website) {
+		const siteBody = [
+			website.hero
+				? `**${withName(asString(website.hero.headline), name)}**\n\n${withName(asString(website.hero.subheadline), name)}`
+				: "",
+			...(website.features ?? []).map(
+				(f) =>
+					`### ${withName(asString(f.title), name)}\n\n${withName(asString(f.description), name)}`
+			),
+			website.cta
+				? `**${withName(asString(website.cta.headline), name)}** — _${asString(website.cta.buttonText)}_`
+				: "",
+		]
+			.filter(Boolean)
+			.join("\n\n");
+		parts.push(section("Landing Page", siteBody));
+	}
+
 	parts.push("\n---\n_Generated with [Brandkite](https://brandkite.co)_\n");
 	return parts.filter(Boolean).join("\n");
 };
