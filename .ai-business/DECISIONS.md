@@ -9,3 +9,6 @@
 | 2026-07-18 | Keep current $10/$30 prices until first users; aim messaging at agencies | Price changes without users = noise; agency tier ($49+) comes with Phase 2 evidence | 10 paying customers |
 | 2026-07-18 | Prod treated as sandbox (deploys/schema/data autonomous) | Owner: zero users, "can do anything incl. dropping db" | **Immediately upon first real user/customer** |
 | 2026-07-18 | Blueprint/Bryan Johnson systems strictly off-limits for Brandkite | Owner directive; personal/work separation | Never |
+| 2026-07-18 | Free grant raised 5 lifetime → 30/month | 5 couldn't complete one kit (~27 credits); throttled activation. Owner approved testing higher grant | If free cannibalizes upgrades or costs spike |
+| 2026-07-18 | Google OAuth added but UI-gated behind VITE_GOOGLE_AUTH_ENABLED | Needs owner to create Google OAuth app + set AUTH_GOOGLE_ID/SECRET; ship dormant to avoid a broken button | When owner provisions creds |
+| 2026-07-18 | Checkout hardened (redirect to Stripe Checkout on checkout_url) rather than rewiring Autumn invoice-mode | The unpaid invoices were an owner operator-mode test, not proof the app flow is broken | If real checkout still fails to collect |

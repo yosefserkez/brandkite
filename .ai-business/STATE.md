@@ -4,7 +4,7 @@ _Last updated: 2026-07-18 ~10:30 ET (session 2026-07-18-0830, batch 2)_
 
 ## Product & business state
 - Brandkite (brandkite.co, live): AI brand-kit studio — generates name, tagline, mission, colors, typography, SVG logo, ~25 more modules from a URL or short description. TanStack Start + React 19 + Convex + Vercel. Public AGPL repo `yosefserkez/brandkite`.
-- **ARR: $0 collected. 13 signed-up users** (~7 activated), 1 reached Pro Annual $300/yr but never paid (invoice-mode granted access on an unpaid invoice). NOT pre-launch — there is real organic pull and a validated buyer, but payment collection is broken. See FINDINGS-2026-07-18.md.
+- **ARR: $0. Effectively pre-launch.** 13 signups are friends; the lone Pro-Annual ($300/yr) is the owner's own test (confirmed 2026-07-18). No validated external demand. Payment collection is also broken (invoice-mode grants access on unpaid invoices) — fix approved. See FINDINGS-2026-07-18.md.
 - Billing scaffolded via Autumn (Free / Starter $10/mo / Pro $30/mo hardcoded in `src/components/billing.tsx`; real products live in Autumn dashboard — not yet verified there).
 
 ## Strategic thesis (current)
