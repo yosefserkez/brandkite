@@ -219,6 +219,18 @@ code {
     shine var(--duration) infinite linear;
   --animate-landing-drift: landing-drift 8s ease-in-out infinite alternate;
   --animate-landing-rise: landing-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-ad-enter: ad-enter 0.4s cubic-bezier(0.2, 0, 0, 1) both;
+
+  @keyframes ad-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 
   @keyframes landing-drift {
     from {

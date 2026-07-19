@@ -120,7 +120,9 @@ export function AnimatedKit({
 					}
 				}
 			},
-			{ threshold: 0.3 }
+			// Fire early (10% visible, 200px lookahead) so fast scrollers never
+			// land on the board before the build sequence has begun.
+			{ threshold: 0.1, rootMargin: "0px 0px 200px 0px" }
 		);
 		observer.observe(node);
 		return () => observer.disconnect();
@@ -303,9 +305,10 @@ export function AnimatedKit({
 										cta: replaceName(ad.cta, brandName),
 									}}
 									className={cn(
-										"mx-auto",
+										"mx-auto animate-ad-enter motion-reduce:animate-none",
 										placement === "tiktok" ? "max-w-[250px]" : "max-w-sm"
 									)}
+									key={placement}
 									logoUrl={logoUrl || undefined}
 									placement={placement}
 									seed={`hero-${ad.headline}`}

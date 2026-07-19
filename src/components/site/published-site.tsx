@@ -268,7 +268,18 @@ export function PublishedSite({ data }: { data: PublishedSiteData }) {
 							background: `radial-gradient(60% 60% at 50% 0%, ${rgba(accent, ALPHA_WASH)} 0%, rgba(255,255,255,0) 70%)`,
 						}}
 					/>
-					<div className="relative mx-auto max-w-4xl px-5 pt-20 pb-16 text-center sm:px-8 sm:pt-28 sm:pb-24">
+					<div className="relative mx-auto max-w-4xl px-5 pt-16 pb-12 text-center sm:px-8 sm:pt-24 sm:pb-16">
+						{data.logoUrl ? (
+							<span className="mx-auto mb-7 flex h-14 w-14 items-center justify-center">
+								<img
+									alt=""
+									className="h-full w-full object-contain"
+									height="56"
+									src={data.logoUrl}
+									width="56"
+								/>
+							</span>
+						) : null}
 						{data.tagline ? (
 							<p
 								className="mb-6 flex items-center justify-center gap-2 font-medium text-sm"
@@ -316,7 +327,7 @@ export function PublishedSite({ data }: { data: PublishedSiteData }) {
 				{/* Features */}
 				{website && website.features.length > 0 ? (
 					<section
-						className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24"
+						className="mx-auto max-w-6xl px-5 py-12 sm:px-8 sm:py-16"
 						id="features"
 					>
 						<div className="grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">

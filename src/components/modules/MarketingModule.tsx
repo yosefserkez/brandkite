@@ -78,7 +78,7 @@ export default function MarketingModule({
 		>
 			<Card>
 				<CardHeader className="gap-1">
-					<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
+					<p className="wrap-break-word col-span-full place-self-stretch font-medium text-[11px] text-gray-400 uppercase tracking-[0.08em]">
 						Marketing
 					</p>
 					<BrandText
@@ -113,7 +113,8 @@ export default function MarketingModule({
 							{data.ads.map((ad, index) => (
 								<AdArtifact
 									ad={ad}
-									key={`${ad.headline}-${index}`}
+									index={index}
+									key={`${placement}-${ad.headline}-${index}`}
 									placement={placement}
 									seed={`${index}-${ad.headline}`}
 								/>
@@ -168,13 +169,17 @@ export default function MarketingModule({
 
 type MarketingAd = BrandMarketing["ads"][number];
 
+const ENTER_STAGGER_MS = 70;
+
 type AdArtifactProps = {
 	ad: MarketingAd;
 	placement: AdPlacement;
 	seed: string;
+	/** Position in the grid; staggers the enter animation on placement switch. */
+	index?: number;
 };
 
-function AdArtifact({ ad, placement, seed }: AdArtifactProps) {
+function AdArtifact({ ad, placement, seed, index = 0 }: AdArtifactProps) {
 	const { replace, companyName } = useBrandText();
 	const logoUrl = useCompanyBrandSelector((state) => state.logoUrl);
 	const brandName = companyName?.trim() || "Your brand";
@@ -191,7 +196,10 @@ function AdArtifact({ ad, placement, seed }: AdArtifactProps) {
 	};
 
 	return (
-		<div className="flex h-full flex-col gap-1.5">
+		<div
+			className="flex h-full animate-ad-enter flex-col gap-1.5 motion-reduce:animate-none"
+			style={{ animationDelay: `${index * ENTER_STAGGER_MS}ms` }}
+		>
 			<AdMockup
 				ad={{
 					brandName,

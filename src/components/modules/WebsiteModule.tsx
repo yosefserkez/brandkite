@@ -75,7 +75,7 @@ export default function WebsiteModule({
 			<Card>
 				<CardHeader>
 					<div className="flex items-center justify-between gap-2">
-						<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
+						<p className="wrap-break-word col-span-full place-self-stretch font-medium text-[11px] text-gray-400 uppercase tracking-[0.08em]">
 							Website
 						</p>
 						{data && (
