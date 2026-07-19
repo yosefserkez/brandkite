@@ -6,6 +6,8 @@ type SiteColor = { hex: string; name: string; role: string };
 export type PublishedSiteData = {
 	name: string;
 	tagline: string;
+	mission?: string;
+	story?: string;
 	logoUrl: string | null;
 	colors: SiteColor[];
 	fonts: { headline: string | null; body: string | null };
@@ -127,6 +129,10 @@ const LIGHT_SURFACE_LUMINANCE = 0.45;
 const ALPHA_HAIRLINE = 0.14;
 const ALPHA_OUTLINE = 0.28;
 const ALPHA_WASH = 0.1;
+const PARAGRAPH_BREAK = /\n\s*\n/;
+const STORY_KEY_CHARS = 40;
+const CTA_PHOTO_WIDTH = 1260;
+const CTA_PHOTO_HEIGHT = 420;
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
 	if (!hex) {
@@ -177,6 +183,52 @@ function readableTextOn(hex: string): string {
 		LUMA_G * toLinear(rgb.g) +
 		LUMA_B * toLinear(rgb.b);
 	return luminance > LIGHT_SURFACE_LUMINANCE ? INK : WHITE;
+}
+
+// ── Brand-duotone photography ───────────────────────────────────────────────
+// The template's signature: stock photography re-colored with the brand's
+// anchor via mix-blend-color, so every generated site carries its own
+// palette as imagery. Seeded per brand for stability across visits.
+function duotonePhotoUrl(seed: string, width: number, height: number): string {
+	return `https://picsum.photos/seed/${encodeURIComponent(seed)}/${width}/${height}`;
+}
+
+function DuotonePhoto({
+	seed,
+	width,
+	height,
+	tint,
+	className,
+	tintOpacity = 0.9,
+}: {
+	seed: string;
+	width: number;
+	height: number;
+	tint: string;
+	className?: string;
+	tintOpacity?: number;
+}) {
+	return (
+		<div className={`relative isolate overflow-hidden ${className ?? ""}`}>
+			<img
+				alt=""
+				className="absolute inset-0 h-full w-full object-cover"
+				height={height}
+				loading="lazy"
+				src={duotonePhotoUrl(seed, width, height)}
+				width={width}
+			/>
+			<div
+				aria-hidden="true"
+				className="absolute inset-0 mix-blend-color"
+				style={{ backgroundColor: tint, opacity: tintOpacity }}
+			/>
+			<div
+				aria-hidden="true"
+				className="pointer-events-none absolute inset-0 ring-1 ring-black/5 ring-inset"
+			/>
+		</div>
+	);
 }
 
 // ── Component ───────────────────────────────────────────────────────────────
@@ -249,7 +301,7 @@ export function PublishedSite({ data }: { data: PublishedSiteData }) {
 						</span>
 					</a>
 					<a
-						className="hover:-translate-y-px inline-flex items-center rounded-full px-4 py-2 font-medium text-sm shadow-sm transition-transform"
+						className="hover:-translate-y-px inline-flex items-center rounded-full px-4 py-2 font-medium text-sm shadow-sm transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
 						href="#cta"
 						style={primaryButtonStyle}
 					>
@@ -307,14 +359,14 @@ export function PublishedSite({ data }: { data: PublishedSiteData }) {
 						</p>
 						<div className="mt-9 flex flex-wrap items-center justify-center gap-3">
 							<a
-								className="hover:-translate-y-px inline-flex items-center rounded-full px-6 py-3 font-semibold text-base shadow-md transition-transform"
+								className="hover:-translate-y-px inline-flex items-center rounded-full px-6 py-3 font-semibold text-base shadow-md transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
 								href="#cta"
 								style={primaryButtonStyle}
 							>
 								{heroCtaLabel}
 							</a>
 							<a
-								className="inline-flex items-center rounded-full border px-6 py-3 font-semibold text-base text-gray-700 transition-colors hover:bg-gray-50"
+								className="inline-flex items-center rounded-full border px-6 py-3 font-semibold text-base text-gray-700 transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
 								href="#features"
 								style={{ borderColor: rgba(neutral, ALPHA_OUTLINE) }}
 							>
@@ -322,7 +374,34 @@ export function PublishedSite({ data }: { data: PublishedSiteData }) {
 							</a>
 						</div>
 					</div>
+					{/* Brand-duotone cover: the palette applied as imagery */}
+					<div className="relative mx-auto max-w-6xl px-5 pb-4 sm:px-8">
+						<DuotonePhoto
+							className="aspect-[21/9] rounded-3xl"
+							height={540}
+							seed={`site-cover-${data.name}`}
+							tint={primary}
+							width={1260}
+						/>
+					</div>
 				</section>
+
+				{/* Mission — one line, said plainly */}
+				{data.mission ? (
+					<section className="mx-auto max-w-3xl px-5 pt-16 pb-4 text-center sm:px-8 sm:pt-20">
+						<span
+							aria-hidden="true"
+							className="mx-auto mb-6 block h-0.5 w-8"
+							style={{ backgroundColor: accent }}
+						/>
+						<p
+							className="text-balance text-2xl text-gray-900 leading-snug sm:text-3xl"
+							style={{ fontFamily: headlineStack }}
+						>
+							{data.mission}
+						</p>
+					</section>
+				) : null}
 
 				{/* Features */}
 				{website && website.features.length > 0 ? (
@@ -353,13 +432,53 @@ export function PublishedSite({ data }: { data: PublishedSiteData }) {
 					</section>
 				) : null}
 
+				{/* Story — editorial two-column */}
+				{data.story ? (
+					<section
+						className="border-t"
+						style={{ borderColor: rgba(neutral, ALPHA_HAIRLINE) }}
+					>
+						<div className="mx-auto grid max-w-6xl gap-x-16 gap-y-6 px-5 py-14 sm:px-8 sm:py-20 md:grid-cols-[10rem_1fr]">
+							<p
+								className="font-medium text-[12px] uppercase tracking-[0.14em]"
+								style={{ color: accent, fontFamily: bodyStack }}
+							>
+								Our story
+							</p>
+							<div className="max-w-2xl space-y-5">
+								{data.story.split(PARAGRAPH_BREAK).map((paragraph) => (
+									<p
+										className="text-gray-700 text-lg leading-relaxed"
+										key={paragraph.slice(0, STORY_KEY_CHARS)}
+									>
+										{paragraph}
+									</p>
+								))}
+							</div>
+						</div>
+					</section>
+				) : null}
+
 				{/* Closing CTA band */}
 				<section className="px-5 pb-20 sm:px-8" id="cta">
 					<div
-						className="mx-auto max-w-6xl rounded-3xl px-6 py-16 text-center sm:px-16 sm:py-20"
+						className="relative isolate mx-auto max-w-6xl overflow-hidden rounded-3xl px-6 py-16 text-center sm:px-16 sm:py-20"
 						style={{ backgroundColor: primary, color: onPrimary }}
 					>
-						<div>
+						<img
+							alt=""
+							aria-hidden="true"
+							className="absolute inset-0 h-full w-full object-cover opacity-15 mix-blend-multiply"
+							height={CTA_PHOTO_HEIGHT}
+							loading="lazy"
+							src={duotonePhotoUrl(
+								`site-cta-${data.name}`,
+								CTA_PHOTO_WIDTH,
+								CTA_PHOTO_HEIGHT
+							)}
+							width={CTA_PHOTO_WIDTH}
+						/>
+						<div className="relative">
 							<h2
 								className="mx-auto max-w-2xl text-balance font-bold text-3xl leading-tight tracking-tight sm:text-4xl"
 								style={{ fontFamily: headlineStack }}
@@ -368,7 +487,7 @@ export function PublishedSite({ data }: { data: PublishedSiteData }) {
 							</h2>
 							<div className="mt-8">
 								<a
-									className="hover:-translate-y-px inline-flex items-center rounded-full bg-white px-7 py-3 font-semibold text-base text-gray-950 shadow-lg transition-transform"
+									className="hover:-translate-y-px inline-flex items-center rounded-full bg-white px-7 py-3 font-semibold text-base text-gray-950 shadow-lg transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
 									href="#top"
 								>
 									{heroCtaLabel}
