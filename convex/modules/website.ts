@@ -11,6 +11,7 @@ import {
 	COPY_CRAFT,
 	composeSystem,
 	DISTINCTIVE_VOICE,
+	MESSAGE_HIERARCHY,
 	NO_FABRICATION,
 } from "../lib/design/skills";
 import { BrandModuleTypes } from "../workflows";
@@ -20,7 +21,8 @@ const SYSTEM_PROMPT = composeSystem(
 	"You are a conversion copywriter writing a landing page in the brand's voice. Write specific, benefit-led copy that reads like a real product site — clear, confident, and human.",
 	COPY_CRAFT,
 	NO_FABRICATION,
-	DISTINCTIVE_VOICE
+	DISTINCTIVE_VOICE,
+	MESSAGE_HIERARCHY
 );
 const TEMPERATURE = 0.75;
 const FEATURE_COUNT = 3;

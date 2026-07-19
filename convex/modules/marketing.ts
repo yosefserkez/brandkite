@@ -11,6 +11,7 @@ import {
 	COPY_CRAFT,
 	composeSystem,
 	DISTINCTIVE_VOICE,
+	HEADLINE_DIVERGENCE,
 	NO_FABRICATION,
 } from "../lib/design/skills";
 import { BrandModuleTypes } from "../workflows";
@@ -20,7 +21,8 @@ const SYSTEM_PROMPT = composeSystem(
 	"You are a senior performance-marketing copywriter. Write sharp, specific ad copy that sounds like the brand and drives action. Lead with the customer's problem or desire, not the product.",
 	COPY_CRAFT,
 	NO_FABRICATION,
-	DISTINCTIVE_VOICE
+	DISTINCTIVE_VOICE,
+	HEADLINE_DIVERGENCE
 );
 const TEMPERATURE = 0.8;
 const AD_COUNT = 3;

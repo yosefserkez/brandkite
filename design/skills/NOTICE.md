@@ -21,3 +21,11 @@ specific detector rules were adapted with attribution as required.
 - **LottieFiles motion-design-skill**
   https://github.com/lottiefiles/motion-design-skill — MIT.
   (Reserved for Phase B motion choreography.)
+- **marketingskills** by Corey Haines
+  https://github.com/coreyhaines31/marketingskills — MIT.
+  Copywriting principles, seven-sweeps editing framework, headline
+  formula buckets, CRO impact ordering, positioning-document method.
+
+Evaluated but NOT used: robertbstillwell/marketing-skills — its core
+skills carry no license (and largely mirror the MIT repo above), so
+nothing was taken from it.

@@ -7,6 +7,7 @@ import type { NameModuleData } from "../../../convex/modules/name";
 import { useBrandModule } from "../../hooks/useBrandModule";
 import { cn } from "../../lib/utils";
 import Logo from "../logo";
+import { AdPreview } from "../modules/AdPreview";
 import { Callout } from "./callout";
 
 // Reveal order for the build sequence.
@@ -213,7 +214,7 @@ export function AnimatedKit({
 										aria-label={`Use ${color.name}`}
 										aria-pressed={isActive}
 										className={cn(
-											"group/swatch relative flex h-16 flex-1 items-end justify-center pb-1.5 outline-none transition-[flex] duration-300",
+											"group/swatch relative flex h-16 flex-1 items-end justify-center pb-1.5 outline-none transition-[flex] duration-300 focus-visible:ring-2 focus-visible:ring-gray-900/70 focus-visible:ring-inset",
 											isActive && "flex-[1.4]"
 										)}
 										key={`${color.name}-${color.hex}`}
@@ -257,38 +258,21 @@ export function AnimatedKit({
 					</Reveal>
 				</div>
 
-				{/* Marketing ad */}
+				{/* Marketing ad — framed as the real deliverable */}
 				<div className="p-6 md:p-8">
 					<Reveal show={step >= STEP_AD}>
 						{ad ? (
-							<div
-								className="rounded-xl border border-gray-100 border-l-[3px] bg-gray-50/60 p-5 transition-colors duration-500"
-								style={{ borderLeftColor: activeColor }}
-							>
-								<p
-									className="mb-2 font-medium text-[11px] uppercase tracking-wider transition-colors duration-500"
-									style={{ color: activeColor }}
-								>
-									Ad · {ad.angle}
-								</p>
-								<p
-									className="font-semibold text-gray-900 text-lg leading-snug tracking-tight"
-									style={{ fontFamily: headingFont }}
-								>
-									{replaceName(ad.headline, brandName)}
-								</p>
-								<p className="mt-1.5 text-gray-500 text-sm leading-relaxed">
-									{replaceName(ad.primaryText, brandName)}
-								</p>
-								<div className="mt-4">
-									<span
-										className="inline-flex items-center rounded-lg px-4 py-2 font-medium text-sm text-white shadow-sm transition-colors duration-500"
-										style={{ backgroundColor: activeColor }}
-									>
-										{replaceName(ad.cta, brandName)}
-									</span>
-								</div>
-							</div>
+							<AdPreview
+								accentColor={activeColor}
+								angle={ad.angle}
+								brandName={brandName}
+								className="mx-auto max-w-md"
+								cta={replaceName(ad.cta, brandName)}
+								headingFontFamily={headingFont}
+								headline={replaceName(ad.headline, brandName)}
+								logo={logoUrl ? <Logo url={logoUrl} /> : undefined}
+								primaryText={replaceName(ad.primaryText, brandName)}
+							/>
 						) : null}
 					</Reveal>
 				</div>

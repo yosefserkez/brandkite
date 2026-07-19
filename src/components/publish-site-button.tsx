@@ -67,7 +67,9 @@ export function PublishSiteButton({
 		try {
 			const saved = await setSiteSlug({ companyId, slug: slugDraft });
 			toast.success("URL updated");
-			await navigator.clipboard.writeText(`${origin}/s/${saved}`).catch(ignoreClipboardError);
+			await navigator.clipboard
+				.writeText(`${origin}/s/${saved}`)
+				.catch(ignoreClipboardError);
 			setEditing(false);
 		} catch (error) {
 			toast.error(
@@ -105,10 +107,7 @@ export function PublishSiteButton({
 				<PopoverContent align="end" className="w-80 space-y-3">
 					{editing ? (
 						<div className="space-y-2">
-							<label
-								className="font-medium text-sm"
-								htmlFor="site-slug-input"
-							>
+							<label className="font-medium text-sm" htmlFor="site-slug-input">
 								Custom URL
 							</label>
 							<div className="flex items-center gap-1 rounded-md border px-2 focus-within:ring-1 focus-within:ring-gray-400">

@@ -62,7 +62,10 @@ function ToneContent({ tone }: { tone: BrandTone }) {
 					<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
 						Tone of Voice
 					</p>
-					<BrandText as="p" className="wrap-break-word text-gray-950 text-sm tracking-tight">
+					<BrandText
+						as="p"
+						className="wrap-break-word text-gray-950 text-sm tracking-tight"
+					>
 						{tone.summary}
 					</BrandText>
 				</div>
@@ -97,10 +100,16 @@ function ToneExampleRow({
 				</BrandText>
 			</div>
 			<div className="flex-1 space-y-2">
-				<BrandText as={CardTitle} className="wrap-break-word text-gray-950 text-sm tracking-tight">
+				<BrandText
+					as={CardTitle}
+					className="wrap-break-word text-gray-950 text-sm tracking-tight"
+				>
 					{example.title}
 				</BrandText>
-				<BrandText as="p" className="wrap-break-word text-gray-950 text-sm tracking-tight">
+				<BrandText
+					as="p"
+					className="wrap-break-word text-gray-950 text-sm tracking-tight"
+				>
 					{example.description}
 				</BrandText>
 			</div>
