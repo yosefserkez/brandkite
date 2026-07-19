@@ -13,6 +13,7 @@ import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SSlugRouteImport } from './routes/s/$slug'
+import { Route as SPreviewCompanyIdRouteImport } from './routes/s/preview/$companyId'
 import { Route as PublicCIdRouteImport } from './routes/public/c/$id'
 import { Route as AuthenticatedCNewRouteImport } from './routes/_authenticated/c/new'
 import { Route as AuthenticatedCIdRouteImport } from './routes/_authenticated/c/$id'
@@ -34,6 +35,11 @@ const IndexRoute = IndexRouteImport.update({
 const SSlugRoute = SSlugRouteImport.update({
   id: '/s/$slug',
   path: '/s/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SPreviewCompanyIdRoute = SPreviewCompanyIdRouteImport.update({
+  id: '/s/preview/$companyId',
+  path: '/s/preview/$companyId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PublicCIdRoute = PublicCIdRouteImport.update({
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/c/$id': typeof AuthenticatedCIdRoute
   '/c/new': typeof AuthenticatedCNewRoute
   '/public/c/$id': typeof PublicCIdRoute
+  '/s/preview/$companyId': typeof SPreviewCompanyIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/c/$id': typeof AuthenticatedCIdRoute
   '/c/new': typeof AuthenticatedCNewRoute
   '/public/c/$id': typeof PublicCIdRoute
+  '/s/preview/$companyId': typeof SPreviewCompanyIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/_authenticated/c/$id': typeof AuthenticatedCIdRoute
   '/_authenticated/c/new': typeof AuthenticatedCNewRoute
   '/public/c/$id': typeof PublicCIdRoute
+  '/s/preview/$companyId': typeof SPreviewCompanyIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -87,8 +96,16 @@ export interface FileRouteTypes {
     | '/c/$id'
     | '/c/new'
     | '/public/c/$id'
+    | '/s/preview/$companyId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/gallery' | '/s/$slug' | '/c/$id' | '/c/new' | '/public/c/$id'
+  to:
+    | '/'
+    | '/gallery'
+    | '/s/$slug'
+    | '/c/$id'
+    | '/c/new'
+    | '/public/c/$id'
+    | '/s/preview/$companyId'
   id:
     | '__root__'
     | '/'
@@ -98,6 +115,7 @@ export interface FileRouteTypes {
     | '/_authenticated/c/$id'
     | '/_authenticated/c/new'
     | '/public/c/$id'
+    | '/s/preview/$companyId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,6 +124,7 @@ export interface RootRouteChildren {
   GalleryRoute: typeof GalleryRoute
   SSlugRoute: typeof SSlugRoute
   PublicCIdRoute: typeof PublicCIdRoute
+  SPreviewCompanyIdRoute: typeof SPreviewCompanyIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -136,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/s/$slug'
       fullPath: '/s/$slug'
       preLoaderRoute: typeof SSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/s/preview/$companyId': {
+      id: '/s/preview/$companyId'
+      path: '/s/preview/$companyId'
+      fullPath: '/s/preview/$companyId'
+      preLoaderRoute: typeof SPreviewCompanyIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/public/c/$id': {
@@ -182,6 +208,7 @@ const rootRouteChildren: RootRouteChildren = {
   GalleryRoute: GalleryRoute,
   SSlugRoute: SSlugRoute,
   PublicCIdRoute: PublicCIdRoute,
+  SPreviewCompanyIdRoute: SPreviewCompanyIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
