@@ -123,9 +123,22 @@ function PublicCompanyView() {
 				</section>
 			) : null}
 
-			{/* Bottom conversion CTA */}
-			<section className="border-gray-100 border-t bg-white py-14 md:py-20">
-				<div className="mx-auto flex max-w-2xl flex-col items-center gap-6 px-4 text-center">
+			{/* Bottom conversion CTA — bookends the hero's studio sky */}
+			<section className="relative overflow-hidden border-gray-100 border-t bg-white py-14 md:py-20">
+				<div
+					aria-hidden="true"
+					className="pointer-events-none absolute inset-0"
+				>
+					<div className="absolute inset-x-0 bottom-0 h-3/5 bg-[linear-gradient(0deg,var(--landing-sky),transparent)]" />
+					<div
+						className="-translate-x-1/2 -bottom-48 absolute left-1/2 h-[420px] w-[880px] rounded-full blur-3xl"
+						style={{
+							background:
+								"radial-gradient(closest-side, color-mix(in srgb, var(--landing-sage) 55%, transparent), transparent 70%)",
+						}}
+					/>
+				</div>
+				<div className="relative mx-auto flex max-w-2xl flex-col items-center gap-6 px-4 text-center">
 					<h2 className="text-balance font-semibold text-4xl text-gray-950 leading-tight tracking-tight md:text-5xl">
 						Your brand is one prompt away.
 					</h2>
