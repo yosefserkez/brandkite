@@ -16,6 +16,8 @@ _Direction: [V2-DIRECTION.md]. Autonomous build. Update statuses as work lands._
 - [ ] Gate publishing behind Pro (free = preview) — Phase 4.
 - [ ] Custom domain (later; may partner).
 - [x] JSON-LD Organization structured data on each published site (2026-07-18).
+- [x] **Custom site URLs** — owners rename their slug (`setSiteSlug`, validated + unique), edited inline from the "Site live" popover (2026-07-18).
+- [x] **Preview before publish** — owner-only `getSitePreview` + `/s/preview/:companyId` (noindex, "not published yet" banner); "Preview" action next to Publish (2026-07-18).
 - [ ] Branded OG **card** per site (1200×630, `og:image` route) — currently og:image is the bare logo (summary card); a rendered card unfurls better.
 - [ ] Per-site **brand favicon** (use the brand logo) — needs to OVERRIDE the root layout's default favicons, not append (appending gives an ambiguous dual-favicon). Do via TanStack head dedup/merge on the `/s` route.
 - [ ] Missing/unpublished slug should return **HTTP 404**, not 200 — else search engines can index the "not available" page. Low value today (≈0 missing-slug traffic); deprioritized after two dead-ends. Tried & reverted: (a) `notFound()` → blank "Error" shell in SSR; (b) `setResponseStatus` in the loader → import pulls `node:async_hooks` into the client bundle, build fails; (c) `createServerFn` loader wrapping the fetch + `setResponseStatus` → builds, but the server-fn RPC 500s ("HTTPError") when called from the loader during SSR in `node .output/server`. Next thing to try: set status in a server-route/middleware layer, or an nitro route handler for `/s/:slug`. Keep transient errors as 503 (retryable), not 404.
