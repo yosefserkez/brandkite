@@ -136,7 +136,7 @@ export function BrandStudioPage({
 						<ColorsModule companyId={companyId} />
 						<TypographyModule companyId={companyId} />
 					</div>
-					<div className="mt-12 flex flex-col items-center gap-2 rounded-lg bg-gray-50 p-4 text-center">
+					<div className="mt-12 flex flex-col items-center gap-2 border-gray-100 border-t pt-8 text-center">
 						<p className="text-gray-500 text-sm">
 							Questions, suggestions, or feedback?&nbsp;
 							<a

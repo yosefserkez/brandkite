@@ -78,7 +78,7 @@ export default function ColorsModule({
 		>
 			<Card>
 				<CardHeader>
-					<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
+					<p className="wrap-break-word col-span-full place-self-stretch font-medium text-[11px] text-gray-400 uppercase tracking-[0.08em]">
 						Color System
 					</p>
 					<div className="wrap-break-word text-gray-950 text-sm tracking-tight">

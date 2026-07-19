@@ -211,6 +211,10 @@ export function AdCreative({
 					</p>
 				</div>
 			) : null}
+			<div
+				aria-hidden="true"
+				className="pointer-events-none absolute inset-0 ring-1 ring-black/5 ring-inset"
+			/>
 			{showLogoChip ? (
 				<span
 					aria-hidden="true"
