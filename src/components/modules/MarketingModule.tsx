@@ -6,6 +6,8 @@ import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandMarketing } from "../../../convex/modules/marketing";
 import { BrandText, useBrandText } from "../../contexts/BrandTextContext";
 import { useBrandModule } from "../../hooks/useBrandModule";
+import { useCompanyBrandSelector } from "../../hooks/useCompanyBrand";
+import { cn } from "../../lib/utils";
 import { SuspenseCard } from "../suspense-card";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader } from "../ui/card";
@@ -17,24 +19,35 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../ui/select";
-import { AdPreview } from "./AdPreview";
+import { AD_PLACEMENTS, AdMockup, type AdPlacement } from "./AdMockups";
 import { BlockWrapper } from "./BlockWrapper";
 
-type MarketingPlatform = "generic" | "google" | "meta" | "linkedin";
 type MarketingGoal = "awareness" | "signups" | "sales";
-
-const PLATFORM_OPTIONS: { value: MarketingPlatform; label: string }[] = [
-	{ value: "generic", label: "Generic" },
-	{ value: "google", label: "Google" },
-	{ value: "meta", label: "Meta" },
-	{ value: "linkedin", label: "LinkedIn" },
-];
 
 const GOAL_OPTIONS: { value: MarketingGoal; label: string }[] = [
 	{ value: "awareness", label: "Awareness" },
 	{ value: "signups", label: "Sign-ups" },
 	{ value: "sales", label: "Sales" },
 ];
+
+/** Copy guidance passed to generation, derived from the previewed placement. */
+const GENERATION_PLATFORM: Record<AdPlacement, string> = {
+	instagram: "meta",
+	facebook: "meta",
+	tiktok: "meta",
+	x: "generic",
+	linkedin: "linkedin",
+	google: "google",
+};
+
+const PLACEMENT_GRID: Record<AdPlacement, string> = {
+	instagram: "grid gap-4 sm:grid-cols-2 md:grid-cols-3",
+	facebook: "grid gap-4 sm:grid-cols-2 md:grid-cols-3",
+	linkedin: "grid gap-4 sm:grid-cols-2 md:grid-cols-3",
+	x: "grid gap-4 sm:grid-cols-2 md:grid-cols-3",
+	tiktok: "mx-auto grid w-full max-w-3xl gap-4 grid-cols-2 md:grid-cols-3",
+	google: "mx-auto flex w-full max-w-xl flex-col gap-4",
+};
 
 type MarketingModuleProps = {
 	companyId: Id<"companies">;
@@ -46,12 +59,15 @@ export default function MarketingModule({
 	className,
 }: MarketingModuleProps) {
 	const ctx = useBrandModule(companyId, "marketing");
-	const [platform, setPlatform] = useState<MarketingPlatform>("generic");
+	const [placement, setPlacement] = useState<AdPlacement>("instagram");
 	const [goal, setGoal] = useState<MarketingGoal>("signups");
 
 	const data = ctx.selected?.data as BrandMarketing | undefined;
 
-	const onRegenerate = () => ctx.regenerate({ options: { platform, goal } });
+	const onRegenerate = () =>
+		ctx.regenerate({
+			options: { platform: GENERATION_PLATFORM[placement], goal },
+		});
 
 	return (
 		<BlockWrapper
@@ -72,11 +88,35 @@ export default function MarketingModule({
 						{data?.valueProp ?? ""}
 					</BrandText>
 				</CardHeader>
-				<CardContent className="pt-5">
+				<CardContent className="space-y-4 pt-5">
+					<fieldset className="flex flex-wrap gap-1">
+						<legend className="sr-only">Preview placement</legend>
+						{AD_PLACEMENTS.map((option) => (
+							<button
+								aria-pressed={placement === option.value}
+								className={cn(
+									"rounded-full px-3 py-1.5 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400",
+									placement === option.value
+										? "bg-gray-100 font-medium text-gray-900"
+										: "text-gray-500 hover:text-gray-900"
+								)}
+								key={option.value}
+								onClick={() => setPlacement(option.value)}
+								type="button"
+							>
+								{option.label}
+							</button>
+						))}
+					</fieldset>
 					{data && (
-						<div className="grid gap-4 md:grid-cols-3">
+						<div className={PLACEMENT_GRID[placement]}>
 							{data.ads.map((ad, index) => (
-								<AdArtifact ad={ad} key={`${ad.headline}-${index}`} />
+								<AdArtifact
+									ad={ad}
+									key={`${ad.headline}-${index}`}
+									placement={placement}
+									seed={`${index}-${ad.headline}`}
+								/>
 							))}
 						</div>
 					)}
@@ -97,26 +137,6 @@ export default function MarketingModule({
 						</PopoverTrigger>
 						<PopoverContent align="start" className="w-64 space-y-3">
 							<div className="space-y-1.5">
-								<span className="font-medium text-xs">Platform</span>
-								<Select
-									onValueChange={(value) =>
-										setPlatform(value as MarketingPlatform)
-									}
-									value={platform}
-								>
-									<SelectTrigger className="w-full">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										{PLATFORM_OPTIONS.map((option) => (
-											<SelectItem key={option.value} value={option.value}>
-												{option.label}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-							<div className="space-y-1.5">
 								<span className="font-medium text-xs">Goal</span>
 								<Select
 									onValueChange={(value) => setGoal(value as MarketingGoal)}
@@ -134,6 +154,10 @@ export default function MarketingModule({
 									</SelectContent>
 								</Select>
 							</div>
+							<p className="text-gray-500 text-xs leading-relaxed">
+								Copy is tuned to the placement selected above when you
+								regenerate.
+							</p>
 						</PopoverContent>
 					</Popover>
 				</div>
@@ -144,8 +168,15 @@ export default function MarketingModule({
 
 type MarketingAd = BrandMarketing["ads"][number];
 
-function AdArtifact({ ad }: { ad: MarketingAd }) {
+type AdArtifactProps = {
+	ad: MarketingAd;
+	placement: AdPlacement;
+	seed: string;
+};
+
+function AdArtifact({ ad, placement, seed }: AdArtifactProps) {
 	const { replace, companyName } = useBrandText();
+	const logoUrl = useCompanyBrandSelector((state) => state.logoUrl);
 	const brandName = companyName?.trim() || "Your brand";
 
 	const onCopy = () => {
@@ -160,25 +191,32 @@ function AdArtifact({ ad }: { ad: MarketingAd }) {
 	};
 
 	return (
-		<div className="group/ad h-full">
-			<AdPreview
-				angle={replace(ad.angle)}
-				brandName={brandName}
-				cta={replace(ad.cta)}
-				headerAction={
-					<button
-						aria-label="Copy ad copy"
-						className="rounded-md p-1 text-gray-300 opacity-0 transition hover:text-gray-600 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 group-hover/ad:opacity-100"
-						onClick={onCopy}
-						title="Copy ad copy"
-						type="button"
-					>
-						<Copy className="h-3.5 w-3.5" />
-					</button>
-				}
-				headline={replace(ad.headline)}
-				primaryText={replace(ad.primaryText)}
+		<div className="flex h-full flex-col gap-1.5">
+			<AdMockup
+				ad={{
+					brandName,
+					headline: replace(ad.headline),
+					primaryText: replace(ad.primaryText),
+					cta: replace(ad.cta),
+				}}
+				logoUrl={logoUrl}
+				placement={placement}
+				seed={seed}
 			/>
+			<div className="flex items-center justify-between gap-2 px-1">
+				<span className="truncate text-[11px] text-gray-400">
+					{replace(ad.angle)}
+				</span>
+				<button
+					aria-label="Copy ad copy"
+					className="flex shrink-0 items-center gap-1 rounded-md p-1.5 text-[11px] text-gray-400 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+					onClick={onCopy}
+					type="button"
+				>
+					<Copy className="size-3" />
+					Copy
+				</button>
+			</div>
 		</div>
 	);
 }
