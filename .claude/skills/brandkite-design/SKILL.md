@@ -50,6 +50,15 @@ fewer gray bands; lead with outcomes.
 - Images: explicit dimensions; lazy-load below fold.
 - Responsive to mobile; test light and dark.
 
+## Companion skill
+
+For micro-polish (concentric border radii, optical alignment, shadow
+layering, stagger/exit animations, tabular-nums, hit areas), also load
+`make-interfaces-feel-better` (installed at
+`.agents/skills/make-interfaces-feel-better/`) — it covers execution
+detail this skill doesn't repeat. Dev-time use only; not part of the
+product corpus.
+
 ## Repo specifics
 
 - Tailwind v4, CSS-first config: tokens live in `src/styles.css` (`:root` /

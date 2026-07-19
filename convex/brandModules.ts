@@ -5,6 +5,7 @@ import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import {
 	action,
+	internalAction,
 	internalMutation,
 	internalQuery,
 	type MutationCtx,
@@ -307,6 +308,30 @@ export const regenerateModule = action({
 		}
 
 		return result;
+	},
+});
+
+// Ops-only: start a module workflow without user auth or credit deduction.
+// For operating our own brand kit from the CLI (`npx convex run`); not
+// reachable from clients (internal).
+export const regenerateModuleAdmin = internalAction({
+	args: {
+		companyId: v.id("companies"),
+		type: brandModuleTypeValidator,
+		publish: v.optional(v.boolean()),
+		options: v.optional(v.record(v.string(), v.string())),
+	},
+	handler: async (ctx, args): Promise<string> => {
+		const entry = MODULE_WORKFLOWS[args.type as keyof typeof MODULE_WORKFLOWS];
+		if (!entry?.workflow) {
+			throw new Error(`No workflow registered for module type: ${args.type}`);
+		}
+		const workflowId = await workflow.start(ctx, entry.workflow, {
+			companyId: args.companyId,
+			publish: args.publish,
+			options: args.options,
+		});
+		return String(workflowId);
 	},
 });
 

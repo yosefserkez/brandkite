@@ -31,6 +31,10 @@ Copy (the stack runs positioning → hierarchy → draft → edit):
 
 - `NOTICE.md` — attribution for vendored/distilled sources
 
+Dev-harness companions (installed, not distilled — see each skill's own
+license): `.agents/skills/make-interfaces-feel-better/` — design-
+engineering micro-polish (radii, optical alignment, animation feel).
+
 ## Rules for adding skills
 
 - Vendor-distill, never runtime-fetch. Snapshot ideas here with attribution
