@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandPalette } from "../../../convex/modules/colors";
@@ -7,7 +7,11 @@ import type { NameModuleData } from "../../../convex/modules/name";
 import { useBrandModule } from "../../hooks/useBrandModule";
 import { cn } from "../../lib/utils";
 import Logo from "../logo";
-import { AdPreview } from "../modules/AdPreview";
+import {
+	AD_PLACEMENTS,
+	AdMockup,
+	type AdPlacement,
+} from "../modules/AdMockups";
 import { Callout } from "./callout";
 
 // Reveal order for the build sequence.
@@ -86,6 +90,7 @@ export function AnimatedKit({
 	const activeColor = pickedColor ?? primaryHex ?? "#111827";
 	const [font, setFont] = useState<"Inter" | "Space Grotesk">("Space Grotesk");
 	const headingFont = `"${font}", system-ui, sans-serif`;
+	const [placement, setPlacement] = useState<AdPlacement>("instagram");
 
 	const ready = Boolean(
 		logoUrl && colors.length > 0 && tagline && ad && brandName
@@ -258,21 +263,54 @@ export function AnimatedKit({
 					</Reveal>
 				</div>
 
-				{/* Marketing ad — framed as the real deliverable */}
+				{/* Marketing ad — framed as the real placement it will run in */}
 				<div className="p-6 md:p-8">
 					<Reveal show={step >= STEP_AD}>
 						{ad ? (
-							<AdPreview
-								accentColor={activeColor}
-								angle={ad.angle}
-								brandName={brandName}
-								className="mx-auto max-w-md"
-								cta={replaceName(ad.cta, brandName)}
-								headingFontFamily={headingFont}
-								headline={replaceName(ad.headline, brandName)}
-								logo={logoUrl ? <Logo url={logoUrl} /> : undefined}
-								primaryText={replaceName(ad.primaryText, brandName)}
-							/>
+							<div
+								// Scope the live brand tokens so the color/font pickers
+								// restyle the mock without touching the page.
+								style={
+									{
+										"--brand-primary-500": activeColor,
+										"--font-brand-headline": headingFont,
+									} as CSSProperties
+								}
+							>
+								<div className="mb-4 flex flex-wrap justify-center gap-1">
+									{AD_PLACEMENTS.map((option) => (
+										<button
+											aria-pressed={placement === option.value}
+											className={cn(
+												"rounded-full px-2.5 py-1 text-[12px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400",
+												placement === option.value
+													? "bg-gray-100 font-medium text-gray-900"
+													: "text-gray-500 hover:text-gray-900"
+											)}
+											key={option.value}
+											onClick={() => setPlacement(option.value)}
+											type="button"
+										>
+											{option.label}
+										</button>
+									))}
+								</div>
+								<AdMockup
+									ad={{
+										brandName,
+										headline: replaceName(ad.headline, brandName),
+										primaryText: replaceName(ad.primaryText, brandName),
+										cta: replaceName(ad.cta, brandName),
+									}}
+									className={cn(
+										"mx-auto",
+										placement === "tiktok" ? "max-w-[250px]" : "max-w-sm"
+									)}
+									logoUrl={logoUrl || undefined}
+									placement={placement}
+									seed={`hero-${ad.headline}`}
+								/>
+							</div>
 						) : null}
 					</Reveal>
 				</div>

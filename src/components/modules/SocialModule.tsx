@@ -4,8 +4,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { BrandSocial } from "../../../convex/modules/social";
-import { BrandText, useBrandText } from "../../contexts/BrandTextContext";
+import { useBrandText } from "../../contexts/BrandTextContext";
 import { useBrandModule } from "../../hooks/useBrandModule";
+import { useCompanyBrandSelector } from "../../hooks/useCompanyBrand";
 import { SuspenseCard } from "../suspense-card";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader } from "../ui/card";
@@ -17,7 +18,13 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../ui/select";
+import { slugify } from "./AdMockups";
 import { BlockWrapper } from "./BlockWrapper";
+import {
+	SocialPostMockup,
+	type SocialPostPlacement,
+	SocialProfileMockup,
+} from "./SocialMockups";
 
 type SocialTone = "brand" | "professional" | "casual" | "bold";
 
@@ -27,6 +34,9 @@ const TONE_OPTIONS: { value: SocialTone; label: string }[] = [
 	{ value: "casual", label: "Casual" },
 	{ value: "bold", label: "Bold" },
 ];
+
+/** Alternate organic post frames: first post as X, second as LinkedIn. */
+const POST_PLACEMENTS: SocialPostPlacement[] = ["x", "linkedin"];
 
 type SocialModuleProps = {
 	companyId: Id<"companies">;
@@ -62,12 +72,16 @@ export default function SocialModule({
 						<>
 							<div className="grid gap-4 md:grid-cols-3">
 								{data.bios.map((bio, index) => (
-									<BioCard bio={bio} key={`${bio.platform}-${index}`} />
+									<BioArtifact bio={bio} key={`${bio.platform}-${index}`} />
 								))}
 							</div>
 							<div className="grid gap-4 md:grid-cols-2">
 								{data.posts.map((post, index) => (
-									<PostCard key={`${post.hook}-${index}`} post={post} />
+									<PostArtifact
+										key={`${post.hook}-${index}`}
+										placement={POST_PLACEMENTS[index % POST_PLACEMENTS.length]}
+										post={post}
+									/>
 								))}
 							</div>
 						</>
@@ -114,91 +128,68 @@ export default function SocialModule({
 	);
 }
 
-type SocialBio = BrandSocial["bios"][number];
-
-/** Circle avatar with the brand initial — stands in for the profile photo. */
-function BrandAvatar({ name }: { name: string }) {
-	return (
-		<span
-			aria-hidden="true"
-			className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gray-100 bg-gray-50 font-semibold text-[13px] text-gray-700"
-		>
-			{name.trim().charAt(0).toUpperCase() || "B"}
-		</span>
-	);
-}
-
-function CopyButton({
+/** Caption row shared by bios and posts: label left, copy right. */
+function ArtifactCaption({
 	label,
 	onCopy,
-	groupClass,
 }: {
 	label: string;
 	onCopy: () => void;
-	groupClass: string;
 }) {
 	return (
-		<button
-			aria-label={label}
-			className={`rounded-md p-1 text-gray-300 opacity-0 transition hover:text-gray-600 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 ${groupClass}`}
-			onClick={onCopy}
-			title={label}
-			type="button"
-		>
-			<Copy className="h-3.5 w-3.5" />
-		</button>
+		<div className="flex items-center justify-between gap-2 px-1">
+			<span className="truncate text-[11px] text-gray-400">{label}</span>
+			<button
+				aria-label={`Copy ${label}`}
+				className="flex shrink-0 items-center gap-1 rounded-md p-1.5 text-[11px] text-gray-400 transition-colors hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+				onClick={onCopy}
+				type="button"
+			>
+				<Copy className="size-3" />
+				Copy
+			</button>
+		</div>
 	);
 }
 
-/** A bio framed as the profile it will live on: avatar, name, handle, bio. */
-function BioCard({ bio }: { bio: SocialBio }) {
+type SocialBio = BrandSocial["bios"][number];
+
+function BioArtifact({ bio }: { bio: SocialBio }) {
 	const { replace, companyName } = useBrandText();
+	const logoUrl = useCompanyBrandSelector((state) => state.logoUrl);
 	const brandName = companyName?.trim() || "Your brand";
 
 	const onCopy = () => {
-		const text = replace(bio.bio);
-		navigator.clipboard.writeText(text).then(() => toast.success("Copied"));
+		navigator.clipboard
+			.writeText(replace(bio.bio))
+			.then(() => toast.success("Copied"));
 	};
 
 	return (
-		<figure className="group/bio flex h-full flex-col rounded-xl border border-gray-200 bg-white p-4 shadow-xs">
-			<figcaption className="sr-only">
-				{replace(bio.platform)} bio preview for {brandName}
-			</figcaption>
-			<div className="flex items-center gap-2.5">
-				<BrandAvatar name={brandName} />
-				<span className="min-w-0 flex-1 leading-tight">
-					<span className="block truncate font-semibold text-[13px] text-gray-900">
-						{brandName}
-					</span>
-					<span className="block truncate text-[11px] text-gray-400">
-						@{replace(bio.handle)}
-					</span>
-				</span>
-				<span className="shrink-0 rounded-full bg-gray-50 px-2 py-0.5 text-[11px] text-gray-400">
-					{replace(bio.platform)}
-				</span>
-				<CopyButton
-					groupClass="group-hover/bio:opacity-100"
-					label="Copy bio"
-					onCopy={onCopy}
-				/>
-			</div>
-			<BrandText
-				as="p"
-				className="wrap-break-word pt-3 text-gray-700 text-sm leading-relaxed"
-			>
-				{bio.bio}
-			</BrandText>
-		</figure>
+		<div className="flex h-full flex-col gap-1.5">
+			<SocialProfileMockup
+				bio={replace(bio.bio)}
+				brandName={brandName}
+				handle={replace(bio.handle)}
+				logoUrl={logoUrl}
+				platform={replace(bio.platform)}
+			/>
+			<ArtifactCaption label={`${replace(bio.platform)} bio`} onCopy={onCopy} />
+		</div>
 	);
 }
 
 type SocialPost = BrandSocial["posts"][number];
 
-/** A post framed as it will appear in a feed: profile row, then the post. */
-function PostCard({ post }: { post: SocialPost }) {
+function PostArtifact({
+	post,
+	placement,
+}: {
+	post: SocialPost;
+	placement: SocialPostPlacement;
+}) {
 	const { replace, companyName } = useBrandText();
+	const logoUrl = useCompanyBrandSelector((state) => state.logoUrl);
 	const brandName = companyName?.trim() || "Your brand";
 
 	const onCopy = () => {
@@ -207,34 +198,19 @@ function PostCard({ post }: { post: SocialPost }) {
 	};
 
 	return (
-		<figure className="group/post flex h-full flex-col rounded-xl border border-gray-200 bg-white p-4 shadow-xs">
-			<figcaption className="sr-only">Post preview for {brandName}</figcaption>
-			<div className="flex items-center gap-2.5">
-				<BrandAvatar name={brandName} />
-				<span className="min-w-0 flex-1 leading-tight">
-					<span className="block truncate font-semibold text-[13px] text-gray-900">
-						{brandName}
-					</span>
-					<span className="block text-[11px] text-gray-400">Draft post</span>
-				</span>
-				<CopyButton
-					groupClass="group-hover/post:opacity-100"
-					label="Copy post"
-					onCopy={onCopy}
-				/>
-			</div>
-			<BrandText
-				as="p"
-				className="wrap-break-word pt-3 font-medium text-[15px] text-gray-900 leading-snug"
-			>
-				{post.hook}
-			</BrandText>
-			<BrandText
-				as="p"
-				className="wrap-break-word pt-1.5 text-gray-600 text-sm leading-relaxed"
-			>
-				{post.body}
-			</BrandText>
-		</figure>
+		<div className="flex h-full flex-col gap-1.5">
+			<SocialPostMockup
+				body={replace(post.body)}
+				brandName={brandName}
+				handle={slugify(brandName)}
+				hook={replace(post.hook)}
+				logoUrl={logoUrl}
+				placement={placement}
+			/>
+			<ArtifactCaption
+				label={placement === "linkedin" ? "LinkedIn draft" : "X draft"}
+				onCopy={onCopy}
+			/>
+		</div>
 	);
 }
