@@ -17,6 +17,7 @@ import type * as http from "../http.js";
 import type * as index from "../index.js";
 import type * as lib_design_checks from "../lib/design/checks.js";
 import type * as lib_design_context from "../lib/design/context.js";
+import type * as lib_design_generate from "../lib/design/generate.js";
 import type * as lib_design_models from "../lib/design/models.js";
 import type * as lib_design_skills from "../lib/design/skills.js";
 import type * as lib_firecrawl from "../lib/firecrawl.js";
@@ -67,6 +68,7 @@ declare const fullApi: ApiFromModules<{
   index: typeof index;
   "lib/design/checks": typeof lib_design_checks;
   "lib/design/context": typeof lib_design_context;
+  "lib/design/generate": typeof lib_design_generate;
   "lib/design/models": typeof lib_design_models;
   "lib/design/skills": typeof lib_design_skills;
   "lib/firecrawl": typeof lib_firecrawl;

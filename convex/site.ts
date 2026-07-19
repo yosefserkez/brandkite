@@ -155,10 +155,14 @@ async function buildSitePayload(ctx: QueryCtx, company: Doc<"companies">) {
 		  }
 		| undefined;
 	const tagline = (byType.tagline as { tagline?: string } | undefined)?.tagline;
+	const mission = (byType.mission as { mission?: string } | undefined)?.mission;
+	const story = (byType.story as { story?: string } | undefined)?.story;
 
 	return {
 		name,
 		tagline: withName(tagline, name),
+		mission: withName(mission, name),
+		story: withName(story, name),
 		logoUrl,
 		colors: colors?.colors ?? [],
 		fonts: {
