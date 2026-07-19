@@ -30,7 +30,7 @@ export function LandingHero({ onGenerate }: LandingHeroProps) {
 					<br className="hidden sm:block" />A whole brand out.
 				</h1>
 				<p className="max-w-lg text-balance text-gray-500 text-lg leading-relaxed md:text-xl">
-					Name, story, colors, logo, and marketing — generated together, always
+					Name, story, colors, logo, and marketing. Generated together, always
 					consistent.
 				</p>
 				<div className="mt-2 flex w-full max-w-xl flex-col items-center gap-2.5">

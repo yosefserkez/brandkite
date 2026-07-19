@@ -112,7 +112,8 @@ export default function TypographyModule({
 			"",
 			"Weight usage:",
 			...STANDARD_FONT_WEIGHTS.map(
-				(weight) => `${weight.label} (${weight.fontWeight}): ${replace(weight.description)}`
+				(weight) =>
+					`${weight.label} (${weight.fontWeight}): ${replace(weight.description)}`
 			),
 			"",
 			replace(data.specimenCopy),
@@ -315,7 +316,10 @@ function TypographyShowcase({ data }: { data: BrandTypography }) {
 						<p>0123456789</p>
 						<p>@#$%&*</p>
 					</div>
-					<BrandText as="p" className="border-gray-200 border-l-4 pl-4 text-base text-gray-600 leading-relaxed">
+					<BrandText
+						as="p"
+						className="border-gray-200 border-l-4 pl-4 text-base text-gray-600 leading-relaxed"
+					>
 						{data.specimenCopy}
 					</BrandText>
 				</div>

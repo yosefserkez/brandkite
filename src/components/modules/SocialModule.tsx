@@ -116,8 +116,44 @@ export default function SocialModule({
 
 type SocialBio = BrandSocial["bios"][number];
 
+/** Circle avatar with the brand initial — stands in for the profile photo. */
+function BrandAvatar({ name }: { name: string }) {
+	return (
+		<span
+			aria-hidden="true"
+			className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gray-100 bg-gray-50 font-semibold text-[13px] text-gray-700"
+		>
+			{name.trim().charAt(0).toUpperCase() || "B"}
+		</span>
+	);
+}
+
+function CopyButton({
+	label,
+	onCopy,
+	groupClass,
+}: {
+	label: string;
+	onCopy: () => void;
+	groupClass: string;
+}) {
+	return (
+		<button
+			aria-label={label}
+			className={`rounded-md p-1 text-gray-300 opacity-0 transition hover:text-gray-600 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 ${groupClass}`}
+			onClick={onCopy}
+			title={label}
+			type="button"
+		>
+			<Copy className="h-3.5 w-3.5" />
+		</button>
+	);
+}
+
+/** A bio framed as the profile it will live on: avatar, name, handle, bio. */
 function BioCard({ bio }: { bio: SocialBio }) {
-	const { replace } = useBrandText();
+	const { replace, companyName } = useBrandText();
+	const brandName = companyName?.trim() || "Your brand";
 
 	const onCopy = () => {
 		const text = replace(bio.bio);
@@ -125,38 +161,45 @@ function BioCard({ bio }: { bio: SocialBio }) {
 	};
 
 	return (
-		<div className="group/bio flex h-full flex-col rounded-lg border border-gray-200 bg-white p-4">
-			<div className="flex items-center justify-between gap-2">
-				<span className="font-medium text-[11px] text-gray-400 uppercase tracking-wide">
+		<figure className="group/bio flex h-full flex-col rounded-xl border border-gray-200 bg-white p-4 shadow-xs">
+			<figcaption className="sr-only">
+				{replace(bio.platform)} bio preview for {brandName}
+			</figcaption>
+			<div className="flex items-center gap-2.5">
+				<BrandAvatar name={brandName} />
+				<span className="min-w-0 flex-1 leading-tight">
+					<span className="block truncate font-semibold text-[13px] text-gray-900">
+						{brandName}
+					</span>
+					<span className="block truncate text-[11px] text-gray-400">
+						@{replace(bio.handle)}
+					</span>
+				</span>
+				<span className="shrink-0 rounded-full bg-gray-50 px-2 py-0.5 text-[11px] text-gray-400">
 					{replace(bio.platform)}
 				</span>
-				<button
-					aria-label="Copy bio"
-					className="text-gray-300 opacity-0 transition hover:text-gray-600 group-hover/bio:opacity-100"
-					onClick={onCopy}
-					title="Copy bio"
-					type="button"
-				>
-					<Copy className="h-3.5 w-3.5" />
-				</button>
+				<CopyButton
+					groupClass="group-hover/bio:opacity-100"
+					label="Copy bio"
+					onCopy={onCopy}
+				/>
 			</div>
-			<span className="pt-1.5 text-gray-500 text-sm">
-				@{replace(bio.handle)}
-			</span>
 			<BrandText
 				as="p"
-				className="wrap-break-word pt-2 text-gray-900 text-sm leading-relaxed"
+				className="wrap-break-word pt-3 text-gray-700 text-sm leading-relaxed"
 			>
 				{bio.bio}
 			</BrandText>
-		</div>
+		</figure>
 	);
 }
 
 type SocialPost = BrandSocial["posts"][number];
 
+/** A post framed as it will appear in a feed: profile row, then the post. */
 function PostCard({ post }: { post: SocialPost }) {
-	const { replace } = useBrandText();
+	const { replace, companyName } = useBrandText();
+	const brandName = companyName?.trim() || "Your brand";
 
 	const onCopy = () => {
 		const text = [replace(post.hook), "", replace(post.body)].join("\n");
@@ -164,33 +207,34 @@ function PostCard({ post }: { post: SocialPost }) {
 	};
 
 	return (
-		<div className="group/post flex h-full flex-col rounded-lg border border-gray-200 bg-white p-4">
-			<div className="flex items-center justify-between gap-2">
-				<span className="font-medium text-[11px] text-gray-400 uppercase tracking-wide">
-					Post
+		<figure className="group/post flex h-full flex-col rounded-xl border border-gray-200 bg-white p-4 shadow-xs">
+			<figcaption className="sr-only">Post preview for {brandName}</figcaption>
+			<div className="flex items-center gap-2.5">
+				<BrandAvatar name={brandName} />
+				<span className="min-w-0 flex-1 leading-tight">
+					<span className="block truncate font-semibold text-[13px] text-gray-900">
+						{brandName}
+					</span>
+					<span className="block text-[11px] text-gray-400">Draft post</span>
 				</span>
-				<button
-					aria-label="Copy post"
-					className="text-gray-300 opacity-0 transition hover:text-gray-600 group-hover/post:opacity-100"
-					onClick={onCopy}
-					title="Copy post"
-					type="button"
-				>
-					<Copy className="h-3.5 w-3.5" />
-				</button>
+				<CopyButton
+					groupClass="group-hover/post:opacity-100"
+					label="Copy post"
+					onCopy={onCopy}
+				/>
 			</div>
 			<BrandText
 				as="p"
-				className="wrap-break-word pt-2 font-semibold text-base text-gray-900 leading-snug tracking-tight"
+				className="wrap-break-word pt-3 font-medium text-[15px] text-gray-900 leading-snug"
 			>
 				{post.hook}
 			</BrandText>
 			<BrandText
 				as="p"
-				className="wrap-break-word pt-1.5 text-gray-500 text-sm leading-relaxed"
+				className="wrap-break-word pt-1.5 text-gray-600 text-sm leading-relaxed"
 			>
 				{post.body}
 			</BrandText>
-		</div>
+		</figure>
 	);
 }

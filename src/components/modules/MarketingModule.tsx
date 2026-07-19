@@ -17,6 +17,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../ui/select";
+import { AdPreview } from "./AdPreview";
 import { BlockWrapper } from "./BlockWrapper";
 
 type MarketingPlatform = "generic" | "google" | "meta" | "linkedin";
@@ -60,22 +61,22 @@ export default function MarketingModule({
 			loadingSkeleton={<SuspenseCard headerText="Marketing" />}
 		>
 			<Card>
-				<CardHeader>
+				<CardHeader className="gap-1">
 					<p className="wrap-break-word col-span-full place-self-stretch text-gray-900">
 						Marketing
 					</p>
 					<BrandText
 						as="p"
-						className="wrap-break-word pt-1 text-gray-950 text-lg tracking-tight"
+						className="wrap-break-word text-gray-500 text-sm leading-relaxed"
 					>
 						{data?.valueProp ?? ""}
 					</BrandText>
 				</CardHeader>
-				<CardContent>
+				<CardContent className="pt-5">
 					{data && (
 						<div className="grid gap-4 md:grid-cols-3">
 							{data.ads.map((ad, index) => (
-								<AdCard ad={ad} key={`${ad.headline}-${index}`} />
+								<AdArtifact ad={ad} key={`${ad.headline}-${index}`} />
 							))}
 						</div>
 					)}
@@ -143,8 +144,9 @@ export default function MarketingModule({
 
 type MarketingAd = BrandMarketing["ads"][number];
 
-function AdCard({ ad }: { ad: MarketingAd }) {
-	const { replace } = useBrandText();
+function AdArtifact({ ad }: { ad: MarketingAd }) {
+	const { replace, companyName } = useBrandText();
+	const brandName = companyName?.trim() || "Your brand";
 
 	const onCopy = () => {
 		const text = [
@@ -158,36 +160,25 @@ function AdCard({ ad }: { ad: MarketingAd }) {
 	};
 
 	return (
-		<div className="group/ad flex h-full flex-col rounded-lg border border-gray-200 bg-white p-4">
-			<div className="flex items-center justify-between gap-2">
-				<span className="font-medium text-[11px] text-gray-400 uppercase tracking-wide">
-					{replace(ad.angle)}
-				</span>
-				<button
-					aria-label="Copy ad copy"
-					className="text-gray-300 opacity-0 transition hover:text-gray-600 group-hover/ad:opacity-100"
-					onClick={onCopy}
-					title="Copy ad copy"
-					type="button"
-				>
-					<Copy className="h-3.5 w-3.5" />
-				</button>
-			</div>
-			<BrandText
-				as="p"
-				className="wrap-break-word pt-2 font-semibold text-base text-gray-900 leading-snug tracking-tight"
-			>
-				{ad.headline}
-			</BrandText>
-			<BrandText
-				as="p"
-				className="wrap-break-word pt-1.5 text-gray-500 text-sm leading-relaxed"
-			>
-				{ad.primaryText}
-			</BrandText>
-			<span className="mt-auto pt-3 font-medium text-gray-400 text-xs">
-				{replace(ad.cta)} →
-			</span>
+		<div className="group/ad h-full">
+			<AdPreview
+				angle={replace(ad.angle)}
+				brandName={brandName}
+				cta={replace(ad.cta)}
+				headerAction={
+					<button
+						aria-label="Copy ad copy"
+						className="rounded-md p-1 text-gray-300 opacity-0 transition hover:text-gray-600 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 group-hover/ad:opacity-100"
+						onClick={onCopy}
+						title="Copy ad copy"
+						type="button"
+					>
+						<Copy className="h-3.5 w-3.5" />
+					</button>
+				}
+				headline={replace(ad.headline)}
+				primaryText={replace(ad.primaryText)}
+			/>
 		</div>
 	);
 }

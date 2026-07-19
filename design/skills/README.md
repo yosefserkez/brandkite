@@ -16,11 +16,19 @@ their own sake, no vagueness).
 
 ## Index
 
-- `copy-craft.md` — specificity, banned buzzwords, AI cadence tells
+Design:
 - `anti-default-looks.md` — the named AI-slop visual modes to avoid
 - `color-craft.md` — brand-derived palettes, contrast floor, divergence
 - `typography-craft.md` — pairing with intent, overused-font list
 - `logo-craft.md` — one idea, reduction tests, category clichés
+
+Copy (the stack runs positioning → hierarchy → draft → edit):
+- `positioning.md` — the context document every copy task reads first
+- `message-hierarchy.md` — promise/proof/CTA sequencing + CRO audit
+- `headline-divergence.md` — six materially different headline angles
+- `copy-craft.md` — specificity, banned buzzwords, AI cadence tells
+- `copy-editing.md` — the seven sweeps + word-level pass + panel gate
+
 - `NOTICE.md` — attribution for vendored/distilled sources
 
 ## Rules for adding skills

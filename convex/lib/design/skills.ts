@@ -49,6 +49,22 @@ export const DISTINCTIVE_VOICE = [
 	"- Take one deliberate, justifiable stylistic risk per piece; keep the rest disciplined.",
 ].join("\n");
 
+export const HEADLINE_DIVERGENCE = [
+	"Headline divergence — variants take materially different ANGLES (a different opening thought), never rewrites of one idea:",
+	"- Angles: outcome-led ({outcome} without {pain}), pain-led (never {bad event} again), mechanism-led ({outcome} by {how}), identity-led (the {category} for {audience}), proof-led (only with a real number from the context), contrarian (the {opposite-of-usual} way to {outcome}).",
+	"- Headlines <= 10 words (6-8 ideal); include the audience or their goal; specific beats clever.",
+	"- If the variants could be swapped around without anyone noticing, they have failed.",
+	'- CTA copy = action verb + what they get, first person ("Start my free trial"). Never: Submit, Sign Up, Learn More, Get Started, Click Here.',
+].join("\n");
+
+export const MESSAGE_HIERARCHY = [
+	"Message hierarchy — decide before writing:",
+	"- The single primary promise (the hero owns it), 2-4 supporting benefits that each survive 'so what?', and the ONE action the page asks for.",
+	"- Hero headline <= 10 words containing the audience or their outcome; subheadline = {product} helps {audience} {outcome} by {mechanism}, with a concrete detail.",
+	"- CTA = action verb + what they get, first person. Never: Submit, Sign Up, Learn More, Get Started.",
+	"- Benefit sections are an argument in sequence, not an unordered feature list; every claim survives 'so what?' or gains a 'which means…' bridge.",
+].join("\n");
+
 // ── Visual fragments ───────────────────────────────────────────────────────
 
 // AI visual output collapses to a few statistical defaults ("AI slop looks").

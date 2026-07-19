@@ -31,14 +31,14 @@ export function GetStartedCard({ className }: GetStartedCardProps) {
 			>
 				<CardHeader className="flex items-center justify-between">
 					<h2 className="font-semibold text-base">
-						Create your own brand from scratch with our AI-powered platform
+						Now yours: one description in, your whole kit out.
 					</h2>
 					<Button
 						onClick={() => setLoginDialogOpen(true)}
 						size="sm"
 						type="button"
 					>
-						Get Started
+						Start my kit
 					</Button>
 				</CardHeader>
 				<CardContent className="m-0 p-0">
@@ -50,10 +50,10 @@ export function GetStartedCard({ className }: GetStartedCardProps) {
 				<ShineBorder shineColor="black" />
 			</Card>
 			<LoginPromptDialog
-				description="Sign in to start building your brand identity with AI-powered tools."
+				description="Sign in to generate your first kit. Free to start, no credit card."
 				onOpenChange={setLoginDialogOpen}
 				open={loginDialogOpen}
-				title="Get started with BrandKite"
+				title="Start your brand kit"
 			/>
 		</>
 	);

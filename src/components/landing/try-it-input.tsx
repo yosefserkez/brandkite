@@ -14,7 +14,7 @@ export function TryItInput({
 	onSubmit,
 	className,
 	placeholder = "Enter your website or describe your idea…",
-	buttonLabel = "Generate",
+	buttonLabel = "Generate my kit",
 }: TryItInputProps) {
 	const [value, setValue] = useState("");
 
